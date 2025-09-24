@@ -1,0 +1,11 @@
+function(add_cases FOLDER_NAME)
+  file(GLOB SOURCES "${FOLDER_NAME}/*.cpp")
+  file(GLOB HEADERS "${FOLDER_NAME}/*.h" "${FOLDER_NAME}/*.hpp")
+  foreach(SOURCE_FILE IN LISTS SOURCES)
+    get_filename_component(TARGET_NAME ${SOURCE_FILE} NAME_WE)
+    add_executable(${TARGET_NAME} ${SOURCE_FILE} ${HEADERS})
+    target_link_libraries(${TARGET_NAME} PUBLIC Solver)
+  endforeach()
+endfunction()
+
+add_cases(validation_cases)

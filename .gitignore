@@ -5,17 +5,11 @@
 *.slo
 *.lo
 *.o
-*.obj
+# *.obj # this overlap with a model format
 
 # Precompiled Headers
 *.gch
 *.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
 
 # Compiled Dynamic libraries
 *.so
@@ -37,5 +31,23 @@
 *.out
 *.app
 
-# debug information files
-*.dwo
+.vs/
+bin/
+build/
+build_debug/
+build_hybrid/
+build_purempi/
+.vscode/
+
+*.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.pdb
+*.sln
+
+# Log file
+.log
+
+result/*
+temp/*

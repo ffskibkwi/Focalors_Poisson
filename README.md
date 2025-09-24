@@ -1,2 +1,14 @@
-# Focalors_Poisson
-Focalors_Poisson is a high-performance, low-complexity, and parallel Poisson equation solver specifically designed as a core component for Focalors – our high-efficiency incompressible Navier-Stokes solver.
+## Env
+
+Add fftw path in `~/.bashrc`
+
+```shell
+export FFTW_ROOT=/path/to/fftw3
+```
+
+## Build
+
+```shell
+cmake -S . -B build -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_BUILD_TYPE=Hybrid
+cmake --build build --parallel $(nproc)
+```

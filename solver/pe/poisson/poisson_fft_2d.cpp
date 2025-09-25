@@ -1,6 +1,6 @@
 #include "poisson_fft_2d.hpp"
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::init(int in_nx, int in_ny)
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet>::init(int in_nx, int in_ny)
 {
     nx = in_nx;
     ny = in_ny;
@@ -22,7 +22,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::i
     plan = fftw_plan_dft_r2c_1d(2 * ny + 2, ex_vec[0], fft_result[0], FFTW_MEASURE);
 }
 
-PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::~PoissonFFT2D()
+PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet>::~PoissonFFT2D()
 {
     fftw_destroy_plan(plan);
     for (int i = 0; i < nx; i++)
@@ -33,7 +33,7 @@ PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::~Poiss
     delete[] fft_result;
 }
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::transform(const field2& f, field2& f_hat)
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet>::transform(const field2& f, field2& f_hat)
 {
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
@@ -46,7 +46,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::t
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::transform_transpose(const field2& p_hat,
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet>::transform_transpose(const field2& p_hat,
                                                                                                    field2&       p)
 {
     OPENMP_PARALLEL_FOR()
@@ -60,7 +60,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet>::t
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::init(int in_nx, int in_ny)
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::init(int in_nx, int in_ny)
 {
     nx = in_nx;
     ny = in_ny;
@@ -91,7 +91,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::init(
     plan = fftw_plan_dft_r2c_1d(2 * ny, ex_vec[0], fft_result[0], FFTW_MEASURE);
 }
 
-PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::~PoissonFFT2D()
+PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::~PoissonFFT2D()
 {
     fftw_destroy_plan(plan);
     delete[] cos_ipi_n;
@@ -104,7 +104,7 @@ PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::~PoissonFF
     delete[] fft_result;
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::transform(const field2& f, field2& f_hat)
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::transform(const field2& f, field2& f_hat)
 {
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
@@ -121,7 +121,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::trans
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::transform_transpose(const field2& p_hat,
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::transform_transpose(const field2& p_hat,
                                                                                                field2&       p)
 {
     OPENMP_PARALLEL_FOR()
@@ -142,7 +142,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::trans
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::init(int in_nx, int in_ny)
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Dirichlet>::init(int in_nx, int in_ny)
 {
     nx = in_nx;
     ny = in_ny;
@@ -172,7 +172,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::ini
     plan = fftw_plan_dft_r2c_1d(2 * ny + 1, ex_vec[0], fft_result[0], FFTW_MEASURE);
 }
 
-PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::~PoissonFFT2D()
+PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Dirichlet>::~PoissonFFT2D()
 {
     fftw_destroy_plan(plan);
     delete[] cos_2nipi_2np1;
@@ -185,7 +185,7 @@ PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::~Poisson
     delete[] fft_result;
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::transform(const field2& f, field2& f_hat)
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Dirichlet>::transform(const field2& f, field2& f_hat)
 {
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
@@ -198,7 +198,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::tra
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::transform_transpose(const field2& p_hat,
+void PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Dirichlet>::transform_transpose(const field2& p_hat,
                                                                                                  field2&       p)
 {
     OPENMP_PARALLEL_FOR()
@@ -219,7 +219,7 @@ void PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet>::tra
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::init(int in_nx, int in_ny)
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Neumann>::init(int in_nx, int in_ny)
 {
     nx = in_nx;
     ny = in_ny;
@@ -241,7 +241,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::ini
     plan = fftw_plan_dft_r2c_1d(2 * ny + 1, ex_vec[0], fft_result[0], FFTW_MEASURE);
 }
 
-PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::~PoissonFFT2D()
+PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Neumann>::~PoissonFFT2D()
 {
     fftw_destroy_plan(plan);
     for (int i = 0; i < nx; i++)
@@ -252,7 +252,7 @@ PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::~Poisson
     delete[] fft_result;
 }
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::transform(const field2& f, field2& f_hat)
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Neumann>::transform(const field2& f, field2& f_hat)
 {
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
@@ -265,7 +265,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::tra
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::transform_transpose(const field2& p_hat,
+void PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Neumann>::transform_transpose(const field2& p_hat,
                                                                                                  field2&       p)
 {
     OPENMP_PARALLEL_FOR()
@@ -279,7 +279,7 @@ void PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann>::tra
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::init(int in_nx, int in_ny)
+void PoissonFFT2D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::init(int in_nx, int in_ny)
 {
     nx = in_nx;
     ny = in_ny;
@@ -356,7 +356,7 @@ void PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::ini
     }
 }
 
-PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::~PoissonFFT2D()
+PoissonFFT2D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::~PoissonFFT2D()
 {
     delete[] cos_ipi_ny;
     delete[] sin_ipi_ny;
@@ -409,7 +409,7 @@ PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::~Poisson
     delete[] fft_result_y_cos;
 }
 
-void PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::transform(const field2& f, field2& f_hat)
+void PoissonFFT2D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::transform(const field2& f, field2& f_hat)
 \
 {
     OPENMP_PARALLEL_FOR()
@@ -448,7 +448,7 @@ void PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::tra
     }
 }
 
-void PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::transform_transpose(const field2& p_hat,
+void PoissonFFT2D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::transform_transpose(const field2& p_hat,
                                                                                                  field2&       p)
 \
 {

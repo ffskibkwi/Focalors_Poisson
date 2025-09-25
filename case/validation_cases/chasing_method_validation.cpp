@@ -61,8 +61,8 @@ public:
                                             c.data(),
                                             y.data(),
                                             x.data(),
-                                            FluidBoundaryType::Dirichlet,
-                                            FluidBoundaryType::Dirichlet);
+                                            PDEBoundaryType::Dirichlet,
+                                            PDEBoundaryType::Dirichlet);
 
         // Compute and print error
         double error = 0.0;
@@ -91,7 +91,7 @@ public:
 
         // Precompute c vector
         chasing_standard_precompute(
-            x_diag_single, n, c.data(), FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet);
+            x_diag_single, n, c.data(), PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet);
 
         std::cout << "Helper vector c:" << std::endl;
         for (int i = 0; i < n - 1; i++)
@@ -122,8 +122,8 @@ public:
                                          c.data(),
                                          y.data(),
                                          x.data(),
-                                         FluidBoundaryType::Dirichlet,
-                                         FluidBoundaryType::Dirichlet);
+                                         PDEBoundaryType::Dirichlet,
+                                         PDEBoundaryType::Dirichlet);
 
         double error = 0.0;
         std::cout << "Index\tComputed\tExact\t\tError" << std::endl;

@@ -18,7 +18,7 @@
  * Therefore, in the FFT-based algorithm, there is a conversion from xyz to zyx.
  * But I think it is easy to comprehence. ^-^
  */
-template<FluidBoundaryType BoundTypeZNegative, FluidBoundaryType BoundTypeZPositive>
+template<PDEBoundaryType BoundTypeZNegative, PDEBoundaryType BoundTypeZPositive>
 class ChasingMethod3D : public ChasingMethodBase
 {
 public:
@@ -33,8 +33,8 @@ public:
 
         y.init(nx, ny, nz, "y");
 
-        if constexpr (BoundTypeZNegative == FluidBoundaryType::Periodic &&
-                      BoundTypeZPositive == FluidBoundaryType::Periodic)
+        if constexpr (BoundTypeZNegative == PDEBoundaryType::Periodic &&
+                      BoundTypeZPositive == PDEBoundaryType::Periodic)
         {
             z_1.init(nx, ny, nz, "z_1");
             z_2.init(nx, ny, nz, "z_2");
@@ -65,8 +65,8 @@ public:
 
     void chasing(field3& f, field3& p)
     {
-        if constexpr (BoundTypeZNegative == FluidBoundaryType::Periodic &&
-                      BoundTypeZPositive == FluidBoundaryType::Periodic)
+        if constexpr (BoundTypeZNegative == PDEBoundaryType::Periodic &&
+                      BoundTypeZPositive == PDEBoundaryType::Periodic)
         {
             for (int i = 0; i < nx; i++)
             {

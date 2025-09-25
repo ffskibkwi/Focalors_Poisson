@@ -73,30 +73,30 @@ int main(int argc, char* argv[])
     field2 p_temp_4(nx_4, ny_4, "p_temp_4");
     field2 p_temp_5(nx_5, ny_5, "p_temp_5");
 
-    PoissonSolver2D<FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Neumann>
+    PoissonSolver2D<PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Neumann>
         pe_solver_1(p_1.get_nx(), p_1.get_ny());
-    PoissonSolver2D<FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet>
+    PoissonSolver2D<PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet>
         pe_solver_2(p_2.get_nx(), p_2.get_ny());
-    PoissonSolver2D<FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Neumann>
+    PoissonSolver2D<PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Neumann>
         pe_solver_3(p_3.get_nx(), p_3.get_ny());
-    PoissonSolver2D<FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet>
+    PoissonSolver2D<PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet>
         pe_solver_4(p_4.get_nx(), p_4.get_ny());
-    PoissonSolver2D<FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Dirichlet,
-                    FluidBoundaryType::Dirichlet>
+    PoissonSolver2D<PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Dirichlet,
+                    PDEBoundaryType::Dirichlet>
         pe_solver_5(p_5.get_nx(), p_5.get_ny());
 
     Shur_mat_left  S_21(p_2, p_1);

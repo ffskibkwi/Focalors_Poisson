@@ -27,21 +27,21 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
                                                             double*           c,
                                                             double*           y,
                                                             double*           x,
-                                                            FluidBoundaryType BoundTypeStart,
-                                                            FluidBoundaryType BoundTypeEnd)
+                                                            PDEBoundaryType BoundTypeStart,
+                                                            PDEBoundaryType BoundTypeEnd)
 {
-    c[0] = (BoundTypeStart == FluidBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
+    c[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         c[i] = 1.0 / (x_diag_single - c[i - 1]);
     }
 
-    y[0] = (BoundTypeStart == FluidBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
+    y[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundTypeEnd == FluidBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+    y[n - 1] = (BoundTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
                                                               (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
@@ -79,15 +79,15 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
                                                          double*           c,
                                                          double*           y,
                                                          double*           x,
-                                                         FluidBoundaryType BoundTypeStart,
-                                                         FluidBoundaryType BoundTypeEnd)
+                                                         PDEBoundaryType BoundTypeStart,
+                                                         PDEBoundaryType BoundTypeEnd)
 {
-    y[0] = (BoundTypeStart == FluidBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
+    y[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundTypeEnd == FluidBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+    y[n - 1] = (BoundTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
                                                               (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
@@ -115,10 +115,10 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
 void ChasingMethodBase::chasing_standard_precompute(double            x_diag_single,
                                                     int               n,
                                                     double*           c,
-                                                    FluidBoundaryType BoundTypeStart,
-                                                    FluidBoundaryType BoundTypeEnd)
+                                                    PDEBoundaryType BoundTypeStart,
+                                                    PDEBoundaryType BoundTypeEnd)
 {
-    c[0] = (BoundTypeStart == FluidBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
+    c[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         c[i] = 1.0 / (x_diag_single - c[i - 1]);
@@ -184,7 +184,7 @@ void ChasingMethodBase::chasing_periodic_with_precompute(double  x_diag_single,
                                                          double* x)
 {
     chasing_standard_with_precompute(
-        x_diag_single, n, f, c_diri, y_diri, y, FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet);
+        x_diag_single, n, f, c_diri, y_diri, y, PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet);
     double gamma_2 =
         (y[n - 1] / (1.0 + z_1[n - 1]) - y[0] / z_1[0]) / (z_2[n - 1] / (1.0 + z_1[n - 1]) - (1.0 + z_2[0]) / z_1[0]);
     double gamma_1 = y[0] / z_1[0] - gamma_2 * ((1.0 + z_2[0]) / z_1[0]);
@@ -230,9 +230,9 @@ void ChasingMethodBase::chasing_periodic_precompute(double  x_diag_single,
         u2_temp[i] = (i == n - 1) ? 1.0 : 0.0;
     }
     chasing_standard_without_precompute(
-        x_diag_single, n, u1_temp, c_temp, y_temp, z_1, FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet);
+        x_diag_single, n, u1_temp, c_temp, y_temp, z_1, PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet);
     chasing_standard_without_precompute(
-        x_diag_single, n, u2_temp, c_temp, y_temp, z_2, FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet);
+        x_diag_single, n, u2_temp, c_temp, y_temp, z_2, PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet);
 
     delete[] c_temp;
     delete[] y_temp;

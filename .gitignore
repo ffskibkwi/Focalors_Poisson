@@ -49,5 +49,5 @@ build_purempi/
 # Log file
 .log
 
-result/*
-temp/*
+result/
+temp/

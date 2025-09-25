@@ -17,21 +17,21 @@ protected:
                                              double*           c,
                                              double*           y,
                                              double*           x,
-                                             FluidBoundaryType BoundTypeStart,
-                                             FluidBoundaryType BoundTypeEnd);
+                                             PDEBoundaryType BoundTypeStart,
+                                             PDEBoundaryType BoundTypeEnd);
     void chasing_standard_with_precompute(double            x_diag_single,
                                           int               n,
                                           double*           f,
                                           double*           c,
                                           double*           y,
                                           double*           x,
-                                          FluidBoundaryType BoundTypeStart,
-                                          FluidBoundaryType BoundTypeEnd);
+                                          PDEBoundaryType BoundTypeStart,
+                                          PDEBoundaryType BoundTypeEnd);
     void chasing_standard_precompute(double            x_diag_single,
                                      int               n,
                                      double*           c,
-                                     FluidBoundaryType BoundTypeStart,
-                                     FluidBoundaryType BoundTypeEnd);
+                                     PDEBoundaryType BoundTypeStart,
+                                     PDEBoundaryType BoundTypeEnd);
     void chasing_standard_singular(int n, double* f, double* x);
     void chasing_periodic_with_precompute(double  x_diag_single,
                                           int     n,

@@ -30,12 +30,12 @@ int main(int argc, char* argv[])
     // x-direction: periodic
     // y-direction: Neumann
     // z-direction: Neumann
-    PoissonSolver3D<FluidBoundaryType::Periodic,
-                    FluidBoundaryType::Periodic,
-                    FluidBoundaryType::Periodic,
-                    FluidBoundaryType::Periodic,
-                    FluidBoundaryType::Neumann,
-                    FluidBoundaryType::Neumann>
+    PoissonSolver3D<PDEBoundaryType::Periodic,
+                    PDEBoundaryType::Periodic,
+                    PDEBoundaryType::Periodic,
+                    PDEBoundaryType::Periodic,
+                    PDEBoundaryType::Neumann,
+                    PDEBoundaryType::Neumann>
         poisson_solver(mesh_profile);
 
     std::cout << "Creating source field and solution fields..." << std::endl;

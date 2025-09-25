@@ -13,7 +13,7 @@
  * @tparam BoundTypeZNegative fluid boundary type in z negative.
  * @tparam BoundTypeZPositive fluid boundary type in z positive.
  */
-template<FluidBoundaryType BoundTypeZNegative, FluidBoundaryType BoundTypeZPositive>
+template<PDEBoundaryType BoundTypeZNegative, PDEBoundaryType BoundTypeZPositive>
 class PoissonFFT3D : public PoissonFFT3DInterface
 {
 public:
@@ -34,7 +34,7 @@ private:
 };
 
 template<>
-class PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann> : public PoissonFFT3DInterface
+class PoissonFFT3D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann> : public PoissonFFT3DInterface
 {
 public:
     PoissonFFT3D() {}
@@ -58,7 +58,7 @@ private:
 };
 
 template<>
-class PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic> : public PoissonFFT3DInterface
+class PoissonFFT3D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic> : public PoissonFFT3DInterface
 {
 public:
     PoissonFFT3D() {}

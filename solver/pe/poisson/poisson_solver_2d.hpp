@@ -8,10 +8,10 @@
 #include "poisson_fft_2d.hpp"
 #include "poisson_solver_interface.h"
 
-template<FluidBoundaryType BoundTypeXNegative,
-         FluidBoundaryType BoundTypeXPositive,
-         FluidBoundaryType BoundTypeYNegative,
-         FluidBoundaryType BoundTypeYPositive>
+template<PDEBoundaryType BoundTypeXNegative,
+         PDEBoundaryType BoundTypeXPositive,
+         PDEBoundaryType BoundTypeYNegative,
+         PDEBoundaryType BoundTypeYPositive>
 class PoissonSolver2D : public PoissonSolver2DInterface
 {
 public:
@@ -42,8 +42,8 @@ public:
         delete[] lambda_y;
 
         bool is_no_Dirichlet =
-            (BoundTypeXNegative != FluidBoundaryType::Dirichlet && BoundTypeXPositive != FluidBoundaryType::Dirichlet &&
-             BoundTypeYNegative != FluidBoundaryType::Dirichlet && BoundTypeYPositive != FluidBoundaryType::Dirichlet);
+            (BoundTypeXNegative != PDEBoundaryType::Dirichlet && BoundTypeXPositive != PDEBoundaryType::Dirichlet &&
+             BoundTypeYNegative != PDEBoundaryType::Dirichlet && BoundTypeYPositive != PDEBoundaryType::Dirichlet);
         bool has_last_vector = true;
         chasing_method_x.init(nx, ny, x_diag, is_no_Dirichlet, has_last_vector);
     }
@@ -74,8 +74,8 @@ public:
         delete[] lambda_y;
 
         bool is_no_Dirichlet =
-            (BoundTypeXNegative != FluidBoundaryType::Dirichlet && BoundTypeXPositive != FluidBoundaryType::Dirichlet &&
-             BoundTypeYNegative != FluidBoundaryType::Dirichlet && BoundTypeYPositive != FluidBoundaryType::Dirichlet);
+            (BoundTypeXNegative != PDEBoundaryType::Dirichlet && BoundTypeXPositive != PDEBoundaryType::Dirichlet &&
+             BoundTypeYNegative != PDEBoundaryType::Dirichlet && BoundTypeYPositive != PDEBoundaryType::Dirichlet);
         bool has_last_vector = true;
         chasing_method_x.init(nx, ny, x_diag, is_no_Dirichlet, has_last_vector);
     }
@@ -114,31 +114,31 @@ private:
                     int               global_length,
                     int               begin,
                     int               local_length,
-                    FluidBoundaryType BoundTypeNegative,
-                    FluidBoundaryType BoundTypePositive)
+                    PDEBoundaryType BoundTypeNegative,
+                    PDEBoundaryType BoundTypePositive)
     {
         // This function is calcualting the lambda of the equation with all the diagonal elements equal to 0
         for (int i = begin; i <= begin + local_length - 1; i++)
         {
-            if (BoundTypeNegative == FluidBoundaryType::Periodic &&
-                BoundTypePositive == FluidBoundaryType::Periodic) // P-P
+            if (BoundTypeNegative == PDEBoundaryType::Periodic &&
+                BoundTypePositive == PDEBoundaryType::Periodic) // P-P
             {
                 lambda[i - begin] = -2.0 * std::cos(2.0 * pi / global_length * std::floor(i / 2.0));
             }
-            else if (BoundTypeNegative == FluidBoundaryType::Neumann &&
-                     BoundTypePositive == FluidBoundaryType::Neumann) // N-N
+            else if (BoundTypeNegative == PDEBoundaryType::Neumann &&
+                     BoundTypePositive == PDEBoundaryType::Neumann) // N-N
             {
                 lambda[i - begin] = -2.0 * std::cos(pi / global_length * i);
             }
-            else if (BoundTypeNegative == FluidBoundaryType::Dirichlet &&
-                     BoundTypePositive == FluidBoundaryType::Dirichlet) // D-D
+            else if (BoundTypeNegative == PDEBoundaryType::Dirichlet &&
+                     BoundTypePositive == PDEBoundaryType::Dirichlet) // D-D
             {
                 lambda[i - begin] = -2.0 * std::cos(pi / (global_length + 1.0) * i);
             }
-            else if ((BoundTypeNegative == FluidBoundaryType::Dirichlet &&
-                      BoundTypePositive == FluidBoundaryType::Neumann) ||
-                     (BoundTypeNegative == FluidBoundaryType::Neumann &&
-                      BoundTypePositive == FluidBoundaryType::Dirichlet)) // D-N or N-D
+            else if ((BoundTypeNegative == PDEBoundaryType::Dirichlet &&
+                      BoundTypePositive == PDEBoundaryType::Neumann) ||
+                     (BoundTypeNegative == PDEBoundaryType::Neumann &&
+                      BoundTypePositive == PDEBoundaryType::Dirichlet)) // D-N or N-D
             {
                 lambda[i - begin] = -2.0 * std::cos(2.0 * pi * i / (2.0 * global_length + 1.0));
             }

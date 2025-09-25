@@ -1,6 +1,6 @@
 #include "poisson_fft_3d.hpp"
 
-void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::init(int in_nx, int in_ny, int in_nz)
+void PoissonFFT3D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::init(int in_nx, int in_ny, int in_nz)
 {
     nx = in_nx;
     ny = in_ny;
@@ -30,7 +30,7 @@ void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::init(
     }
 }
 
-PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::~PoissonFFT3D()
+PoissonFFT3D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::~PoissonFFT3D()
 {
     delete[] cos_ipi_nz;
     delete[] sin_ipi_nz;
@@ -45,7 +45,7 @@ PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::~PoissonFF
     fftw_destroy_plan(plan_z);
 }
 
-void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::transform(const field3& f, field3& f_hat)
+void PoissonFFT3D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::transform(const field3& f, field3& f_hat)
 \
 {
     OPENMP_PARALLEL_FOR()
@@ -72,7 +72,7 @@ void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::trans
     }
 }
 
-void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::transform_transpose(const field3& p_hat,
+void PoissonFFT3D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann>::transform_transpose(const field3& p_hat,
                                                                                                field3&       p)
 \
 {
@@ -107,7 +107,7 @@ void PoissonFFT3D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann>::trans
     }
 }
 
-void PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::init(int in_nx, int in_ny, int in_nz)
+void PoissonFFT3D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::init(int in_nx, int in_ny, int in_nz)
 {
     nx = in_nx;
     ny = in_ny;
@@ -179,7 +179,7 @@ void PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::ini
     }
 }
 
-PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::~PoissonFFT3D()
+PoissonFFT3D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::~PoissonFFT3D()
 {
     delete[] sin_ipi_nz;
     delete[] cos_ipi_nz;
@@ -227,7 +227,7 @@ PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::~Poisson
     fftw_destroy_plan(plan_z_cos_odd);
 }
 
-void PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::transform(const field3& f, field3& f_hat)
+void PoissonFFT3D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::transform(const field3& f, field3& f_hat)
 \
 {
     OPENMP_PARALLEL_FOR()
@@ -270,7 +270,7 @@ void PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::tra
     }
 }
 
-void PoissonFFT3D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic>::transform_transpose(const field3& p_hat,
+void PoissonFFT3D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic>::transform_transpose(const field3& p_hat,
                                                                                                  field3&       p)
 \
 {

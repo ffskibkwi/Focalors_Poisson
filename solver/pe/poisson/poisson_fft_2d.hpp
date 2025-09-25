@@ -13,7 +13,7 @@
  * @tparam BoundTypeYNegative fluid boundary type in y negative.
  * @tparam BoundTypeYPositive fluid boundary type in y positive.
  */
-template<FluidBoundaryType BoundTypeYNegative, FluidBoundaryType BoundTypeYPositive>
+template<PDEBoundaryType BoundTypeYNegative, PDEBoundaryType BoundTypeYPositive>
 class PoissonFFT2D : public PoissonFFT2DInterface
 {
 public:
@@ -33,7 +33,7 @@ private:
 };
 
 template<>
-class PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Dirichlet> : public PoissonFFT2DInterface
+class PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet> : public PoissonFFT2DInterface
 {
 public:
     PoissonFFT2D() {}
@@ -53,7 +53,7 @@ private:
 };
 
 template<>
-class PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Neumann> : public PoissonFFT2DInterface
+class PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Neumann> : public PoissonFFT2DInterface
 {
 public:
     PoissonFFT2D() {}
@@ -74,7 +74,7 @@ private:
 };
 
 template<>
-class PoissonFFT2D<FluidBoundaryType::Neumann, FluidBoundaryType::Dirichlet> : public PoissonFFT2DInterface
+class PoissonFFT2D<PDEBoundaryType::Neumann, PDEBoundaryType::Dirichlet> : public PoissonFFT2DInterface
 {
 public:
     PoissonFFT2D() {}
@@ -95,7 +95,7 @@ private:
 };
 
 template<>
-class PoissonFFT2D<FluidBoundaryType::Dirichlet, FluidBoundaryType::Neumann> : public PoissonFFT2DInterface
+class PoissonFFT2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Neumann> : public PoissonFFT2DInterface
 {
 public:
     PoissonFFT2D() {}
@@ -115,7 +115,7 @@ private:
 };
 
 template<>
-class PoissonFFT2D<FluidBoundaryType::Periodic, FluidBoundaryType::Periodic> : public PoissonFFT2DInterface
+class PoissonFFT2D<PDEBoundaryType::Periodic, PDEBoundaryType::Periodic> : public PoissonFFT2DInterface
 {
 public:
     PoissonFFT2D() {}

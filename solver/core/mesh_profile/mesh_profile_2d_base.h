@@ -5,6 +5,7 @@ class MeshProfile2DBase
 public:
     int    nx, ny;
     double lx, ly;
+    bool is_uniform;
 
     MeshProfile2DBase(int nx, int ny, double lx, double ly)
         : nx(nx)

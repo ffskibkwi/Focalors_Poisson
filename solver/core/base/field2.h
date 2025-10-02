@@ -8,7 +8,9 @@ public:
     double* value = nullptr;
 
     field2() {}
-    field2(int in_nx, int in_ny, const std::string& in_name = "Default");
+    field2(int in_nx, int in_ny);
+    field2(int in_nx, int in_ny, const std::string& in_name);
+    field2(const std::string& in_name);
     ~field2();
     field2(const field2& rhs) noexcept;
     field2& operator=(const field2& rhs) noexcept;
@@ -23,6 +25,7 @@ public:
     }
 
     void init(int in_nx, int in_ny, const std::string& in_name);
+    void init(int in_nx, int in_ny);
     void deinit();
 
     // Basic calculation
@@ -64,5 +67,5 @@ public:
 protected:
     unsigned int nx, ny;
     unsigned int size_n;
-    std::string  name;
+    std::string  name = "Default";
 };

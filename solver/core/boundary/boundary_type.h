@@ -43,7 +43,8 @@ enum class PDEBoundaryType : std::uint8_t
 {
     Dirichlet,
     Neumann,
-    Periodic
+    Periodic,
+    Null        //Default boundary type
 };
 
 enum class FluidBoundaryType : std::uint8_t
@@ -51,7 +52,8 @@ enum class FluidBoundaryType : std::uint8_t
     Wall,       //Wall boundary; velocity -> Dirichlet; pressure -> Neumann
     Far,        //Far-field boundary; velocity -> Neumann; pressure -> Neumann
     Periodic,   //Periodic boundary; velocity -> Periodic; pressure -> Periodic
-    Convective  //Convective boundary; velocity -> Dirichlet; pressure -> Neumann (Not sure)
+    Convective, //Convective boundary; velocity -> Dirichlet; pressure -> Neumann (Not sure)
+    Null        //Default boundary type
 };
 
 enum class ParticleBoundaryType : std::uint8_t

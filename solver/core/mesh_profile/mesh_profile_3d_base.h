@@ -5,7 +5,8 @@ class MeshProfile3DBase
 public:
     int    nx, ny, nz;
     double lx, ly, lz;
-
+    bool is_uniform;
+    
     MeshProfile3DBase(int nx, int ny, int nz, double lx, double ly, double lz)
         : nx(nx)
         , ny(ny)

@@ -4,6 +4,10 @@
 
 field2::field2(int in_nx, int in_ny, const std::string& in_name) { init(in_nx, in_ny, in_name); }
 
+field2::field2(const std::string& in_name) { name = in_name; }
+
+field2::field2(int in_nx, int in_ny) { init(in_nx, in_ny); }
+
 field2::~field2() { deinit(); }
 
 field2::field2(const field2& rhs) noexcept
@@ -45,9 +49,14 @@ field2& field2::operator=(const field2& rhs) noexcept
 
 void field2::init(int in_nx, int in_ny, const std::string& in_name)
 {
+    init(in_nx, in_ny);
+    name = in_name;
+}
+
+void field2::init(int in_nx, int in_ny)
+{
     nx   = in_nx;
     ny   = in_ny;
-    name = in_name;
 
     size_n = nx * ny;
     if (value != nullptr)

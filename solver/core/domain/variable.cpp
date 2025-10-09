@@ -1,6 +1,10 @@
 #include "variable.h"
 #include <algorithm>
 
+Variable::Variable(const std::string& in_name)
+    : name(in_name)
+{}
+
 /**
  * @brief Attach this variable to a geometry.
  * @param g Geometry to bind to this variable.
@@ -29,7 +33,7 @@ void Variable::set_field(Domain2DUniform& s, field2& f)
         throw std::runtime_error("Domain mesh size invalid");
 
     if (f.get_name() == "Default")
-        f.init(s.nx, s.ny, "variable");
+        f.init(s.nx, s.ny, name + "_" + s.name);
     else
         f.init(s.nx, s.ny);
 

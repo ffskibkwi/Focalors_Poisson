@@ -52,8 +52,7 @@ field2 Afun(Shur_mat& S_1, Shur_mat& S_2, Shur_mat& S_3, PoissonSolver2DInterfac
     return x - ft;
 }
 
-field2
-Afun(Shur_mat& S_1, Shur_mat& S_2, Shur_mat& S_3, Shur_mat& S_4, PoissonSolver2DInterface& solver_root, field2& x)
+field2 Afun(Shur_mat& S_1, Shur_mat& S_2, Shur_mat& S_3, Shur_mat& S_4, PoissonSolver2DInterface& solver_root, field2& x)
 {
     field2 ft(x);
     ft = S_1 * x + S_2 * x + S_3 * x + S_4 * x;

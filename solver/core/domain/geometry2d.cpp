@@ -1,5 +1,12 @@
 #include "geometry2d.h"
 #include <algorithm>
+#include <queue>
+#include <unordered_set>
+Geometry2D::~Geometry2D()
+{
+    if (tree_root) { deleteTree(tree_root); tree_root = nullptr; }
+}
+
 
 /**
  * @brief Add a domain to the geometry if not already present.
@@ -82,6 +89,10 @@ void Geometry2D::check()
     }
     if (main_domain == nullptr)
         throw std::runtime_error("No main domain found");
+
+    //Check the single connectedness of the geometry
+    if (!is_single_connected())
+        throw std::runtime_error("Geometry is not single connected");
     is_checked = true;
 }
 
@@ -93,6 +104,53 @@ void Geometry2D::solve_prepare()
 {
     if (!is_checked)
         throw std::runtime_error("Geometry2D is not checked");
+
+    //Build the geometry tree, for later use
+    build_tree();
+}
+bool Geometry2D::is_single_connected() const
+{
+    if (domains.empty()) return true;
+    //Start from any node in adjacency; if adjacency is empty but domains>1, it is not connected
+    Domain2DUniform* start = nullptr;
+    if (!adjacency.empty()) start = adjacency.begin()->first;
+    else return domains.size() == 1;
+
+    std::unordered_set<Domain2DUniform*> visited;
+    std::queue<Domain2DUniform*> q;
+    q.push(start);
+    visited.insert(start);
+
+    auto enqueue = [&](Domain2DUniform* a, Domain2DUniform* b){
+        if (b && !visited.count(b)) { visited.insert(b); q.push(b); }
+    };
+
+    while (!q.empty()) {
+        Domain2DUniform* u = q.front(); q.pop();
+        //Forward adjacency
+        auto it = adjacency.find(u);
+        if (it != adjacency.end()) {
+            for (const auto& kv : it->second) enqueue(u, kv.second);
+        }
+        //Reverse adjacency: traverse other keys, if its adjacency value contains u, it is also considered as an undirected connection
+        for (const auto& ap : adjacency) {
+            for (const auto& kv : ap.second) {
+                if (kv.second == u) enqueue(ap.first, ap.first);
+            }
+        }
+    }
+
+    //All domains must be visited
+    for (auto* s : domains) {
+        if (!visited.count(s)) return false;
+    }
+    return true;
+}
+
+void Geometry2D::build_tree()
+{
+    TreeBuilder2D builder;
+    tree_root = builder.buildOptimalTree(adjacency);
 }
 
 

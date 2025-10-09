@@ -12,15 +12,9 @@ Domain2DUniform::Domain2DUniform(int in_nx, int in_ny, double in_lx, double in_l
     , lx(in_lx)
     , ly(in_ly)
     , name(in_name)
-{}
-
-Domain2DUniform::Domain2DUniform(MeshProfile2DBase& mesh_profile, PDEBoundaryType in_BoundTypeXNegative, PDEBoundaryType in_BoundTypeXPositive, PDEBoundaryType in_BoundTypeYNegative, PDEBoundaryType in_BoundTypeYPositive)
-    : BoundaryTypeXNegative(in_BoundTypeXNegative)
-    , BoundaryTypeXPositive(in_BoundTypeXPositive)
-    , BoundaryTypeYNegative(in_BoundTypeYNegative)
-    , BoundaryTypeYPositive(in_BoundTypeYPositive)
 {
-    (void)mesh_profile;
+    hx = in_lx / in_nx;
+    hy = in_ly / in_ny;
 }
 
 Domain2DUniform::~Domain2DUniform() = default;
@@ -29,25 +23,41 @@ Domain2DUniform::~Domain2DUniform() = default;
  * @brief Set the number of nodes along x-direction.
  * @param in_nx Number of nodes along x (>= 1).
  */
-void Domain2DUniform::set_nx(int in_nx) { nx = in_nx; }
+void Domain2DUniform::set_nx(int in_nx)
+{
+    nx = in_nx;
+    hx = lx / in_nx;
+}
 
 /**
  * @brief Set the number of nodes along y-direction.
  * @param in_ny Number of nodes along y (>= 1).
  */
-void Domain2DUniform::set_ny(int in_ny) { ny = in_ny; }
+void Domain2DUniform::set_ny(int in_ny)
+{
+    ny = in_ny;
+    hy = ly / in_ny;
+}
 
 /**
  * @brief Set the domain size along x-direction.
  * @param in_lx Physical length along x (> 0).
  */
-void Domain2DUniform::set_lx(double in_lx) { lx = in_lx; }
+void Domain2DUniform::set_lx(double in_lx)
+{
+    lx = in_lx;
+    hx = in_lx / nx;
+}
 
 /**
  * @brief Set the domain size along y-direction.
  * @param in_ly Physical length along y (> 0).
  */
-void Domain2DUniform::set_ly(double in_ly) { ly = in_ly; }
+void Domain2DUniform::set_ly(double in_ly)
+{
+    ly = in_ly;
+    hy = in_ly / ny;
+}
 
 /**
  * @brief Set the domain size along both directions.
@@ -58,6 +68,8 @@ void Domain2DUniform::set_size(double in_lx, double in_ly)
 {
     lx = in_lx;
     ly = in_ly;
+    hx = in_lx / nx;
+    hy = in_ly / ny;
 }
 
 /**

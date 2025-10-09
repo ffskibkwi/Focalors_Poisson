@@ -16,6 +16,9 @@ public:
     // Size of the domain
     double lx = 0.0;
     double ly = 0.0;
+    // Spatial step
+    double hx = 0.0;
+    double hy = 0.0;
 
     std::string  name;
     Geometry2D* parent = nullptr;
@@ -29,9 +32,6 @@ public:
     Domain2DUniform();
     Domain2DUniform(const std::string& in_name);
     Domain2DUniform(int in_nx, int in_ny, double in_lx, double in_ly, const std::string& in_name);
-
-    // Old
-    Domain2DUniform(MeshProfile2DBase& mesh_profile, PDEBoundaryType in_BoundTypeXNegative, PDEBoundaryType in_BoundTypeXPositive, PDEBoundaryType in_BoundTypeYNegative, PDEBoundaryType in_BoundTypeYPositive);
 
     ~Domain2DUniform();
 

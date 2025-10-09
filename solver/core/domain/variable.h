@@ -9,10 +9,12 @@
 class Variable
 {
 public:
+    std::string  name;
     Geometry2D* geometry = nullptr;
     std::unordered_map<Domain2DUniform*, field2*> field_map;
 
     Variable() = default;
+    Variable(const std::string& in_name);
     ~Variable() = default;
 
     void set_geometry(Geometry2D& g);

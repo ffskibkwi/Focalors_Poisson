@@ -5,6 +5,8 @@
 
 #include "core/boundary/boundary_type.h"
 
+#include "pe/concat_new/concat_solver2d.h"
+
 int main(int argc, char* argv[])
 {
 
@@ -32,6 +34,10 @@ int main(int argc, char* argv[])
     Domain2DUniform C("C");
 
     C.set_ly(ly_C);
+    C.set_ny(ny_C);
+
+    B.set_lx(lx_B);
+    B.set_nx(nx_B);
 
     geo.add_domain(A);
     geo.add_domain(B);
@@ -39,28 +45,38 @@ int main(int argc, char* argv[])
 
     geo.connect(A, LocationType::Left, B);
     geo.connect(A, LocationType::Up, C);
+    /*
+        geo.connect(A, LocationType::Left, B, S_AB);    //Add Schur matrix here
+    */
 
-    A.set_boundary(LocationType::Up, PDEBoundaryType::Dirichlet);
+    A.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
     A.set_boundary(LocationType::Down, PDEBoundaryType::Dirichlet);
+
+    B.set_boundary(LocationType::Down, PDEBoundaryType::Dirichlet);
+    B.set_boundary(LocationType::Up, PDEBoundaryType::Dirichlet);
+    B.set_boundary(LocationType::Left, PDEBoundaryType::Dirichlet);
+
+    C.set_boundary(LocationType::Up, PDEBoundaryType::Dirichlet);
+    C.set_boundary(LocationType::Left, PDEBoundaryType::Dirichlet);
+    C.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
 
     geo.check();
     
-    Variable p;
-    field2 p_A("p_A");
+    Variable p("p");
+    field2 p_A;
     field2 p_B("p_B");
     field2 p_C("p_C");
 
     p.set_geometry(geo);
-    p.set_field(A, p_A);    //In this step, must check if A belongs to geo
+    p.set_field(A, p_A);
     p.set_field(B, p_B);
     p.set_field(C, p_C);
-    
-    // geo.solve_prepare();
 
-    // void geometry::solve_prepare()
-    // {
-    //     //Find main domain
-    //     //Find the domain has more than one neibour, that is the main domain
-    //     //If there are more than one domain, the current version does not support
-    // }
+    std::cout << "main domain of p: " << p.geometry->main_domain->name << std::endl;
+    std::cout <<  "name of p_A: " << p_A.get_name() << std::endl;
+
+    // ConcatSolver2D solver(p);
+    // solver.solve();
+
+    return 0;
 }

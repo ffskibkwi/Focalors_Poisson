@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include "core/boundary/boundary_type.h"
 #include "core/domain/domain2d.h"
+#include "core/domain/geometry_tree.hpp"
 
 class Geometry2D
 {
@@ -17,8 +18,11 @@ public:
     bool is_checked = false;
     Domain2DUniform* main_domain = nullptr;
 
+    // using GeometryTreeNode2D = GeometryTreeNode<Domain2DUniform> (in geometry_tree.hpp)
+    GeometryTreeNode2D* tree_root = nullptr;
+
     Geometry2D() = default;
-    ~Geometry2D() = default;
+    ~Geometry2D();
 
     void add_domain(Domain2DUniform& s);
     void connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& b);
@@ -26,4 +30,10 @@ public:
     void check();
 
     void solve_prepare();
+
+private:
+    // Check the single connectedness of the geometry
+    bool is_single_connected() const;
+    // Build the geometry tree
+    void build_tree();
 };

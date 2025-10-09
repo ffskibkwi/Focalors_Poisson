@@ -16,7 +16,7 @@ public:
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> adjacency;
 
     bool is_checked = false;
-    Domain2DUniform* main_domain = nullptr;
+    // Domain2DUniform* main_domain = nullptr; // deprecated: tree-based analysis replaces single main domain
 
     // using GeometryTreeNode2D = GeometryTreeNode<Domain2DUniform> (in geometry_tree.hpp)
     GeometryTreeNode2D* tree_root = nullptr;

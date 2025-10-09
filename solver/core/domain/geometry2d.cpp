@@ -75,20 +75,8 @@ void Geometry2D::check()
             throw std::runtime_error("Domain " + s->name + " has invalid profile");
         if (!s->check_boundary())
             throw std::runtime_error("Domain " + s->name + " has invalid boundary");
-        
-        //Check the domain degree and find the main domain
-        size_t deg = 0;
-        auto it = adjacency.find(s);
-        if (it != adjacency.end()) deg = it->second.size();
-        if (deg > 1)
-        {
-            if (main_domain != nullptr)
-                throw std::runtime_error("Multiple main domains are not supported");
-            main_domain = s;
-        }
+        // Deprecated: single main domain detection is removed in favor of tree-based analysis
     }
-    if (main_domain == nullptr)
-        throw std::runtime_error("No main domain found");
 
     //Check the single connectedness of the geometry
     if (!is_single_connected())

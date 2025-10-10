@@ -11,13 +11,14 @@
 #include <vector>
 #include <unordered_map>
 
-class ConcatSolver2D
+class ConcatSolver2D_Simple
 {
+    //Simple: Only for single main domain geometry
 public:
     Variable& variable;
     
-    ConcatSolver2D(Variable &in_variable);
-    ~ConcatSolver2D();
+    ConcatSolver2D_Simple(Variable &in_variable);
+    ~ConcatSolver2D_Simple();
 
     void init();
     void solve();

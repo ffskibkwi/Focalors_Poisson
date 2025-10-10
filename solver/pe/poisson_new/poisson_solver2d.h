@@ -6,8 +6,9 @@
 #include "core/domain/domain2d.h"
 #include "poisson_fft2d.h"
 #include "chasing_method2d.h"
+#include "domain_solver.h"
 
-class PoissonSolver2D
+class PoissonSolver2D : public DomainSolver2D
 {
 public:
     PoissonSolver2D() {};
@@ -16,11 +17,11 @@ public:
     PoissonSolver2D(Domain2DUniform& in_domain);
     ~PoissonSolver2D();
 
-    void init();
+    void init() override;
 
     void cal_lambda();
 
-    void solve(field2& f);
+    void solve(field2& f) override;
 
 private:
     int    nx, ny;

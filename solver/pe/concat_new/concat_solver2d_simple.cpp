@@ -1,14 +1,14 @@
 #include "concat_solver2d.h"
 #include "pe/poisson_new/poisson_solver2d.h"
 
-ConcatSolver2D::ConcatSolver2D(Variable &in_variable)
+ConcatSolver2D_Simple::ConcatSolver2D_Simple(Variable &in_variable)
     : variable(in_variable)
 {
     init();
 }
 
 
-void ConcatSolver2D::init()
+void ConcatSolver2D_Simple::init()
 {
     geo_main_domain = variable.geometry.main_domain;
     geo_main_neighbour_domains = variable.geometry->adjacency[geo_main_domain];
@@ -63,7 +63,7 @@ void ConcatSolver2D::init()
 }
 
 
-void ConcatSolver2D::solve()
+void ConcatSolver2D_Simple::solve()
 {
     // for (auto &[domain, field] : variable.field_map)     // It is error, should not including main field
     for (auto &[LocationType, domain] : geo_main_neighbour_domains)

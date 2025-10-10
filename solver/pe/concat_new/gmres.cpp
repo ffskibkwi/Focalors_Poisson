@@ -40,10 +40,7 @@ field2 Afun(std::vector<Schur_mat*>& S_params, PoissonSolver2DInterface& solver_
     field2 ft(x);
     ft.clear(0.);
     for (auto& s : S_params)
-    {
         ft = ft + *s * x;
-    }
-    // ft = S_1 * x + S_2 * x;
     solver_root.solve(ft);
     return x - ft;
 }

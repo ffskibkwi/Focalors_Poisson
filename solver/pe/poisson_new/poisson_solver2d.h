@@ -17,7 +17,7 @@ public:
     PoissonSolver2D(Domain2DUniform& in_domain);
     ~PoissonSolver2D();
 
-    void init() override;
+    void init();
 
     void cal_lambda();
 

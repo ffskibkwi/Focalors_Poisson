@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "pe/poisson_new/poisson_solver2d.h"
+#include "domain_solver.h"
 
 class Schur_mat
 {
@@ -38,8 +38,8 @@ public:
         }
     }
 
-    virtual void   construct(PoissonSolver2D& branch_solver) = 0;
-    virtual field2 operator*(const field2& root)                      = 0;
+    virtual void   construct(DomainSolver2D* branch_solver) = 0;
+    virtual field2 operator*(const field2& root)            = 0;
 };
 
 class Schur_mat_left : public Schur_mat
@@ -48,7 +48,7 @@ public:
     Schur_mat_left(const field2& root, const field2& branch)
         : Schur_mat(root, branch, root.get_ny())
     {}
-    void   construct(PoissonSolver2D& branch_solver) override;
+    void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
@@ -58,7 +58,7 @@ public:
     Schur_mat_right(const field2& root, const field2& branch)
         : Schur_mat(root, branch, root.get_ny())
     {}
-    void   construct(PoissonSolver2D& branch_solver) override;
+    void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
@@ -68,7 +68,7 @@ public:
     Schur_mat_up(const field2& root, const field2& branch)
         : Schur_mat(root, branch, root.get_nx())
     {}
-    void   construct(PoissonSolver2D& branch_solver) override;
+    void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
@@ -78,6 +78,6 @@ public:
     Schur_mat_down(const field2& root, const field2& branch)
         : Schur_mat(root, branch, root.get_nx())
     {}
-    void   construct(PoissonSolver2D& branch_solver) override;
+    void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };

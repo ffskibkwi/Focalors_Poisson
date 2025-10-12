@@ -13,15 +13,15 @@ PoissonSolver2D::PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_h
     init();
 }
 
-PoissonSolver2D::PoissonSolver2D(Domain2DUniform& in_domain)
-    : nx(in_domain.nx), 
-    ny(in_domain.ny), 
-    hx(in_domain.hx), 
-    hy(in_domain.hy), 
-    BoundaryTypeXNegative(in_domain.BoundaryTypeXNegative), 
-    BoundaryTypeXPositive(in_domain.BoundaryTypeXPositive), 
-    BoundaryTypeYNegative(in_domain.BoundaryTypeYNegative), 
-    BoundaryTypeYPositive(in_domain.BoundaryTypeYPositive)
+PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain)
+    : nx(in_domain->nx), 
+    ny(in_domain->ny), 
+    hx(in_domain->hx), 
+    hy(in_domain->hy), 
+    BoundaryTypeXNegative(in_domain->BoundaryTypeXNegative), 
+    BoundaryTypeXPositive(in_domain->BoundaryTypeXPositive), 
+    BoundaryTypeYNegative(in_domain->BoundaryTypeYNegative), 
+    BoundaryTypeYPositive(in_domain->BoundaryTypeYPositive)
 {
     init();
 }

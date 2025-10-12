@@ -24,8 +24,7 @@ public:
     ConcatSolver2D(Variable &in_variable);
     ~ConcatSolver2D();
 
-    void init();
-    void prepare();
+    // void init();
     void solve();
 
 private:
@@ -36,5 +35,6 @@ private:
 
     std::vector<double> resVec;
 
-    void construct_solve_queue();
+    void specify_solve_order();
+    void construct_solver_map();
 };

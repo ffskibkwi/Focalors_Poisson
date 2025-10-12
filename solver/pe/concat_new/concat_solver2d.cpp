@@ -3,12 +3,23 @@
 ConcatSolver2D::ConcatSolver2D(Variable &in_variable)
     : variable(in_variable)
 {
-    init();
+    specify_solve_order();
+    construct_solver_map();
+    
+    //Construct the temp field for each domain
+    for (auto &[domain, field] : variable.field_map)
+        temp_fields[&domain] = new field2(field.get_nx(), field.get_ny(), field.get_name() + "_temp");
 }
 
+~ConcatSolver2D()
+{
+    for (auto &[domain, temp_field] : temp_fields)
+        delete temp_field;
+    for (auto &domain : solve_order)
+        delete solver_map[domain];
+}
 
-
-void ConcatSolver2D::construct_solve_stack()
+void ConcatSolver2D::specify_solve_order()
 {
     GeometryTreeNode<Domain2DUniform>* root_domain = variable.geometry.tree_root;
     
@@ -25,7 +36,10 @@ void ConcatSolver2D::construct_solve_stack()
             q.push(child->domain);  //In this version, assume there is no ring, so do not check is child already in q
         }
     }
+}
 
+void ConcatSolver2D::construct_solver_map()
+{
     //Construct solvers
     for (auto &domain : solve_order)
     {
@@ -41,3 +55,16 @@ void ConcatSolver2D::construct_solve_stack()
     }
 }
 
+void ConcatSolver2D::solve()
+{
+    for (auto &domain : solve_order)
+    {
+        (*temp_fields[domain]) = variable.field_map[domain];
+        for (auto &[location, neighbour_domain] : variable.geometry.adjacency[domain])
+        {
+            
+        }
+
+    }
+        solver_map[domain]->solve(*temp_fields[domain]);
+}

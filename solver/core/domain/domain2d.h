@@ -20,7 +20,7 @@ public:
     double hx = 0.0;
     double hy = 0.0;
 
-    std::string  name;
+    std::string name;
     Geometry2D* parent = nullptr;
 
     // Boundary conditions (four directions) and setting flags

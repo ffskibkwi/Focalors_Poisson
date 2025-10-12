@@ -92,9 +92,9 @@ int main(int argc, char* argv[])
     try {
         geo.solve_prepare();
         std::cout << "Geometry optimal tree:" << std::endl;
-        printTree(geo.tree_root);
+        TreeUtils::printTreeMap(geo.tree_root, geo.tree_map);
         if (geo.tree_root)
-            std::cout << "tree root: " << geo.tree_root->domain->name << std::endl;
+            std::cout << "tree root: " << geo.tree_root->name << std::endl;
     } catch (const std::exception& ex) {
         std::cout << "[FAIL] solve_prepare/printTree threw: " << ex.what() << std::endl;
     }
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     p.set_field(C, p_C);
     p.set_field(D, p_D);
     p.set_field(E, p_E);
-    std::cout << "tree root of geometry: " << (geo.tree_root ? geo.tree_root->domain->name : std::string("(null)")) << std::endl;
+    std::cout << "tree root of geometry: " << (geo.tree_root ? geo.tree_root->name : std::string("(null)")) << std::endl;
     std::cout << "fields bound: "
               << p_A.get_name() << ", " << p_B.get_name() << ", "
               << p_C.get_name() << ", " << p_D.get_name() << ", "
@@ -232,9 +232,9 @@ int main(int argc, char* argv[])
             geo_line.check();
             geo_line.solve_prepare();
             std::cout << "line optimal tree:" << std::endl;
-            printTree(geo_line.tree_root);
+            TreeUtils::printTreeMap(geo_line.tree_root, geo_line.tree_map);
             if (geo_line.tree_root)
-                std::cout << "line tree root: " << geo_line.tree_root->domain->name << std::endl;
+                std::cout << "line tree root: " << geo_line.tree_root->name << std::endl;
         } catch (const std::exception& ex) {
             std::cout << "[FAIL] case1 threw: " << ex.what() << std::endl;
         }
@@ -292,9 +292,17 @@ int main(int argc, char* argv[])
             geo_tee.check();
             geo_tee.solve_prepare();
             std::cout << "tee optimal tree:" << std::endl;
-            printTree(geo_tee.tree_root);
+            
+            // TreeUtils::printTreeMap(geo_tee.tree_root, geo_tee.tree_map);
+            for (auto &[key, value] : geo_tee.tree_map) {
+                std::cout << "key: " << key->name << std::endl;
+                for (auto &child : value) {
+                    std::cout << "  child: " << child->name << std::endl;
+                }
+            }
+
             if (geo_tee.tree_root)
-                std::cout << "tee tree root: " << geo_tee.tree_root->domain->name << std::endl;
+                std::cout << "tee tree root: " << geo_tee.tree_root->name << std::endl;
         } catch (const std::exception& ex) {
             std::cout << "[FAIL] case2 threw: " << ex.what() << std::endl;
         }

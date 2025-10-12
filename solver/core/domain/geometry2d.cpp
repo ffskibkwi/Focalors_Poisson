@@ -1,12 +1,8 @@
 #include "geometry2d.h"
-#include <algorithm>
-#include <queue>
-#include <unordered_set>
+
 Geometry2D::~Geometry2D()
 {
-    if (tree_root) { deleteTree(tree_root); tree_root = nullptr; }
 }
-
 
 /**
  * @brief Add a domain to the geometry if not already present.
@@ -137,8 +133,12 @@ bool Geometry2D::is_single_connected() const
 
 void Geometry2D::build_tree()
 {
-    TreeBuilder2D builder;
-    tree_root = builder.buildOptimalTree(adjacency);
+    // for geometry_tree_old.hpp
+    // TreeBuilder2D builder;
+    // tree_root = builder.buildOptimalTree(adjacency);
+
+    tree_root = TreeUtils::findOptimalRoot(adjacency);
+    tree_map = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
 }
 
 

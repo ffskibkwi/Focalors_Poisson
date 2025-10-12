@@ -43,11 +43,11 @@ GMRESSolver2D::~GMRESSolver2D()
 
 void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>& adjacency_key, const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
-    for (auto &[LocationType, neighbour_domain] : adjacency_key)
+    for (auto &[location, neighbour_domain] : adjacency_key)
     {
         //Construct the Schur matrix for each neibour domain of main domain
         Schur_mat* current = nullptr;
-        switch (LocationType)
+        switch (location)
         {
             case LocationType::Left:
             {

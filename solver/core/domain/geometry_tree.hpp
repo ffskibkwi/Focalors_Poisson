@@ -1,36 +1,30 @@
 #pragma once
-
+#include <iostream>
 #include <vector>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
 #include <cstdint>
-#include <iostream>
 #include "core/boundary/boundary_type.h"
 #include "core/domain/domain2d.h"
 
-// Currently the main project uses 2D, but the tree structure and building algorithm are independent of dimension.
-//DomainT = Domain2DUniform / (Domain2DNonuniform) / Domain3DUniform / (Domain3DNonuniform)
-
-template <typename DomainT>
-struct GeometryTreeNode {
-    DomainT* domain;
-    std::vector<GeometryTreeNode*> children;
-    explicit GeometryTreeNode(DomainT* d) : domain(d) {}
-};
-
-template <typename DomainT>
-class TreeBuilder {
-public:
+namespace TreeUtils {
+    template <typename DomainT>
     using Adjacency = std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>;
-
-    GeometryTreeNode<DomainT>* buildOptimalTree(const Adjacency& adjacency)
+    /**
+     * @brief 从图的邻接表中找到最优的根节点（图的中心）。
+     * @tparam DomainT 节点的类型。
+     * @param adjacency 图的邻接表。
+     * @return 指向最优根节点的指针；如果图为空，则返回 nullptr。
+     */
+    template <typename DomainT>
+    DomainT* findOptimalRoot(const Adjacency<DomainT>& adjacency)
     {
         if (adjacency.empty()) {
             return nullptr;
         }
-
-        // Collect all nodes and calculate the degree
+        // --- 寻找图中心的算法，保持不变 ---
         std::unordered_map<DomainT*, int> degrees;
         std::unordered_set<DomainT*> nodes;
         for (const auto& pair : adjacency) {
@@ -40,14 +34,8 @@ public:
             }
         }
         for (DomainT* node : nodes) {
-            if (adjacency.count(node)) {
-                degrees[node] = static_cast<int>(adjacency.at(node).size());
-            } else {
-                degrees[node] = 0;
-            }
+            degrees[node] = adjacency.count(node) ? static_cast<int>(adjacency.at(node).size()) : 0;
         }
-
-        // Find the graph center
         std::queue<DomainT*> leaves;
         for (DomainT* node : nodes) {
             if (degrees[node] <= 1) {
@@ -57,7 +45,7 @@ public:
         int remainingNodes = static_cast<int>(nodes.size());
         while (remainingNodes > 2) {
             int leavesCount = static_cast<int>(leaves.size());
-            if (leavesCount == 0) break; // If it is not a tree structure, prevent infinite loop
+            if (leavesCount == 0) break;
             remainingNodes -= leavesCount;
             for (int i = 0; i < leavesCount; ++i) {
                 DomainT* leaf = leaves.front();
@@ -65,23 +53,17 @@ public:
                 if (adjacency.count(leaf)) {
                     for (const auto& p : adjacency.at(leaf)) {
                         DomainT* neighbor = p.second;
-                        degrees[neighbor]--;
-                        if (degrees[neighbor] == 1) {
+                        if (--degrees[neighbor] == 1) {
                             leaves.push(neighbor);
                         }
                     }
                 }
             }
         }
-
-        // Choose the unique root
         if (leaves.empty()) {
-            if (!nodes.empty()) {
-                leaves.push(*nodes.begin());
-            } else {
-                return nullptr;
-            }
+            return nodes.empty() ? nullptr : *nodes.begin();
         }
+        
         DomainT* rootDomain = leaves.front();
         leaves.pop();
         if (!leaves.empty()) {
@@ -90,66 +72,63 @@ public:
                 rootDomain = secondCenter;
             }
         }
-
-        // Recursively build the tree
-        return buildSubtree(rootDomain, nullptr, adjacency);
+        return rootDomain;
     }
-
-private:
-    GeometryTreeNode<DomainT>* buildSubtree(
-        DomainT* currentDomain,
-        DomainT* parentDomain,
-        const Adjacency& adjacency)
+    // 内部递归辅助函数
+    template <typename DomainT>
+    void buildTreeMapRecursive(
+        DomainT* current,
+        DomainT* parent,
+        const Adjacency<DomainT>& adjacency,
+        std::unordered_map<DomainT*, std::vector<DomainT*>>& tree_map)
     {
-        // Use an explicit visited set to avoid infinite recursion caused by loops in general graphs.
-        std::unordered_set<DomainT*> visited;
-        return buildSubtreeImpl(currentDomain, parentDomain, adjacency, visited);
-    }
-
-    GeometryTreeNode<DomainT>* buildSubtreeImpl(
-        DomainT* currentDomain,
-        DomainT* parentDomain,
-        const Adjacency& adjacency,
-        std::unordered_set<DomainT*>& visited)
-    {
-        if (visited.count(currentDomain)) return nullptr;
-        visited.insert(currentDomain);
-
-        GeometryTreeNode<DomainT>* node = new GeometryTreeNode<DomainT>(currentDomain);
-        if (adjacency.count(currentDomain)) {
-            for (const auto& pair : adjacency.at(currentDomain)) {
+        if (!current) return;
+        tree_map.try_emplace(current); // 确保当前节点作为键存在
+        if (adjacency.count(current)) {
+            for (const auto& pair : adjacency.at(current)) {
                 DomainT* neighbor = pair.second;
-                if (neighbor == parentDomain) continue;
-                if (auto* child = buildSubtreeImpl(neighbor, currentDomain, adjacency, visited)) {
-                    node->children.push_back(child);
+                // 只需要检查父节点即可防止回溯，因为输入保证是树状结构
+                if (neighbor == parent) {
+                    continue;
                 }
+                tree_map[current].push_back(neighbor);
+                buildTreeMapRecursive(neighbor, current, adjacency, tree_map);
             }
         }
-        return node;
     }
-};
-
-template <typename DomainT>
-void deleteTree(GeometryTreeNode<DomainT>* root)
-{
-    if (!root) return;
-    for (auto* child : root->children) {
-        deleteTree(child);
+    /**
+     * @brief 从一个给定的根节点开始，构建树的哈希表表示。
+     * @tparam DomainT 节点的类型。
+     * @param root 开始构建树的根节点。
+     * @param adjacency 图的邻接表。
+     * @return 一个表示树结构的哈希表。
+     */
+    template <typename DomainT>
+    std::unordered_map<DomainT*, std::vector<DomainT*>> buildTreeMapFromRoot(
+        DomainT* root,
+        const Adjacency<DomainT>& adjacency)
+    {
+        if (!root) {
+            return {};
+        }
+        std::unordered_map<DomainT*, std::vector<DomainT*>> tree_map;
+        buildTreeMapRecursive<DomainT>(root, nullptr, adjacency, tree_map);
+        return tree_map;
     }
-    delete root;
-}
-
-template <typename DomainT>
-void printTree(GeometryTreeNode<DomainT>* node, int depth = 0)
-{
-    if (!node) return;
-    for (int i = 0; i < depth; ++i) std::cout << "  ";
-    std::cout << "- " << node->domain->name << std::endl;
-    for (auto* child : node->children) {
-        printTree(child, depth + 1);
+    // --- 打印辅助函数 (与之前相同) ---
+    template <typename DomainT>
+    void printTreeMap(
+        DomainT* currentNode, 
+        const std::unordered_map<DomainT*, std::vector<DomainT*>>& tree_map, 
+        int depth = 0)
+    {
+        if (!currentNode) return;
+        for (int i = 0; i < depth; ++i) std::cout << "  ";
+        std::cout << "- " << currentNode->name << std::endl;
+        if (tree_map.count(currentNode)) {
+            for (DomainT* child : tree_map.at(currentNode)) {
+                printTreeMap(child, tree_map, depth + 1);
+            }
+        }
     }
-}
-
-// Only for 2D
-using GeometryTreeNode2D = GeometryTreeNode<Domain2DUniform>;
-using TreeBuilder2D = TreeBuilder<Domain2DUniform>;
+    } // namespace TreeUtils

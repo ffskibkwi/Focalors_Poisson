@@ -60,11 +60,10 @@ void ConcatSolver2D::solve()
     for (auto &domain : solve_order)
     {
         (*temp_fields[domain]) = variable.field_map[domain];
-        for (auto &[location, neighbour_domain] : variable.geometry.adjacency[domain])
+        for (auto &[location, child_domain] : variable.geometry.tree_map[domain])
         {
-            
+            temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
         }
-
-    }
         solver_map[domain]->solve(*temp_fields[domain]);
+    }
 }

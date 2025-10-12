@@ -25,7 +25,7 @@ public:
     // GeometryTreeNode2D* tree_root = nullptr; (for geometry_tree_old.hpp)
 
     Domain2DUniform* tree_root = nullptr;
-    std::unordered_map<Domain2DUniform*, std::vector<Domain2DUniform*>> tree_map;
+    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
 
     Geometry2D() = default;
     ~Geometry2D();

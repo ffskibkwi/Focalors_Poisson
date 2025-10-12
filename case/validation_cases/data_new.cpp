@@ -292,14 +292,7 @@ int main(int argc, char* argv[])
             geo_tee.check();
             geo_tee.solve_prepare();
             std::cout << "tee optimal tree:" << std::endl;
-            
-            // TreeUtils::printTreeMap(geo_tee.tree_root, geo_tee.tree_map);
-            for (auto &[key, value] : geo_tee.tree_map) {
-                std::cout << "key: " << key->name << std::endl;
-                for (auto &child : value) {
-                    std::cout << "  child: " << child->name << std::endl;
-                }
-            }
+            TreeUtils::printTreeMap(geo_tee.tree_root, geo_tee.tree_map);
 
             if (geo_tee.tree_root)
                 std::cout << "tee tree root: " << geo_tee.tree_root->name << std::endl;

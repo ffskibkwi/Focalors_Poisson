@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "core/boundary/boundary_type.h"
 
 class field2
 {
@@ -47,6 +48,7 @@ public:
     void right_bond_add(const double k, const field2& right_field2);
     void up_bond_add(const double k, const field2& up_field2);
     void down_bond_add(const double k, const field2& down_field2);
+    void bond_add(LocationType location, const double k, const field2& neighbour_field2);
 
     double& operator()(int i, int j);
     double  operator()(int i, int j) const;

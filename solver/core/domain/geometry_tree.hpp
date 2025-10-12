@@ -80,18 +80,19 @@ namespace TreeUtils {
         DomainT* current,
         DomainT* parent,
         const Adjacency<DomainT>& adjacency,
-        std::unordered_map<DomainT*, std::vector<DomainT*>>& tree_map)
+        std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map)
     {
         if (!current) return;
         tree_map.try_emplace(current); // 确保当前节点作为键存在
         if (adjacency.count(current)) {
             for (const auto& pair : adjacency.at(current)) {
+                const LocationType childDir = pair.first;
                 DomainT* neighbor = pair.second;
                 // 只需要检查父节点即可防止回溯，因为输入保证是树状结构
                 if (neighbor == parent) {
                     continue;
                 }
-                tree_map[current].push_back(neighbor);
+                tree_map[current][childDir] = neighbor;
                 buildTreeMapRecursive(neighbor, current, adjacency, tree_map);
             }
         }
@@ -104,30 +105,51 @@ namespace TreeUtils {
      * @return 一个表示树结构的哈希表。
      */
     template <typename DomainT>
-    std::unordered_map<DomainT*, std::vector<DomainT*>> buildTreeMapFromRoot(
+    std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>> buildTreeMapFromRoot(
         DomainT* root,
         const Adjacency<DomainT>& adjacency)
     {
         if (!root) {
             return {};
         }
-        std::unordered_map<DomainT*, std::vector<DomainT*>> tree_map;
+        std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>> tree_map;
         buildTreeMapRecursive<DomainT>(root, nullptr, adjacency, tree_map);
         return tree_map;
     }
-    // --- 打印辅助函数 (与之前相同) ---
+    
+    inline const char* locationTypeToString(LocationType t)
+    {
+        switch (t)
+        {
+        case LocationType::Left:  return "Left";
+        case LocationType::Right: return "Right";
+        case LocationType::Down:  return "Down";
+        case LocationType::Up:    return "Up";
+        case LocationType::Front: return "Front";
+        case LocationType::Back:  return "Back";
+        default: return "Unknown";
+        }
+    }
+
+    // --- 打印辅助函数 ---
     template <typename DomainT>
     void printTreeMap(
         DomainT* currentNode, 
-        const std::unordered_map<DomainT*, std::vector<DomainT*>>& tree_map, 
-        int depth = 0)
+        const std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map, 
+        int depth = 0,
+        bool printNodeLine = true)
     {
         if (!currentNode) return;
-        for (int i = 0; i < depth; ++i) std::cout << "  ";
-        std::cout << "- " << currentNode->name << std::endl;
+        if (printNodeLine) {
+            for (int i = 0; i < depth; ++i) std::cout << "  ";
+            std::cout << "- " << currentNode->name << std::endl;
+        }
         if (tree_map.count(currentNode)) {
-            for (DomainT* child : tree_map.at(currentNode)) {
-                printTreeMap(child, tree_map, depth + 1);
+            int dirIndent = depth + (printNodeLine ? 1 : 0);
+            for (const auto& kv : tree_map.at(currentNode)) {
+                for (int i = 0; i < dirIndent; ++i) std::cout << "  ";
+                std::cout << locationTypeToString(kv.first) << " -> " << kv.second->name << std::endl;
+                printTreeMap(kv.second, tree_map, dirIndent + 1, false);
             }
         }
     }

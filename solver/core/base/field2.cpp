@@ -249,6 +249,27 @@ void field2::down_bond_add(const double k, const field2& down_field2)
         value[i * ny] += k * down_field2(i, down_field2_ny - 1);
 }
 
+void field2::bond_add(LocationType location, const double k, const field2& neighbour_field2)
+{
+    switch (location)
+    {
+        case LocationType::Left:
+            left_bond_add(k, neighbour_field2);
+        break;
+        case LocationType::Right:
+            right_bond_add(k, neighbour_field2);
+        break;
+        case LocationType::Up:
+            up_bond_add(k, neighbour_field2);
+        break;
+        case LocationType::Down:
+            down_bond_add(k, neighbour_field2);
+        break;
+        default:
+            throw std::invalid_argument("Invalid location type");
+    }
+}
+
 double& field2::operator()(int i, int j) { return value[i * ny + j]; }
 
 double field2::operator()(int i, int j) const { return value[i * ny + j]; }

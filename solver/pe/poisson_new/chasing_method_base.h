@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "core/boundary/boundary_type.h"
-#include "core/parallel/mpi/mpi_misc.h"
+// #include "core/parallel/mpi/mpi_misc.h"
 
 /**
  * @brief The class for chasing method in single direction.

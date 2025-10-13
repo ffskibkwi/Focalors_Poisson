@@ -132,4 +132,7 @@ bool Domain2DUniform::check_profile() const { return nx > 0 && ny > 0 && lx > 0.
  */
 bool Domain2DUniform::check_boundary() const { return BoundaryTypeXNegative != PDEBoundaryType::Null && BoundaryTypeXPositive != PDEBoundaryType::Null && BoundaryTypeYNegative != PDEBoundaryType::Null && BoundaryTypeYPositive != PDEBoundaryType::Null; }
 
-
+void Domain2DUniform::construct_field(field2& f)
+{
+    f.init(nx, ny);
+}

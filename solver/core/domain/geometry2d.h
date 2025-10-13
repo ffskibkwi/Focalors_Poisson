@@ -35,7 +35,6 @@ public:
     void connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& b);
 
     void check();
-
     void solve_prepare();
 
 private:

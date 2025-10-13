@@ -46,4 +46,6 @@ public:
 
     bool check_profile() const;
     bool check_boundary() const;
+
+    void construct_field(field2& f);
 };

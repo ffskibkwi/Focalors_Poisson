@@ -11,7 +11,7 @@ class DomainSolver2D
 public:
     DomainSolver2D() {};
 
-    ~DomainSolver2D();
+    virtual ~DomainSolver2D() = default;
 
     // virtual void init() = 0;
     virtual void solve(field2& f) = 0;
@@ -22,7 +22,7 @@ class DomainSolver3D
 public:
     DomainSolver3D() {};
 
-    ~DomainSolver3D();
+    virtual ~DomainSolver3D() = default;
 
     // virtual void init() = 0;
     virtual void solve(field3& f) = 0;

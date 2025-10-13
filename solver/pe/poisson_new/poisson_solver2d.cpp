@@ -71,7 +71,7 @@ void PoissonSolver2D::init()
     chasing_method_x->init(nx, ny, x_diag, is_no_Dirichlet, has_last_vector, BoundaryTypeXNegative, BoundaryTypeXPositive);
 }
 
-void PoissonSolver2D::~PoissonSolver2D()
+PoissonSolver2D::~PoissonSolver2D()
 {
     delete[] x_diag;
     // delete[] lambda_y;
@@ -100,22 +100,22 @@ void PoissonSolver2D::cal_lambda()  //The current version is only for OpenMP
         if (BoundaryTypeYNegative == PDEBoundaryType::Periodic &&
         BoundaryTypeYPositive == PDEBoundaryType::Periodic) // P-P
         {
-        lambda[i] = -2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
+        lambda_y[i] = -2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
         }
         else if (BoundaryTypeYNegative == PDEBoundaryType::Neumann &&
             BoundaryTypeYPositive == PDEBoundaryType::Neumann) // N-N
         {
-        lambda[i] = -2.0 * std::cos(pi / ny * i);
+        lambda_y[i] = -2.0 * std::cos(pi / ny * i);
         }
         else if (BoundaryTypeYNegative == PDEBoundaryType::Dirichlet &&
             BoundaryTypeYPositive == PDEBoundaryType::Dirichlet) // D-D
         {
-        lambda[i] = -2.0 * std::cos(pi / (ny + 1) * i);
+        lambda_y[i] = -2.0 * std::cos(pi / (ny + 1) * i);
         }
         else if ((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
             (BoundaryTypeYNegative == PDEBoundaryType::Neumann && BoundaryTypeYPositive == PDEBoundaryType::Dirichlet)) // D-N or N-D
         {
-        lambda[i] = -2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
+        lambda_y[i] = -2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
         }
     }
 }

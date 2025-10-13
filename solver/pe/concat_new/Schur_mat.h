@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "domain_solver.h"
+#include "core/domain/domain2d.h"
 
 class Schur_mat
 {
@@ -18,6 +19,17 @@ public:
         , root_ny(root.get_ny())
         , branch_nx(branch.get_nx())
         , branch_ny(branch.get_ny())
+    {
+        value = new double*[cosize_n];
+        for (int i = 0; i < cosize_n; i++)
+            value[i] = new double[cosize_n];
+    }
+    Schur_mat(const Domain2DUniform& root, const Domain2DUniform& branch, const int _cosize_n)
+        : cosize_n(_cosize_n)
+        , root_nx(root.nx)
+        , root_ny(root.ny)
+        , branch_nx(branch.nx)
+        , branch_ny(branch.ny)
     {
         value = new double*[cosize_n];
         for (int i = 0; i < cosize_n; i++)
@@ -45,8 +57,8 @@ public:
 class Schur_mat_left : public Schur_mat
 {
 public:
-    Schur_mat_left(const field2& root, const field2& branch)
-        : Schur_mat(root, branch, root.get_ny())
+    Schur_mat_left(const Domain2DUniform& root, const Domain2DUniform& branch)
+        : Schur_mat(root, branch, root.ny)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -55,8 +67,9 @@ public:
 class Schur_mat_right : public Schur_mat
 {
 public:
-    Schur_mat_right(const field2& root, const field2& branch)
-        : Schur_mat(root, branch, root.get_ny())
+    
+    Schur_mat_right(const Domain2DUniform& root, const Domain2DUniform& branch)
+        : Schur_mat(root, branch, root.ny)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -65,8 +78,8 @@ public:
 class Schur_mat_up : public Schur_mat
 {
 public:
-    Schur_mat_up(const field2& root, const field2& branch)
-        : Schur_mat(root, branch, root.get_nx())
+    Schur_mat_up(const Domain2DUniform& root, const Domain2DUniform& branch)
+        : Schur_mat(root, branch, root.nx)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -75,8 +88,8 @@ public:
 class Schur_mat_down : public Schur_mat
 {
 public:
-    Schur_mat_down(const field2& root, const field2& branch)
-        : Schur_mat(root, branch, root.get_nx())
+    Schur_mat_down(const Domain2DUniform& root, const Domain2DUniform& branch)
+        : Schur_mat(root, branch, root.nx)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;

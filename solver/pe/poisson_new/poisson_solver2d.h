@@ -6,7 +6,7 @@
 #include "core/domain/domain2d.h"
 #include "poisson_fft2d.h"
 #include "chasing_method2d.h"
-#include "domain_solver.h"
+#include "pe/concat_new/domain_solver.h"
 
 class PoissonSolver2D : public DomainSolver2D
 {

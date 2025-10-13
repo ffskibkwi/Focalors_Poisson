@@ -5,7 +5,7 @@
 #include "core/boundary/boundary_type.h"
 #include "core/domain/domain2d.h"
 #include "pe/poisson_new/poisson_solver2d.h"
-#include "chasing_method2d.h"
+#include "pe/poisson_new/chasing_method2d.h"
 #include "domain_solver.h"
 #include "gmres.h"
 #include "Schur_mat.h"
@@ -31,7 +31,7 @@ public:
 
 private:
     // 成员参数（原 gmres 的未指定入参）：
-    Domain2DUniform&              domain;
+    Domain2DUniform*             domain;
     std::vector<Schur_mat*>       S_params;
     int                           m = 0;
     double                        tol = 0.0;

@@ -51,29 +51,29 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
         {
             case LocationType::Left:
             {
-                current = new Schur_mat_left(domain, neighbour_domain);
-                    current->construct(solver_map[&neighbour_domain]);
-                    S_params.push_back(current);
+                current = new Schur_mat_left(*domain, *neighbour_domain);
+                current->construct(solver_map.at(neighbour_domain));
+                S_params.push_back(current);
             }  
             break;
             case LocationType::Right:
             {
-                current = new Schur_mat_right(domain, neighbour_domain);
-                current->construct(solver_map[&neighbour_domain]);
+                current = new Schur_mat_right(*domain, *neighbour_domain);
+                current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Up:
             {
-                current = new Schur_mat_up(domain, neighbour_domain);
-                current->construct(solver_map[&neighbour_domain]);
+                current = new Schur_mat_up(*domain, *neighbour_domain);
+                current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Down:
             {
-                current = new Schur_mat_down(domain, neighbour_domain);
-                current->construct(solver_map[&neighbour_domain]);
+                current = new Schur_mat_down(*domain, *neighbour_domain);
+                current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;

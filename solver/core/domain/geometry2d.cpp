@@ -139,6 +139,7 @@ void Geometry2D::build_tree()
 
     tree_root = TreeUtils::findOptimalRoot(adjacency);
     tree_map = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
+    parent_map = TreeUtils::buildParentMapFromTree(tree_map);
 }
 
 

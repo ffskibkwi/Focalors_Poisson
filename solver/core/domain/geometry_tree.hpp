@@ -116,6 +116,28 @@ namespace TreeUtils {
         buildTreeMapRecursive<DomainT>(root, nullptr, adjacency, tree_map);
         return tree_map;
     }
+
+    /**
+     * @brief 从树的哈希表中构建父节点哈希表。
+     * @tparam DomainT 节点的类型。
+     * @param tree_map 树的哈希表。
+     * @return 一个表示父节点哈希表。
+     */
+    template <typename DomainT>
+    std::unordered_map<DomainT*, std::pair<LocationType, DomainT*>> buildParentMapFromTree(
+        std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map
+    )
+    {
+        std::unordered_map<DomainT*, std::pair<LocationType, DomainT*>> parent_map;
+        for (auto &[domain, children] : tree_map)
+        {
+            for (auto &[location, child] : children)
+            {
+                parent_map[child] = std::make_pair(opposite(location), domain);
+            }
+        }
+        return parent_map;
+    }
     
     inline const char* locationTypeToString(LocationType t)
     {
@@ -148,7 +170,7 @@ namespace TreeUtils {
             int dirIndent = depth + (printNodeLine ? 1 : 0);
             for (const auto& kv : tree_map.at(currentNode)) {
                 for (int i = 0; i < dirIndent; ++i) std::cout << "  ";
-                std::cout << locationTypeToString(kv.first) << " -> " << kv.second->name << std::endl;
+                std::cout << TreeUtils::locationTypeToString(kv.first) << " -> " << kv.second->name << std::endl;
                 printTreeMap(kv.second, tree_map, dirIndent + 1, false);
             }
         }

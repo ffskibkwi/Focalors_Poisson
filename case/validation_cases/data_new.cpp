@@ -8,6 +8,20 @@
 
 // #include "pe/concat_new/concat_solver2d.h" // 未在此测试中使用，避免引入外部依赖
 
+inline const char* locationTypeToString(LocationType t)
+    {
+        switch (t)
+        {
+        case LocationType::Left:  return "Left";
+        case LocationType::Right: return "Right";
+        case LocationType::Down:  return "Down";
+        case LocationType::Up:    return "Up";
+        case LocationType::Front: return "Front";
+        case LocationType::Back:  return "Back";
+        default: return "Unknown";
+        }
+    }
+
 int main(int argc, char* argv[])
 {
     // 复杂几何测试：以 A 为中心的“星形”结构，测试单连通性检查与最优树生成
@@ -293,9 +307,18 @@ int main(int argc, char* argv[])
             geo_tee.solve_prepare();
             std::cout << "tee optimal tree:" << std::endl;
             TreeUtils::printTreeMap(geo_tee.tree_root, geo_tee.tree_map);
-
+            
             if (geo_tee.tree_root)
                 std::cout << "tee tree root: " << geo_tee.tree_root->name << std::endl;
+            
+            if (!geo_tee.parent_map.empty())
+            {
+                for (auto &[key, value] : geo_tee.parent_map)
+                {
+                    std::cout << "parent of " << key->name << " is " << value.second->name << " on " << locationTypeToString(value.first) << std::endl;
+                }
+                std::cout << std::endl;
+            }
         } catch (const std::exception& ex) {
             std::cout << "[FAIL] case2 threw: " << ex.what() << std::endl;
         }

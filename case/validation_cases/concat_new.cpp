@@ -8,6 +8,8 @@
 
 #include "pe/concat_new/concat_solver2d.h"
 
+#include "io/csv_writer_2d.h"
+
 int main(int argc, char* argv[])
 {
     Geometry2D geo_tee;
@@ -81,8 +83,25 @@ int main(int argc, char* argv[])
     v.set_field(T4, v_T4);
     v.set_field(T5, v_T5);
     v.set_field(T6, v_T6);
+
+    for (int i = 3; i < v_T4.get_nx() - 3; i++)
+    {
+        for (int j = 3; j < v_T4.get_ny() - 3; j++)
+        {
+            v_T4(i, j) = 1.0;
+        }
+    }
+
+
     ConcatSolver2D solver(v);
     solver.solve();
+
+    IO::field_to_csv(v_T1, "result/v_T1.txt");
+    IO::field_to_csv(v_T2, "result/v_T2.txt");
+    IO::field_to_csv(v_T3, "result/v_T3.txt");
+    IO::field_to_csv(v_T4, "result/v_T4.txt");
+    IO::field_to_csv(v_T5, "result/v_T5.txt");
+    IO::field_to_csv(v_T6, "result/v_T6.txt");
 
     return 0;
 }

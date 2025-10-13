@@ -1,7 +1,7 @@
 #include "core/domain/domain2d.h"
 #include "core/base/field2.h"
 #include "core/boundary/boundary_type.h"
-#include "pe/poisson_new/poisson_solver2d.h"
+#include "pe/poisson/poisson_solver_2d.hpp"
 
 #include "io/csv_writer_2d.h"
 
@@ -24,12 +24,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    IO::field_to_csv(Omega_field, "result/before.txt");
+    IO::field_to_csv(Omega_field, "result/before_old.txt");
 
-    PoissonSolver2D solver(&Omega);
+    PoissonSolver2D<PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet, PDEBoundaryType::Dirichlet> solver(Omega.nx, Omega.ny, Omega.hx, Omega.hy);
     solver.solve(Omega_field);
 
-    IO::field_to_csv(Omega_field, "result/after.txt");
+    IO::field_to_csv(Omega_field, "result/after_old.txt");
 
     field2 Omega_field_valid(Omega_field);
     for (int i = 0; i < Omega_field_valid.get_nx(); i++)
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    IO::field_to_csv(Omega_field_valid, "result/valid.txt");
+    IO::field_to_csv(Omega_field_valid, "result/valid_old.txt");
 
     return 0;
 }

@@ -39,7 +39,7 @@ void PoissonFFT2D_DD::transform(const field2& f, field2& f_hat)
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
     {
-        for (int j = 0; j < ny; j++) ex_vec[i][j + 1] = f(i, j);
+        for (int j = 0; j < ny; j++)ex_vec[i][j + 1] = f(i, j);
         fftw_execute_dft_r2c(plan, ex_vec[i], fft_result[i]);
         for (int j = 0; j < ny; j++) f_hat(i, j) = -sqr_2_N1 * fft_result[i][j + 1][1];
     }

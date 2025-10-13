@@ -54,11 +54,10 @@ void PoissonSolver2D::init()
     x_diag   = new double[ny];
 
     cal_lambda();
-    // cal_lambda(lambda_y, ny, 1, ny, BoundaryTypeYNegative, BoundaryTypeYPositive);
 
     for (int j = 0; j < ny; j++)
     {
-        x_diag[j] = -2.0 + hx * hx / hy / hy * (lambda_y[j] - 2.0);
+        x_diag[j] = -2.0 + hx * hx / hy / hy * lambda_y[j];
     }
     delete[] lambda_y;
 
@@ -68,7 +67,7 @@ void PoissonSolver2D::init()
     bool has_last_vector = true;
 
     chasing_method_x = new ChasingMethod2D();
-    chasing_method_x->init(nx, ny, x_diag, is_no_Dirichlet, has_last_vector, BoundaryTypeXNegative, BoundaryTypeXPositive);
+    chasing_method_x->init(ny, nx, x_diag, is_no_Dirichlet, has_last_vector, BoundaryTypeXNegative, BoundaryTypeXPositive);
 }
 
 PoissonSolver2D::~PoissonSolver2D()
@@ -84,8 +83,11 @@ void PoissonSolver2D::solve(field2& f)
     buffer.set_size(nx, ny);
     poisson_fft_y->transform(f, buffer);
 
-    chasing_method_x->chasing(buffer, f);
+    buffer.transpose(f);
+    buffer.set_size(ny, nx);
+    chasing_method_x->chasing(f, buffer);
 
+    buffer.transpose(f);
     buffer.set_size(nx, ny);
     poisson_fft_y->transform_transpose(f, buffer);
 
@@ -95,27 +97,27 @@ void PoissonSolver2D::solve(field2& f)
 void PoissonSolver2D::cal_lambda()  //The current version is only for OpenMP
 {
     // This function is calcualting the lambda of the equation with all the diagonal elements equal to 0
-    for (int i = 0; i < ny; i++)
+    for (int i = 1; i <= ny; i++)
     {
         if (BoundaryTypeYNegative == PDEBoundaryType::Periodic &&
         BoundaryTypeYPositive == PDEBoundaryType::Periodic) // P-P
         {
-        lambda_y[i] = -2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
+        lambda_y[i - 1] = -2.0 + 2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
         }
         else if (BoundaryTypeYNegative == PDEBoundaryType::Neumann &&
             BoundaryTypeYPositive == PDEBoundaryType::Neumann) // N-N
         {
-        lambda_y[i] = -2.0 * std::cos(pi / ny * i);
+        lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / ny * i);
         }
         else if (BoundaryTypeYNegative == PDEBoundaryType::Dirichlet &&
             BoundaryTypeYPositive == PDEBoundaryType::Dirichlet) // D-D
         {
-        lambda_y[i] = -2.0 * std::cos(pi / (ny + 1) * i);
+        lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / (ny + 1) * i);
         }
         else if ((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
             (BoundaryTypeYNegative == PDEBoundaryType::Neumann && BoundaryTypeYPositive == PDEBoundaryType::Dirichlet)) // D-N or N-D
         {
-        lambda_y[i] = -2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
+        lambda_y[i - 1] = -2.0 + 2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
         }
     }
 }

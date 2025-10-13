@@ -38,42 +38,4 @@ private:
 
     PoissonFFT2D*    poisson_fft_y;
     ChasingMethod2D* chasing_method_x;
-
-    /*
-    // for MPI
-    void cal_lambda(double*           lambda,
-                    int               global_length,
-                    int               begin,
-                    int               local_length,
-                    PDEBoundaryType BoundaryTypeNegative,
-                    PDEBoundaryType BoundaryTypePositive)
-    {
-        // This function is calcualting the lambda of the equation with all the diagonal elements equal to 0
-        for (int i = begin; i <= begin + local_length - 1; i++)
-        {
-            if (BoundaryTypeNegative == PDEBoundaryType::Periodic &&
-                BoundaryTypePositive == PDEBoundaryType::Periodic) // P-P
-            {
-                lambda[i - begin] = -2.0 * std::cos(2.0 * pi / global_length * std::floor(i / 2.0));
-            }
-            else if (BoundaryTypeNegative == PDEBoundaryType::Neumann &&
-                     BoundaryTypePositive == PDEBoundaryType::Neumann) // N-N
-            {
-                lambda[i - begin] = -2.0 * std::cos(pi / global_length * i);
-            }
-            else if (BoundaryTypeNegative == PDEBoundaryType::Dirichlet &&
-                     BoundaryTypePositive == PDEBoundaryType::Dirichlet) // D-D
-            {
-                lambda[i - begin] = -2.0 * std::cos(pi / (global_length + 1.0) * i);
-            }
-            else if ((BoundaryTypeNegative == PDEBoundaryType::Dirichlet &&
-                      BoundaryTypePositive == PDEBoundaryType::Neumann) ||
-                     (BoundaryTypeNegative == PDEBoundaryType::Neumann &&
-                      BoundaryTypePositive == PDEBoundaryType::Dirichlet)) // D-N or N-D
-            {
-                lambda[i - begin] = -2.0 * std::cos(2.0 * pi * i / (2.0 * global_length + 1.0));
-            }
-        }
-    }
-    */
 };

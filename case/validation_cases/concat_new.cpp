@@ -9,10 +9,14 @@
 #include "pe/concat/concat_solver2d.h"
 
 #include "io/csv_writer_2d.h"
+#include "io/env_config.h"
 
 int main(int argc, char* argv[])
 {
     Geometry2D geo_tee;
+    EnvironmentConfig* env_config = new EnvironmentConfig();
+    env_config->showGmresRes = true;
+    env_config->showCurrentStep = true;
 
     // Grid parameters
     Domain2DUniform T2(10, 10, 1.0, 1.0, "T2"); // 中心
@@ -93,7 +97,7 @@ int main(int argc, char* argv[])
     }
 
 
-    ConcatSolver2D solver(v);
+    ConcatSolver2D solver(v, env_config);
     solver.solve();
 
     IO::field_to_csv(v_T1, "result/v_T1.txt");

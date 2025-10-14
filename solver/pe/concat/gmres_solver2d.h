@@ -11,6 +11,7 @@
 #include "Schur_mat.h"
 #include "pe/poisson/poisson_solver2d.h"
 #include <unordered_map>
+#include "io/env_config.h"
 
 class GMRESSolver2D : public DomainSolver2D
 {
@@ -18,7 +19,8 @@ public:
     GMRESSolver2D(Domain2DUniform*              in_domain,
                   int                           in_m,
                   double                        in_tol,
-                  int                           in_maxIter);
+                  int                           in_maxIter,
+                  EnvironmentConfig*            in_env_config = nullptr);
     ~GMRESSolver2D();
 
     void solve(field2& f) override;
@@ -28,6 +30,8 @@ public:
 
     // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b
     void set_initial_guess(field2* x0) { x0_override = x0; }
+
+    // 统一：环境配置通过构造函数传入
 
 private:
     // 成员参数（原 gmres 的未指定入参）：
@@ -59,8 +63,13 @@ private:
     // 可选初值覆盖
     field2*                       x0_override = nullptr;
 
+    // 环境配置（只读使用）
+    EnvironmentConfig*            env_config = nullptr;
+
     // 与原实现一致的 Afun
     field2& Afun(field2& x);
+
+    void maybe_print_res() const;
 
     // field2 gmres(field2&                   b,
     //     field2&                   x,

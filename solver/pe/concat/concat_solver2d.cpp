@@ -1,8 +1,15 @@
 #include "concat_solver2d.h"
 
-ConcatSolver2D::ConcatSolver2D(Variable &in_variable)
+ConcatSolver2D::ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_config)
     : variable(in_variable)
+    , env_config(in_env_config)
 {
+    //config load
+    if (in_env_config)
+    {
+        showGmresRes = in_env_config->showGmresRes;
+    }
+
     // geometry double check
     if (variable.geometry == nullptr)
         throw std::runtime_error("ConcatSolver2D: variable.geometry is null");
@@ -61,24 +68,24 @@ void ConcatSolver2D::construct_solver_map()
     {
         if (tree_map[domain].size() > 0)
         {
-            solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter);
+            solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter, env_config);
             static_cast<GMRESSolver2D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map); //Here use RTTI
         }    
         else
         {
-            solver_map[domain] = new PoissonSolver2D(domain);
+            solver_map[domain] = new PoissonSolver2D(domain, env_config);
         } 
     }
 
     //Construct solver for root domain
     if (tree_map[tree_root].size() > 0)
     {
-        solver_map[tree_root] = new GMRESSolver2D(tree_root, m, tol, maxIter);
+        solver_map[tree_root] = new GMRESSolver2D(tree_root, m, tol, maxIter, env_config);
         static_cast<GMRESSolver2D*>(solver_map[tree_root])->schur_mat_construct(tree_map[tree_root], solver_map); //Here use RTTI
     }    
     else
     {
-        solver_map[tree_root] = new PoissonSolver2D(tree_root);
+        solver_map[tree_root] = new PoissonSolver2D(tree_root, env_config);
     } 
 }
 

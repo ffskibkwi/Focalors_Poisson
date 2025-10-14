@@ -1,6 +1,6 @@
 #include "poisson_solver2d.h"
 
-PoissonSolver2D::PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_hy, PDEBoundaryType in_BoundaryTypeXNegative, PDEBoundaryType in_BoundaryTypeXPositive, PDEBoundaryType in_BoundaryTypeYNegative, PDEBoundaryType in_BoundaryTypeYPositive)
+PoissonSolver2D::PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_hy, PDEBoundaryType in_BoundaryTypeXNegative, PDEBoundaryType in_BoundaryTypeXPositive, PDEBoundaryType in_BoundaryTypeYNegative, PDEBoundaryType in_BoundaryTypeYPositive, EnvironmentConfig* in_env_config)
     : nx(in_nx), 
     ny(in_ny), 
     hx(in_hx), 
@@ -10,10 +10,11 @@ PoissonSolver2D::PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_h
     BoundaryTypeYNegative(in_BoundaryTypeYNegative), 
     BoundaryTypeYPositive(in_BoundaryTypeYPositive)
 {
+    env_config = in_env_config;
     init();
 }
 
-PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain)
+PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, EnvironmentConfig* in_env_config)
     : nx(in_domain->nx), 
     ny(in_domain->ny), 
     hx(in_domain->hx), 
@@ -23,6 +24,7 @@ PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain)
     BoundaryTypeYNegative(in_domain->BoundaryTypeYNegative), 
     BoundaryTypeYPositive(in_domain->BoundaryTypeYPositive)
 {
+    env_config = in_env_config;
     init();
 }
 

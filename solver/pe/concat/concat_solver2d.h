@@ -21,7 +21,7 @@ class ConcatSolver2D
 public:
     Variable& variable;
     
-    ConcatSolver2D(Variable &in_variable);
+    ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~ConcatSolver2D();
 
     // void init();
@@ -46,4 +46,7 @@ private:
     std::unordered_map<Domain2DUniform*, field2*> field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>> parent_map;
+
+    EnvironmentConfig* env_config;
+    bool showGmresRes = false;
 };

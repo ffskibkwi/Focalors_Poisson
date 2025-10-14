@@ -1,21 +1,24 @@
 #include "gmres_solver2d.h"
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform*              in_domain,
                              int                           in_m,
                              double                        in_tol,
-                             int                           in_maxIter)
+                             int                           in_maxIter,
+                             EnvironmentConfig*            in_env_config)
     : domain(in_domain)
     , m(in_m)
     , tol(in_tol)
     , maxIter(in_maxIter)
 {
+    env_config = in_env_config;
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
 
-    pe_solver = new PoissonSolver2D(domain);
+    pe_solver = new PoissonSolver2D(domain, env_config);
 
     x_buf.init(nx, ny);
     r_buf.init(nx, ny);
@@ -99,6 +102,20 @@ field2& GMRESSolver2D::Afun(field2& x)
     return afun_buf;
 }
 
+void GMRESSolver2D::maybe_print_res() const
+{
+    if (env_config && env_config->showGmresRes)
+    {
+        std::cout << "GMRES resVec: [";
+        for (size_t i = 0; i < resVec.size(); ++i)
+        {
+            std::cout << resVec[i];
+            if (i + 1 < resVec.size()) std::cout << ", ";
+        }
+        std::cout << "]" << std::endl;
+    }
+}
+
 void GMRESSolver2D::solve(field2& b)
 {
     //Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
@@ -127,6 +144,7 @@ void GMRESSolver2D::solve(field2& b)
             if (beta < tol)
             {
                 b = x_buf; // 直接覆盖 b
+                maybe_print_res();
                 return;
             }
         }
@@ -214,4 +232,5 @@ void GMRESSolver2D::solve(field2& b)
 
     // 达到最大迭代，返回当前近似解
     b = x_buf;
+    maybe_print_res();
 }

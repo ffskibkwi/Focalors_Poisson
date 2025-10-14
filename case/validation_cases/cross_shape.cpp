@@ -1,9 +1,9 @@
 #include "core/base/location_boundary.h"
 #include "io/csv_writer_2d.h"
-#include "pe/concat/Shur_mat.hpp"
-#include "pe/concat/Shur_solver.hpp"
+#include "pe/concat_old/Shur_mat.hpp"
+#include "pe/concat_old/Shur_solver.hpp"
 #include "pe/concat/gmres.h"
-#include "pe/poisson/poisson_solver_2d.hpp"
+#include "pe/poisson_old/poisson_solver_2d.hpp"
 
 #include <functional>
 
@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
     // std::cout << "acc_rank:" << acc_rank << ", gmres_m:" << gmres_m << ", result:";
     std::cout << acc_rank << ", " << gmres_m << ", "; //for csv output
 
-    p_2 = gmres(p_2, p_2, S_21, S_23, S_24, S_25, pe_solver_2, gmres_m, gmres_tol, 1000, resVec);
+    // p_2 = gmres(p_2, p_2, S_21, S_23, S_24, S_25, pe_solver_2, gmres_m, gmres_tol, 1000, resVec);
     for (size_t i = 0; i < resVec.size(); ++i)
     {
         std::cout << resVec[i];

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Shur_mat.hpp"
-#include "pe/poisson/poisson_solver_interface.h"
+#include "pe/poisson_old/poisson_solver_interface.h"
 
 field2 Shur_solve_1(field2& f, Shur_mat& S, PoissonSolver2DInterface& solver_root, unsigned int max_it);
 field2

@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "pe/poisson/poisson_solver_interface.h"
+#include "pe/poisson_old/poisson_solver_interface.h"
 
 class Shur_mat
 {

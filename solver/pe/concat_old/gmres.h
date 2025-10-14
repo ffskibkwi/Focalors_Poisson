@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "Shur_mat.hpp"
-#include "pe/poisson/poisson_solver_interface.h"
+#include "pe/poisson_old/poisson_solver_interface.h"
 
 #include <vector>
 

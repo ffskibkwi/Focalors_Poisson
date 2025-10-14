@@ -6,7 +6,7 @@
 
 #include "core/base/location_boundary.h"
 
-#include "pe/concat_new/concat_solver2d.h"
+#include "pe/concat/concat_solver2d.h"
 
 #include "io/csv_writer_2d.h"
 

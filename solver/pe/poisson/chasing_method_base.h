@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "core/base/location_boundary.h"
-#include "core/parallel/mpi/mpi_misc.h"
+// #include "core/parallel/mpi/mpi_misc.h"
 
 /**
  * @brief The class for chasing method in single direction.
@@ -17,21 +17,21 @@ protected:
                                              double*           c,
                                              double*           y,
                                              double*           x,
-                                             PDEBoundaryType BoundTypeStart,
-                                             PDEBoundaryType BoundTypeEnd);
+                                             PDEBoundaryType BoundaryTypeStart,
+                                             PDEBoundaryType BoundaryTypeEnd);
     void chasing_standard_with_precompute(double            x_diag_single,
                                           int               n,
                                           double*           f,
                                           double*           c,
                                           double*           y,
                                           double*           x,
-                                          PDEBoundaryType BoundTypeStart,
-                                          PDEBoundaryType BoundTypeEnd);
+                                          PDEBoundaryType BoundaryTypeStart,
+                                          PDEBoundaryType BoundaryTypeEnd);
     void chasing_standard_precompute(double            x_diag_single,
                                      int               n,
                                      double*           c,
-                                     PDEBoundaryType BoundTypeStart,
-                                     PDEBoundaryType BoundTypeEnd);
+                                     PDEBoundaryType BoundaryTypeStart,
+                                     PDEBoundaryType BoundaryTypeEnd);
     void chasing_standard_singular(int n, double* f, double* x);
     void chasing_periodic_with_precompute(double  x_diag_single,
                                           int     n,

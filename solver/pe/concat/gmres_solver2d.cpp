@@ -84,7 +84,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
 }
 field2& GMRESSolver2D::Afun(field2& x)
 {
-    // 与 concat_new/gmres.cpp 一致：ft = sum(S_i * x); pe_solver->solve(ft); return x - ft
+    // 与 concat/gmres.cpp 一致：ft = sum(S_i * x); pe_solver->solve(ft); return x - ft
     ft_buf = x;
     ft_buf.clear(0.);
     for (auto& s : S_params)

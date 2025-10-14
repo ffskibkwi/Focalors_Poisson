@@ -13,8 +13,8 @@
  * @param c            The helper vector (size N - 1).  Must be pre-initialized. Modified during execution.
  * @param y            The helper vector (size N).  Modified during execution.
  * @param x            The solution vector.  Output.
- * @param BoundaryTypeStart The boundary type at the start (first row).
- * @param BoundaryTypeEnd   The boundary type at the end (last row).
+ * @param BoundTypeStart The boundary type at the start (first row).
+ * @param BoundTypeEnd   The boundary type at the end (last row).
  *
  * @note
  * The key difference between the precompute and non-precompute versions is that
@@ -27,21 +27,21 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
                                                             double*           c,
                                                             double*           y,
                                                             double*           x,
-                                                            PDEBoundaryType BoundaryTypeStart,
-                                                            PDEBoundaryType BoundaryTypeEnd)
+                                                            PDEBoundaryType BoundTypeStart,
+                                                            PDEBoundaryType BoundTypeEnd)
 {
-    c[0] = (BoundaryTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
+    c[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         c[i] = 1.0 / (x_diag_single - c[i - 1]);
     }
 
-    y[0] = (BoundaryTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
+    y[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+    y[n - 1] = (BoundTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
                                                               (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
@@ -64,8 +64,8 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
  * @param c            The precomputed helper vector (size N-1).  Must be pre-calculated. Not modified during execution.
  * @param y            The helper vector (size N).  Modified during execution.
  * @param x            The solution vector. Output.
- * @param BoundaryTypeStart The boundary type at the start (first row).
- * @param BoundaryTypeEnd   The boundary type at the end (last row).
+ * @param BoundTypeStart The boundary type at the start (first row).
+ * @param BoundTypeEnd   The boundary type at the end (last row).
  *
  * @note
  *  In the precompute version, the helper vector 'c' is calculated and stored
@@ -79,15 +79,15 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
                                                          double*           c,
                                                          double*           y,
                                                          double*           x,
-                                                         PDEBoundaryType BoundaryTypeStart,
-                                                         PDEBoundaryType BoundaryTypeEnd)
+                                                         PDEBoundaryType BoundTypeStart,
+                                                         PDEBoundaryType BoundTypeEnd)
 {
-    y[0] = (BoundaryTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
+    y[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? f[0] / (x_diag_single + 1.0) : f[0] / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+    y[n - 1] = (BoundTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
                                                               (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
@@ -103,8 +103,8 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
  * @param x_diag_single The value of the main diagonal. Assumed to be constant.
  * @param n            The size of the matrix (number of rows/columns).
  * @param c            The helper vector (size N-1) to be precomputed. Output.
- * @param BoundaryTypeStart The boundary type at the start (first row).
- * @param BoundaryTypeEnd   The boundary type at the end (last row).
+ * @param BoundTypeStart The boundary type at the start (first row).
+ * @param BoundTypeEnd   The boundary type at the end (last row).
  *
  * @note
  *  This function precalculates the 'c' vector, which is used as a helper in the
@@ -115,10 +115,10 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
 void ChasingMethodBase::chasing_standard_precompute(double            x_diag_single,
                                                     int               n,
                                                     double*           c,
-                                                    PDEBoundaryType BoundaryTypeStart,
-                                                    PDEBoundaryType BoundaryTypeEnd)
+                                                    PDEBoundaryType BoundTypeStart,
+                                                    PDEBoundaryType BoundTypeEnd)
 {
-    c[0] = (BoundaryTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
+    c[0] = (BoundTypeStart == PDEBoundaryType::Neumann) ? 1.0 / (x_diag_single + 1.0) : 1.0 / x_diag_single;
     for (int i = 1; i < n - 1; i++)
     {
         c[i] = 1.0 / (x_diag_single - c[i - 1]);

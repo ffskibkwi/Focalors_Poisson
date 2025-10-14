@@ -1,7 +1,7 @@
 #include "core/domain/domain2d.h"
 #include "core/base/field2.h"
 #include "core/base/location_boundary.h"
-#include "pe/poisson_new/poisson_solver2d.h"
+#include "pe/poisson/poisson_solver2d.h"
 
 #include "io/csv_writer_2d.h"
 

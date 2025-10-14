@@ -6,7 +6,7 @@
 
 #include "core/base/location_boundary.h"
 
-// #include "pe/concat_new/concat_solver2d.h" // 未在此测试中使用，避免引入外部依赖
+// #include "pe/concat/concat_solver2d.h" // 未在此测试中使用，避免引入外部依赖
 
 inline const char* locationTypeToString(LocationType t)
     {

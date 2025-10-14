@@ -4,12 +4,12 @@
 
 #include "core/base/location_boundary.h"
 #include "core/domain/domain2d.h"
-#include "pe/poisson_new/poisson_solver2d.h"
-#include "pe/poisson_new/chasing_method2d.h"
+#include "pe/poisson/poisson_solver2d.h"
+#include "pe/poisson/chasing_method2d.h"
 #include "domain_solver.h"
 #include "gmres.h"
 #include "Schur_mat.h"
-#include "pe/poisson_new/poisson_solver2d.h"
+#include "pe/poisson/poisson_solver2d.h"
 #include <unordered_map>
 
 class GMRESSolver2D : public DomainSolver2D

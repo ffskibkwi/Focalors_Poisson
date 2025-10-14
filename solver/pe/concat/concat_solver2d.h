@@ -8,7 +8,7 @@
 #include "core/domain/geometry_tree.hpp"
 
 #include "domain_solver.h"
-#include "pe/poisson_new/poisson_solver2d.h"
+#include "pe/poisson/poisson_solver2d.h"
 #include "gmres_solver2d.h"
 
 #include "Schur_mat.h"

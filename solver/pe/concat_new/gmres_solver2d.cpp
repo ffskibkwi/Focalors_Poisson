@@ -101,6 +101,9 @@ field2& GMRESSolver2D::Afun(field2& x)
 
 void GMRESSolver2D::solve(field2& b)
 {
+    //Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
+    pe_solver->solve(b);
+
     // 每次执行前清空残差历史
     resVec.clear();
 

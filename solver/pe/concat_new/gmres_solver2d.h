@@ -31,7 +31,7 @@ public:
 
 private:
     // 成员参数（原 gmres 的未指定入参）：
-    Domain2DUniform*             domain;
+    Domain2DUniform*              domain;
     std::vector<Schur_mat*>       S_params;
     int                           m = 0;
     double                        tol = 0.0;

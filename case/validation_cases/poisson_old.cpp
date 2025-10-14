@@ -1,6 +1,6 @@
 #include "core/domain/domain2d.h"
 #include "core/base/field2.h"
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "pe/poisson/poisson_solver_2d.hpp"
 
 #include "io/csv_writer_2d.h"

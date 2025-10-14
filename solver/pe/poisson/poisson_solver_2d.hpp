@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "chasing_method_2d.hpp"
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/mesh_profile/mesh_profile_2d_uniform.h"
 #include "poisson_fft_2d.hpp"
 #include "poisson_solver_interface.h"

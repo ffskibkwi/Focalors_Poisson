@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "fftw3.h"
 
 class PoissonFFT2D

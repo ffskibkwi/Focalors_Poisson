@@ -4,7 +4,7 @@
 #include "core/base/field2.h"
 #include "core/domain/geometry_tree.hpp"
 
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 
 // #include "pe/concat_new/concat_solver2d.h" // 未在此测试中使用，避免引入外部依赖
 

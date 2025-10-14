@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <queue>
 #include <cstdint>
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/domain/domain2d.h"
 
 namespace TreeUtils {

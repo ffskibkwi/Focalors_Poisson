@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/parallel/mpi/mpi_misc.h"
 
 /**

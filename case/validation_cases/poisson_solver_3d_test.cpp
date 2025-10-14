@@ -1,4 +1,4 @@
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "pch.h"
 #include "pe/poisson/poisson_solver_3d.hpp"
 #include <cmath>

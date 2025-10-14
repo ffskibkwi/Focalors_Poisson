@@ -1,4 +1,4 @@
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "io/csv_writer_2d.h"
 #include "pe/concat/Shur_mat.hpp"
 #include "pe/concat/Shur_solver.hpp"

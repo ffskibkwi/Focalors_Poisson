@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "pe/poisson/poisson_solver_interface.h"
 
 class Schur_mat

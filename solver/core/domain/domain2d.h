@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/mesh_profile/mesh_profile_2d_base.h"
 #include <stdexcept>
 

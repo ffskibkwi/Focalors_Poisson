@@ -6,7 +6,7 @@
 #include <queue>
 #include <cstdint>
 #include <iostream>
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/domain/domain2d.h"
 
 // Currently the main project uses 2D, but the tree structure and building algorithm are independent of dimension.

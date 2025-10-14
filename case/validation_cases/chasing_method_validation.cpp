@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "core/base/field2.h"
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "pe/poisson/chasing_method_base.h"
 #include <cmath>
 #include <iomanip>

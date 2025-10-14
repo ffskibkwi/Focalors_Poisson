@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "core/domain/domain2d.h"
 #include "poisson_fft2d.h"
 #include "chasing_method2d.h"

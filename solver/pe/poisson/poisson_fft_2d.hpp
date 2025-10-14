@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-#include "core/boundary/boundary_type.h"
+#include "core/base/location_boundary.h"
 #include "poisson_fft_interface.h"
 
 #include "fftw3.h"

@@ -1,4 +1,4 @@
-# Focalors
+# Focalors_Poisson
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
@@ -59,16 +59,14 @@ export FFTW_ROOT=/path/to/fftw3 # 将 /path/to/fftw3 替换为FFTW的实际安�
 
 ```shell
 cmake -S . -B build -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_BUILD_TYPE=Release
-
-# 2. 使用多核心并行编译
 cmake --build build --parallel $(nproc) #推荐使用并行编译，将$(nproc)替换为机器的核心数
 ```
 
-### 4. 运行 (Run)
+### 4. 运行
 
 编译生成的可执行文件位于 `build/bin/` 目录下，直接运行即可开始求解
 
-## 如何使用 (Usage)
+## 如何使用
 
 要使用 Focalors_Poisson 求解特定的问题，您需要创建一个 `case` 文件 -- 一个用于定义几何、边界条件和求解参数的 C++ 源文件。
 
@@ -85,13 +83,13 @@ cmake --build build --parallel $(nproc) #推荐使用并行编译，将$(nproc)�
 
 （详细的开发文档仍在锐意制作中）
 
-## 贡献 (Contributing)
+## 贡献
 
 我们欢迎任何形式的贡献！如果您发现 Bug、有功能建议或希望改进代码，请随时：
 1.  提交一个 [Issue](https://github.com/your-username/Focalors/issues)。
 2.  Fork 本仓库并发起一个 Pull Request。
 
-## 开发者 (Authors)
+## 开发者
 
 本求解器的核心算法设计与代码实现由且仅有以下两人完成：
 
@@ -101,6 +99,6 @@ cmake --build build --parallel $(nproc) #推荐使用并行编译，将$(nproc)�
 ## 为什么叫Focalors？
 是的，就是《原神》中水之国度的神明~
 
-## 许可证 (License)
+## 许可证
 
 本项目采用 MIT 许可证。详情请见 [LICENSE](LICENSE) 文件。

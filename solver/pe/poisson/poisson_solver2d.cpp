@@ -82,6 +82,8 @@ PoissonSolver2D::~PoissonSolver2D()
 
 void PoissonSolver2D::solve(field2& f)
 {
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Poisson] solve: start" << std::endl;
     buffer.set_size(nx, ny);
     poisson_fft_y->transform(f, buffer);
 
@@ -94,6 +96,8 @@ void PoissonSolver2D::solve(field2& f)
     poisson_fft_y->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Poisson] solve: done" << std::endl;
 }
 
 void PoissonSolver2D::cal_lambda()  //The current version is only for OpenMP

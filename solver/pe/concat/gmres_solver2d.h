@@ -65,6 +65,7 @@ private:
 
     // 环境配置（只读使用）
     EnvironmentConfig*            env_config = nullptr;
+    EnvironmentConfig             inner_env_config; // 用于内部 Poisson（关闭 showCurrentStep）
 
     // 与原实现一致的 Afun
     field2& Afun(field2& x);

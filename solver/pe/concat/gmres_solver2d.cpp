@@ -14,11 +14,16 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*              in_domain,
     , maxIter(in_maxIter)
 {
     env_config = in_env_config;
+    // 内部 Poisson 的配置：关闭 showCurrentStep，保持 showGmresRes 同步
+    inner_env_config = EnvironmentConfig{};
+    if (env_config)
+        inner_env_config.showGmresRes = env_config->showGmresRes;
+    inner_env_config.showCurrentStep = false;
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
 
-    pe_solver = new PoissonSolver2D(domain, env_config);
+    pe_solver = new PoissonSolver2D(domain, &inner_env_config);
 
     x_buf.init(nx, ny);
     r_buf.init(nx, ny);
@@ -46,6 +51,8 @@ GMRESSolver2D::~GMRESSolver2D()
 
 void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>& adjacency_key, const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[GMRES] Schur construct: start" << std::endl;
     for (auto &[location, neighbour_domain] : adjacency_key)
     {
         //Construct the Schur matrix for each neibour domain of main domain
@@ -84,6 +91,8 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 throw std::invalid_argument("Invalid location type");
         }
     }
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[GMRES] Schur construct: done" << std::endl;
 }
 field2& GMRESSolver2D::Afun(field2& x)
 {
@@ -118,6 +127,8 @@ void GMRESSolver2D::maybe_print_res() const
 
 void GMRESSolver2D::solve(field2& b)
 {
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[GMRES] solve: start" << std::endl;
     //Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);
 
@@ -233,4 +244,6 @@ void GMRESSolver2D::solve(field2& b)
     // 达到最大迭代，返回当前近似解
     b = x_buf;
     maybe_print_res();
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[GMRES] solve: done" << std::endl;
 }

@@ -117,11 +117,11 @@ int main(int argc, char* argv[])
     Variable p("p");
     field2 p_A("p_A"), p_B("p_B"), p_C("p_C"), p_D("p_D"), p_E("p_E");
     p.set_geometry(geo);
-    p.set_field(A, p_A);
-    p.set_field(B, p_B);
-    p.set_field(C, p_C);
-    p.set_field(D, p_D);
-    p.set_field(E, p_E);
+    p.set_center_field(A, p_A);
+    p.set_center_field(B, p_B);
+    p.set_center_field(C, p_C);
+    p.set_center_field(D, p_D);
+    p.set_center_field(E, p_E);
     std::cout << "tree root of geometry: " << (geo.tree_root ? geo.tree_root->name : std::string("(null)")) << std::endl;
     std::cout << "fields bound: "
               << p_A.get_name() << ", " << p_B.get_name() << ", "

@@ -19,5 +19,5 @@ public:
 
     void set_geometry(Geometry2D& g);
 
-    void set_field(Domain2DUniform& s, field2& f);
+    void set_center_field(Domain2DUniform& s, field2& f);
 };

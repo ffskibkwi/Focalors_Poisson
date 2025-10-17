@@ -23,7 +23,7 @@ void Variable::set_geometry(Geometry2D& g)
  *
  * If the field name is "Default", it will be initialized with the name "variable".
  */
-void Variable::set_field(Domain2DUniform& s, field2& f)
+void Variable::set_center_field(Domain2DUniform& s, field2& f)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable has no geometry set");

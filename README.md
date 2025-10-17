@@ -1,21 +1,20 @@
 
 <div align="center">
-  <img src="Focalors_logo.png" alt="Focalors Logo" width="200"/>
+  <img src="Focalors_logo.png" alt="Focalors Logo" width="250"/>
 </div>
-
-<div align="center">
-#Focalors_Poisson
-
-基于FFT区域分解算法的高性能Poisson求解器
-</div>
-<div align="center">
+<p align="center">
+  # Focalors_Poisson
+  <br/>
+  基于FFT区域分解算法的高性能Poisson求解器
+</p>
+<p align="center">
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
+  [![Language](https://img.img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
   [![CMake](https://img.img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
-</div>
-<div align="center">
-  中文&nbsp;&nbsp;|&nbsp;&nbsp;English[./README_en.md]&nbsp;&nbsp;|&nbsp;&nbsp;[日本語](./README_ja.md)
-</div>
+</p>
+<p align="center">
+  [中文](./README.md)&nbsp;&nbsp;|&nbsp;&nbsp;[English](./README_en.md)&nbsp;&nbsp;|&nbsp;&nbsp;[日本語](./README_ja.md)
+</p>
 
 **Focalors_Poisson** 是为拼接几何问题设计的高性能Poisson方程求解器。它基于快速傅里叶变换（FFT）和区域分解算法（Domain Decomposition Method），旨在提供最快的计算速度。
 

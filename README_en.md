@@ -1,20 +1,19 @@
 <div align="center">
-  <img src="Focalors_logo.png" alt="Focalors Logo" width="200"/>
+  <img src="Focalors_logo.png" alt="Focalors Logo" width="250"/>
 </div>
-
-<div align="center">
-#Focalors_Poisson
-
-High-Performance Poisson Solver Based on FFT-based Domain Decomposition Algorithm
-</div>
-<div align="center">
+<p align="center">
+  # Focalors_Poisson
+  <br/>
+  High-Performance Poisson Solver Based on FFT-based Domain Decomposition Algorithm
+</p>
+<p align="center">
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
+  [![Language](https://img.img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
   [![CMake](https://img.img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
-</div>
-<div align="center">
+</p>
+<p align="center">
   [中文](./README.md)&nbsp;&nbsp;|&nbsp;&nbsp;English&nbsp;&nbsp;|&nbsp;&nbsp;[日本語](README_ja.md)
-</div>
+</p>
 
 **Focalors_Poisson** is a high-performance Poisson equation solver designed for composite geometries. It is based on the Fast Fourier Transform (FFT) and Domain Decomposition Method, aiming to deliver extreme computational speed.
 

@@ -1,14 +1,29 @@
-# Focalors
+<p align="center">
+  <img src="Focalors_logo.png" alt="Focalors Logo" width="250"/>
+</p>
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
-[![CMake](https://img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
+  # Focalors_Poisson
 
-[中文](README.md)|English|[日本語](README_ja.md)
+
+  High-Performance Poisson Solver Based on FFT-based Domain Decomposition Algorithm
+</div>
+
+<div align="center">
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
+  [![CMake](https://img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
+
+  [中文](./README.md)&nbsp;&nbsp;|&nbsp;&nbsp;English&nbsp;&nbsp;|&nbsp;&nbsp;[日本語](./README_ja.md)
+
+</div>
+
+---
 
 **Focalors_Poisson** is a high-performance Poisson equation solver designed for composite geometries. It is based on the Fast Fourier Transform (FFT) and Domain Decomposition Method, aiming to deliver extreme computational speed.
 
-This project serves as the Poisson module developed for the (work-in-progress) incompressible Navier-Stokes solver `Focalors`, but it can also operate as a fully functional, stand-alone Poisson equation solver.
+This project serves as the Poisson module developed for the (work-in-progress) incompressible Navier-Stokes solver [Focalors](https://github.com/ffskibkwi/Focalors), but it can also operate as a fully functional, stand-alone Poisson equation solver.
 
 ---
 

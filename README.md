@@ -1,16 +1,28 @@
-# Focalors_Poisson
+<p align="center">
+  <img src="Focalors_logo.png" alt="Focalors Logo" width="250"/>
+</p>
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
-[![CMake](https://img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
+  # Focalors_Poisson
 
-中文|[English](README_en.md)|[日本語](README_ja.md)
+  基于FFT区域分解算法的高性能Poisson求解器
+</div>
 
-**Focalors_Poisson** 是为拼接几何设计的高性能Poisson方程求解器。它基于快速傅里叶变换（FFT）和区域分解算法（Domain Decomposition Method），旨在提供极致的计算速度。
+<div align="center">
 
-本项目是为（开发中的）不可压缩 Navier-Stokes 求解器 `Focalors` 开发的 Poisson 模块，但它也可以作为一个功能完整、完全独立的Poisson方程求解器运行。
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)](https://isocpp.org/)
+  [![CMake](https://img.shields.io/badge/Build-CMake-green.svg)](https://cmake.org/)
+
+  中文&nbsp;&nbsp;|&nbsp;&nbsp;[English](./README_en.md)&nbsp;&nbsp;|&nbsp;&nbsp;[日本語](./README_ja.md)
+
+</div>
 
 ---
+
+**Focalors_Poisson** 是为拼接几何问题设计的高性能Poisson方程求解器。它基于快速傅里叶变换（FFT）和区域分解算法（Domain Decomposition Method），旨在提供最快的计算速度。
+
+本项目是为（开发中的）不可压缩 Navier-Stokes 求解器 [Focalors](https://github.com/ffskibkwi/Focalors) 开发的 Poisson 模块，但它也可以作为一个功能完整、完全独立的Poisson方程求解器运行。
 
 ## 核心理念
 

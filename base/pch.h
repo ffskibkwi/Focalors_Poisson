@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/base/field2.h"
-#include "core/base/field3.h"
-#include "core/parallel/omp/enable_openmp.h"
+#include "base/field/field2.h"
+#include "base/field/field3.h"
+#include "base/parallel/omp/enable_openmp.h"
 
 #include <cmath>
 #include <iostream>

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "pch.h"
+#include "base/pch.h"
 
-#include "core/base/location_boundary.h"
-#include "core/parallel/mpi/mpi_misc.h"
+#include "base/location_boundary.h"
+#include "base/parallel/mpi/mpi_misc.h"
 
 #include "chasing_method_base.h"
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "pch.h"
+#include "base/pch.h"
 
 #include "chasing_method_3d.hpp"
-#include "core/base/location_boundary.h"
-#include "core/mesh_profile/mesh_profile_3d_uniform.h"
+#include "base/location_boundary.h"
+#include "base/mesh_profile/mesh_profile_3d_uniform.h"
 #include "poisson_fft_3d.hpp"
 #include "poisson_solver_interface.h"
 

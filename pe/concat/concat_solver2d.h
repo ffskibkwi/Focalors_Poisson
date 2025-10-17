@@ -1,11 +1,11 @@
 #pragma once
 
-#include "pch.h"
-#include "core/base/location_boundary.h"
-#include "core/domain/domain2d.h"
-#include "core/domain/geometry2d.h"
-#include "core/domain/variable.h"
-#include "core/domain/geometry_tree.hpp"
+#include "base/pch.h"
+#include "base/location_boundary.h"
+#include "base/domain/domain2d.h"
+#include "base/domain/geometry2d.h"
+#include "base/domain/variable.h"
+#include "base/domain/geometry_tree.hpp"
 
 #include "domain_solver.h"
 #include "pe/poisson/poisson_solver2d.h"

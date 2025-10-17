@@ -18,5 +18,43 @@ endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_subdirectory(solver)
+# ---------------------- Solver library (moved from solver/CMakeLists.txt) ----------------------
+file(GLOB_RECURSE SOLVER_HEADER_FILES
+    "${CMAKE_SOURCE_DIR}/base/*.h" "${CMAKE_SOURCE_DIR}/base/*.hpp"
+    "${CMAKE_SOURCE_DIR}/io/*.h"   "${CMAKE_SOURCE_DIR}/io/*.hpp"
+    "${CMAKE_SOURCE_DIR}/pe/*.h"   "${CMAKE_SOURCE_DIR}/pe/*.hpp"
+)
+file(GLOB_RECURSE SOLVER_SOURCE_FILES
+    "${CMAKE_SOURCE_DIR}/base/*.cpp"
+    "${CMAKE_SOURCE_DIR}/io/*.cpp"
+    "${CMAKE_SOURCE_DIR}/pe/*.cpp"
+)
+
+add_library(Solver ${SOLVER_SOURCE_FILES} ${SOLVER_HEADER_FILES})
+target_include_directories(Solver PUBLIC ${CMAKE_SOURCE_DIR})
+target_precompile_headers(Solver PUBLIC base/pch.h)
+
+# Avoid following error:
+# Policy CMP0074 is not set: find_package uses <PackageName>_ROOT variables.
+cmake_policy(SET CMP0074 NEW)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+find_package(FFTW REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(MPI) # MPI_C may not found, so don't use REQUIRED
+
+target_include_directories(Solver PUBLIC
+    ${FFTW_INCLUDE_DIRS}
+    ${MPI_CXX_INCLUDE_DIRS})
+target_link_libraries(Solver PUBLIC
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.14>>:stdc++fs>
+)
+target_link_libraries(Solver PUBLIC
+    ${FFTW_LIBRARIES}
+    OpenMP::OpenMP_CXX
+    MPI::MPI_CXX)
+
+# ------------------------------------------------------------------------------------------------
+
 add_subdirectory(case)

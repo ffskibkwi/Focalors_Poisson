@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include "geometry2d.h"
 #include "domain2d.h"
-#include "core/base/field2.h"
+#include "base/field/field2.h"
 
 class Variable
 {

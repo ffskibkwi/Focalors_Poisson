@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
-#include "core/base/location_boundary.h"
+#include "base/location_boundary.h"
 #include "domain2d.h"
 #include "geometry_tree.hpp"
 

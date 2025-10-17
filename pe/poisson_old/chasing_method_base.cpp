@@ -1,5 +1,5 @@
 #include "chasing_method_base.h"
-#include "core/base/location_boundary.h"
+#include "base/location_boundary.h"
 
 /**
  * @brief The standard chasing method for tridiagonal equations without precomputation.

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
+#include "base/pch.h"
 
-#include "core/base/location_boundary.h"
+#include "base/location_boundary.h"
 #include "fftw3.h"
 
 class PoissonFFT2D

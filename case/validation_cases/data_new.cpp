@@ -1,10 +1,10 @@
-#include "core/domain/geometry2d.h"
-#include "core/domain/domain2d.h"
-#include "core/domain/variable.h"
-#include "core/base/field2.h"
-#include "core/domain/geometry_tree.hpp"
+#include "base/domain/geometry2d.h"
+#include "base/domain/domain2d.h"
+#include "base/domain/variable.h"
+#include "base/field/field2.h"
+#include "base/domain/geometry_tree.hpp"
 
-#include "core/base/location_boundary.h"
+#include "base/location_boundary.h"
 
 // #include "pe/concat/concat_solver2d.h" // 未在此测试中使用，避免引入外部依赖
 

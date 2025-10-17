@@ -6,8 +6,8 @@
 #include <unordered_set>
 #include <queue>
 #include <cstdint>
-#include "core/base/location_boundary.h"
-#include "core/domain/domain2d.h"
+#include "base/location_boundary.h"
+#include "base/domain/domain2d.h"
 
 namespace TreeUtils {
     template <typename DomainT>

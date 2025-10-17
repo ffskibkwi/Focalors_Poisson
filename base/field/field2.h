@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "core/base/location_boundary.h"
+#include "base/location_boundary.h"
 
 class field2
 {

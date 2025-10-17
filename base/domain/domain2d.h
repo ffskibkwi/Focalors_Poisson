@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
-#include "core/base/location_boundary.h"
-#include "core/mesh_profile/mesh_profile_2d_base.h"
+#include "base/pch.h"
+#include "base/location_boundary.h"
+#include "base/mesh_profile/mesh_profile_2d_base.h"
 #include <stdexcept>
 
 class Geometry2D;

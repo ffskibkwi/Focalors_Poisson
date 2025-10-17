@@ -1,9 +1,9 @@
 #pragma once
 
-#include "pch.h"
+#include "base/pch.h"
 
 #include "domain_solver.h"
-#include "core/domain/domain2d.h"
+#include "base/domain/domain2d.h"
 
 class Schur_mat
 {

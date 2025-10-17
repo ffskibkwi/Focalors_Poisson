@@ -6,8 +6,8 @@
 #include <queue>
 #include <cstdint>
 #include <iostream>
-#include "core/base/location_boundary.h"
-#include "core/domain/domain2d.h"
+#include "base/location_boundary.h"
+#include "base/domain/domain2d.h"
 
 // Currently the main project uses 2D, but the tree structure and building algorithm are independent of dimension.
 //DomainT = Domain2DUniform / (Domain2DNonuniform) / Domain3DUniform / (Domain3DNonuniform)

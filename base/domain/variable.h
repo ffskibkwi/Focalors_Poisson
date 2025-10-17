@@ -20,4 +20,6 @@ public:
     void set_geometry(Geometry2D& g);
 
     void set_center_field(Domain2DUniform& s, field2& f);
+    void set_x_edge_field(Domain2DUniform& s, field2& f);
+    void set_y_edge_field(Domain2DUniform& s, field2& f);
 };

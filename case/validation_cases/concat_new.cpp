@@ -81,12 +81,12 @@ int main(int argc, char* argv[])
     Variable v("v");
     v.set_geometry(geo_tee);
     field2 v_T1("v_T1"), v_T2("v_T2"), v_T3("v_T3"), v_T4("v_T4"), v_T5("v_T5"), v_T6("v_T6");
-    v.set_center_field(T1, v_T1);
-    v.set_center_field(T2, v_T2);
-    v.set_center_field(T3, v_T3);
-    v.set_center_field(T4, v_T4);
-    v.set_center_field(T5, v_T5);
-    v.set_center_field(T6, v_T6);
+    v.set_center_field(&T1, v_T1);
+    v.set_center_field(&T2, v_T2);
+    v.set_center_field(&T3, v_T3);
+    v.set_center_field(&T4, v_T4);
+    v.set_center_field(&T5, v_T5);
+    v.set_center_field(&T6, v_T6);
 
     for (int i = 3; i < v_T4.get_nx() - 3; i++)
     {

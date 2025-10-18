@@ -62,3 +62,11 @@ enum class ParticleBoundaryType : std::uint8_t
     Deposition,
     Periodic
 };
+
+enum class VariableLocationType : std::uint8_t
+{
+    Center,
+    XEdge,
+    YEdge,
+    Null
+};

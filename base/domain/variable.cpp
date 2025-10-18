@@ -15,6 +15,22 @@ void Variable::set_geometry(Geometry2D& g)
 }
 
 /**
+ * @brief Check geometry (before set fields)
+ * @throws std::runtime_error If geometry is not set, domain is not part of the geometry,
+ *         or the domain mesh size is invalid.
+ */
+void Variable::check_geometry(Domain2DUniform* s)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable has no geometry set");
+    if (s->parent != geometry)
+        throw std::runtime_error("Domain not found in geometry");
+    if (s->nx <= 0 || s->ny <= 0)
+        throw std::runtime_error("Domain mesh size invalid");
+}
+
+
+/**
  * @brief Initialize a field and bind it to a domain within the attached geometry.
  * @param s Domain to which the field belongs.
  * @param f Field storage to initialize and register.
@@ -23,21 +39,59 @@ void Variable::set_geometry(Geometry2D& g)
  *
  * If the field name is "Default", it will be initialized with the name "variable".
  */
-void Variable::set_center_field(Domain2DUniform& s, field2& f)
+void Variable::set_center_field(Domain2DUniform* s, field2& f)
 {
-    if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
-    if (s.parent != geometry)
-        throw std::runtime_error("Domain not found in geometry");
-    if (s.nx <= 0 || s.ny <= 0)
-        throw std::runtime_error("Domain mesh size invalid");
+    check_geometry(s);
 
     if (f.get_name() == "Default")
-        f.init(s.nx, s.ny, name + "_" + s.name);
+        f.init(s->nx, s->ny, name + "_" + s->name);
     else
-        f.init(s.nx, s.ny);
+        f.init(s->nx, s->ny);
 
-    field_map[&s] = &f;
+    field_map[s] = &f;
+
+    //Center variable only need left and down buffer
+    buffer_map[s][LocationType::Left] = new field2(1, s->ny, name + "_" + s->name + "_left");
+    buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
+
+    location_type = VariableLocationType::Center;
 }
 
+void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
+{
+    check_geometry(s);
+
+    if (f.get_name() == "Default")
+        f.init(s->nx, s->ny, name + "_" + s->name);
+    else
+        f.init(s->nx, s->ny);
+
+    field_map[s] = &f;
+
+    buffer_map[s][LocationType::Left] = new field2(1, s->ny, name + "_" + s->name + "_left");
+    buffer_map[s][LocationType::Right] = new field2(1, s->ny, name + "_" + s->name + "_right");
+    buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
+    buffer_map[s][LocationType::Up] = new field2(s->nx, 1, name + "_" + s->name + "_up");
+
+    location_type = VariableLocationType::XEdge;
+}
+
+void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
+{
+    check_geometry(s);
+
+    if (f.get_name() == "Default")
+        f.init(s->nx, s->ny, name + "_" + s->name);
+    else
+        f.init(s->nx, s->ny);
+
+    field_map[s] = &f;
+
+    buffer_map[s][LocationType::Left] = new field2(1, s->ny, name + "_" + s->name + "_left");
+    buffer_map[s][LocationType::Right] = new field2(1, s->ny, name + "_" + s->name + "_right");
+    buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
+    buffer_map[s][LocationType::Up] = new field2(s->nx, 1, name + "_" + s->name + "_up");
+
+    location_type = VariableLocationType::YEdge;
+}
 

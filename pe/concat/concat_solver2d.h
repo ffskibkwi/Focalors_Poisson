@@ -15,16 +15,17 @@
 #include <vector>
 #include <unordered_map>
 
-class ConcatSolver2D
+class ConcatPoissonSolver2D
 {
     //Simple: Only for single main domain geometry
 public:
-    Variable& variable;
+    Variable* variable = nullptr;
     
-    ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_config = nullptr);
-    ~ConcatSolver2D();
+    ConcatPoissonSolver2D(Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ~ConcatPoissonSolver2D();
 
     // void init();
+    void set_parameter(int in_m, double in_tol, int in_maxIter);
     void solve();
 
 private:

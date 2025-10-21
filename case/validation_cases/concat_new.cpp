@@ -9,7 +9,7 @@
 #include "pe/concat/concat_solver2d.h"
 
 #include "io/csv_writer_2d.h"
-#include "io/env_config.h"
+#include "io/config.h"
 
 int main(int argc, char* argv[])
 {
@@ -26,26 +26,7 @@ int main(int argc, char* argv[])
     Domain2DUniform T5("T5"); T5.set_ny(20); T5.set_ly(2.0);
     Domain2DUniform T6("T6"); T6.set_nx(30); T6.set_lx(3.0);
 
-    // Set boundary
-    T2.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-
-    T1.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    T1.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    T1.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    T3.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-    T3.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    T3.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    T4.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    T4.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-
-    T5.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    T5.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    T6.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-    T6.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    T6.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+    // 边界条件将绑定在 Variable 上
 
     // Construct geometry
     geo_tee.add_domain(T1);
@@ -88,6 +69,27 @@ int main(int argc, char* argv[])
     v.set_center_field(&T5, v_T5);
     v.set_center_field(&T6, v_T6);
 
+    // 变量层面的边界条件设置
+    v.set_boundary_type(&T2, LocationType::Up,    PDEBoundaryType::Dirichlet);
+
+    v.set_boundary_type(&T1, LocationType::Left,  PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T1, LocationType::Up,    PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T1, LocationType::Down,  PDEBoundaryType::Dirichlet);
+
+    v.set_boundary_type(&T3, LocationType::Right, PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T3, LocationType::Up,    PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T3, LocationType::Down,  PDEBoundaryType::Dirichlet);
+
+    v.set_boundary_type(&T4, LocationType::Left,  PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T4, LocationType::Right, PDEBoundaryType::Dirichlet);
+
+    v.set_boundary_type(&T5, LocationType::Left,  PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T5, LocationType::Down,  PDEBoundaryType::Dirichlet);
+
+    v.set_boundary_type(&T6, LocationType::Right, PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T6, LocationType::Up,    PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(&T6, LocationType::Down,  PDEBoundaryType::Dirichlet);
+
     for (int i = 3; i < v_T4.get_nx() - 3; i++)
     {
         for (int j = 3; j < v_T4.get_ny() - 3; j++)
@@ -96,8 +98,7 @@ int main(int argc, char* argv[])
         }
     }
 
-
-    ConcatSolver2D solver(v, env_config);
+    ConcatPoissonSolver2D solver(v, env_config);
     solver.solve();
 
     IO::field_to_csv(v_T1, "result/v_T1.txt");

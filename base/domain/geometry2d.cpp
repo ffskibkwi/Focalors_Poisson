@@ -40,9 +40,7 @@ void Geometry2D::connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& 
     adjacency[&a][dir] = &b;
     adjacency[&b][opposite(dir)] = &a;
 
-    //Set the boundary of the two domains
-    a.set_boundary(dir, PDEBoundaryType::Dirichlet);
-    b.set_boundary(opposite(dir), PDEBoundaryType::Dirichlet);
+    // 不再在几何层面设置边界类型，边界类型应绑定在 Variable 上
 
     //Set the size
     //In  this function, b is decided by a
@@ -66,11 +64,10 @@ void Geometry2D::check()
 {
     for (auto* s : domains)
     {
-        //Check the domain profile and boundary
+        //Check the domain profile
         if (!s->check_profile())
             throw std::runtime_error("Domain " + s->name + " has invalid profile");
-        if (!s->check_boundary())
-            throw std::runtime_error("Domain " + s->name + " has invalid boundary");
+        // 不再在几何层面校验边界类型（边界由 Variable 管理）
         // Deprecated: single main domain detection is removed in favor of tree-based analysis
     }
 
@@ -90,7 +87,8 @@ void Geometry2D::solve_prepare()
         throw std::runtime_error("Geometry2D is not checked");
 
     //Build the geometry tree, for later use
-    build_tree();
+    if (!is_prepared)
+        build_tree();
 }
 bool Geometry2D::is_single_connected() const
 {
@@ -140,6 +138,8 @@ void Geometry2D::build_tree()
     tree_root = TreeUtils::findOptimalRoot(adjacency);
     tree_map = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
     parent_map = TreeUtils::buildParentMapFromTree(tree_map);
+
+    is_prepared = true;
 }
 
 

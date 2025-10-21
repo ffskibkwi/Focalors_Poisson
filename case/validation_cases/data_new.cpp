@@ -72,27 +72,7 @@ int main(int argc, char* argv[])
     geo.connect(A, LocationType::Right, D);
     geo.connect(A, LocationType::Down,  E);
 
-    // 设置各域其余边界条件（连接的那一侧在 connect 中已设为 Dirichlet）
-    A.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    A.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-    A.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    A.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    B.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    B.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    B.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    C.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    C.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    C.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-
-    D.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-    D.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    D.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-    E.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-    E.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-    E.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+    // 旧逻辑移除：边界条件不再设置在 Domain 上
 
     // 1) 单连通性与主域检查
     try {
@@ -140,16 +120,7 @@ int main(int argc, char* argv[])
         geo_disconnected.add_domain(Z);
         geo_disconnected.connect(X, LocationType::Right, Y);
 
-        X.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        X.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        X.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        Y.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        Y.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        Y.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        Z.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        Z.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-        Z.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        Z.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+        // 旧逻辑移除
 
         try {
             geo_disconnected.check();
@@ -177,16 +148,7 @@ int main(int argc, char* argv[])
         geo_multi_main.connect(Q, LocationType::Right, R);
         geo_multi_main.connect(R, LocationType::Right, S);
 
-        P.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        P.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        P.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        Q.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        Q.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        R.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        R.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        S.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-        S.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        S.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+        // 旧逻辑移除
 
         try {
             geo_multi_main.check();
@@ -197,7 +159,7 @@ int main(int argc, char* argv[])
     }
 
     // 可选：后续联立求解
-    // ConcatSolver2D solver(p);
+    // ConcatPoissonSolver2D solver(p);
     // solver.solve();
 
     // case1：检查可能有多 root 候选（路径 1-2-3-4-5-6，理论中心为 3 与 4）
@@ -224,23 +186,7 @@ int main(int argc, char* argv[])
         geo_line.connect(L4, LocationType::Right, L5);
         geo_line.connect(L5, LocationType::Right, L6);
 
-        // 设置未连接侧的边界
-        L1.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        L1.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L1.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-        L2.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L2.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        L3.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L3.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        L4.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L4.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-        L5.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L5.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-        L6.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-        L6.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        L6.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+        // 旧逻辑移除
 
         try {
             geo_line.check();
@@ -281,26 +227,7 @@ int main(int argc, char* argv[])
         // 横向 5-6
         geo_tee.connect(T5, LocationType::Right, T6);
 
-        // 设置未连接侧的边界
-        T2.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-
-        T1.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        T1.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        T1.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-        T3.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-        T3.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        T3.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-        T4.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        T4.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-
-        T5.set_boundary(LocationType::Left,  PDEBoundaryType::Dirichlet);
-        T5.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
-
-        T6.set_boundary(LocationType::Right, PDEBoundaryType::Dirichlet);
-        T6.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-        T6.set_boundary(LocationType::Down,  PDEBoundaryType::Dirichlet);
+        // 旧逻辑移除
 
         try {
             geo_tee.check();

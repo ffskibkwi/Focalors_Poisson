@@ -14,23 +14,42 @@ PoissonSolver2D::PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_h
     init();
 }
 
-PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, EnvironmentConfig* in_env_config)
+PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config)
     : nx(in_domain->nx), 
     ny(in_domain->ny), 
     hx(in_domain->hx), 
-    hy(in_domain->hy), 
-    BoundaryTypeXNegative(in_domain->BoundaryTypeXNegative), 
-    BoundaryTypeXPositive(in_domain->BoundaryTypeXPositive), 
-    BoundaryTypeYNegative(in_domain->BoundaryTypeYNegative), 
-    BoundaryTypeYPositive(in_domain->BoundaryTypeYPositive)
+    hy(in_domain->hy)
 {
     env_config = in_env_config;
+    // 新逻辑：必须从 Variable 的 boundary_type_map 读取边界；禁止回退到 Domain
+    if (in_variable == nullptr)
+        throw std::runtime_error("PoissonSolver2D requires Variable with boundary_type_map; do not use Domain boundary");
+
+    auto domIt = in_variable->boundary_type_map.find(in_domain);
+    if (domIt == in_variable->boundary_type_map.end())
+        throw std::runtime_error("Variable has no boundary map for domain " + in_domain->name);
+
+    const auto &mp = domIt->second;
+    auto get_required = [&](LocationType loc){
+        auto it = mp.find(loc);
+        if (it == mp.end() || it->second == PDEBoundaryType::Null)
+            throw std::runtime_error("Boundary type missing for domain " + in_domain->name);
+        return it->second;
+    };
+
+    BoundaryTypeXNegative = get_required(LocationType::Left);
+    BoundaryTypeXPositive = get_required(LocationType::Right);
+    BoundaryTypeYNegative = get_required(LocationType::Down);
+    BoundaryTypeYPositive = get_required(LocationType::Up);
+
     init();
 }
 
 void PoissonSolver2D::init()
 {
     buffer.init(nx, ny, "buffer");    //Here init a new field for buffer, but it can be replaced by another existed buffer field
+
+    auto isDirLike = [](PDEBoundaryType t){ return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented; };
 
     if (BoundaryTypeYNegative == PDEBoundaryType::Periodic && BoundaryTypeYPositive == PDEBoundaryType::Periodic)
     {
@@ -40,12 +59,12 @@ void PoissonSolver2D::init()
     {
         poisson_fft_y = new PoissonFFT2D_NN();
     }
-    else if (BoundaryTypeYNegative == PDEBoundaryType::Dirichlet && BoundaryTypeYPositive == PDEBoundaryType::Dirichlet)
+    else if (isDirLike(BoundaryTypeYNegative) && isDirLike(BoundaryTypeYPositive))
     {
         poisson_fft_y = new PoissonFFT2D_DD();
     }
-    else if ((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
-        (BoundaryTypeYNegative == PDEBoundaryType::Neumann && BoundaryTypeYPositive == PDEBoundaryType::Dirichlet))
+    else if ((isDirLike(BoundaryTypeYNegative) && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
+        (BoundaryTypeYNegative == PDEBoundaryType::Neumann && isDirLike(BoundaryTypeYPositive)))
     {
         poisson_fft_y = new PoissonFFT2D_DN();
     }
@@ -63,9 +82,8 @@ void PoissonSolver2D::init()
     }
     delete[] lambda_y;
 
-    bool is_no_Dirichlet =
-        (BoundaryTypeXNegative != PDEBoundaryType::Dirichlet && BoundaryTypeXPositive != PDEBoundaryType::Dirichlet &&
-            BoundaryTypeYNegative != PDEBoundaryType::Dirichlet && BoundaryTypeYPositive != PDEBoundaryType::Dirichlet);
+    bool is_no_Dirichlet = !(isDirLike(BoundaryTypeXNegative) || isDirLike(BoundaryTypeXPositive) ||
+            isDirLike(BoundaryTypeYNegative) || isDirLike(BoundaryTypeYPositive));
     bool has_last_vector = true;
 
     chasing_method_x = new ChasingMethod2D();
@@ -115,13 +133,13 @@ void PoissonSolver2D::cal_lambda()  //The current version is only for OpenMP
         {
         lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / ny * i);
         }
-        else if (BoundaryTypeYNegative == PDEBoundaryType::Dirichlet &&
-            BoundaryTypeYPositive == PDEBoundaryType::Dirichlet) // D-D
+        else if ((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet || BoundaryTypeYNegative == PDEBoundaryType::Adjacented) &&
+            (BoundaryTypeYPositive == PDEBoundaryType::Dirichlet || BoundaryTypeYPositive == PDEBoundaryType::Adjacented)) // D/Adj - D/Adj
         {
         lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / (ny + 1) * i);
         }
-        else if ((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
-            (BoundaryTypeYNegative == PDEBoundaryType::Neumann && BoundaryTypeYPositive == PDEBoundaryType::Dirichlet)) // D-N or N-D
+        else if (((BoundaryTypeYNegative == PDEBoundaryType::Dirichlet || BoundaryTypeYNegative == PDEBoundaryType::Adjacented) && BoundaryTypeYPositive == PDEBoundaryType::Neumann) ||
+            (BoundaryTypeYNegative == PDEBoundaryType::Neumann && (BoundaryTypeYPositive == PDEBoundaryType::Dirichlet || BoundaryTypeYPositive == PDEBoundaryType::Adjacented))) // (D/Adj)-N or N-(D/Adj)
         {
         lambda_y[i - 1] = -2.0 + 2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
         }

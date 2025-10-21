@@ -1,6 +1,13 @@
 #include "concat_solver2d.h"
 
-ConcatSolver2D::ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_config)
+void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
+{
+    m = in_m;
+    tol = in_tol;
+    maxIter = in_maxIter;
+}
+
+ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable* in_variable, EnvironmentConfig* in_env_config)
     : variable(in_variable)
     , env_config(in_env_config)
 {
@@ -11,17 +18,17 @@ ConcatSolver2D::ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_
     }
 
     // geometry double check
-    if (variable.geometry == nullptr)
-        throw std::runtime_error("ConcatSolver2D: variable.geometry is null");
-    if (!variable.geometry->is_checked)
-        variable.geometry->check();
-    if (variable.geometry->tree_root == nullptr || variable.geometry->tree_map.empty())
-        variable.geometry->solve_prepare();
+    if (variable->geometry == nullptr)
+        throw std::runtime_error("ConcatPoissonSolver2D: variable->geometry is null");
+    if (!variable->geometry->is_checked)
+        variable->geometry->check();
+    if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
+        variable->geometry->solve_prepare();
 
-    tree_root = variable.geometry->tree_root;
-    tree_map  = variable.geometry->tree_map;
-    parent_map= variable.geometry->parent_map;
-    field_map = variable.field_map;
+    tree_root = variable->geometry->tree_root;
+    tree_map  = variable->geometry->tree_map;
+    parent_map= variable->geometry->parent_map;
+    field_map = variable->field_map;
 
     specify_solve_order();
     construct_solver_map();
@@ -34,7 +41,7 @@ ConcatSolver2D::ConcatSolver2D(Variable &in_variable, EnvironmentConfig* in_env_
     }
 }
 
-ConcatSolver2D::~ConcatSolver2D()
+ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 {
     for (auto &[domain, temp_field] : temp_fields)
         delete temp_field;
@@ -42,7 +49,7 @@ ConcatSolver2D::~ConcatSolver2D()
         delete solver_map[domain];
 }
 
-void ConcatSolver2D::specify_solve_order()
+void ConcatPoissonSolver2D::specify_solve_order()
 {
     // Solve order arrangement
     std::queue<Domain2DUniform*> q;
@@ -61,35 +68,35 @@ void ConcatSolver2D::specify_solve_order()
     }
 }
 
-void ConcatSolver2D::construct_solver_map()
+void ConcatPoissonSolver2D::construct_solver_map()
 {
     //Construct solvers (for non-root domains)
     for (auto &domain : solve_order)
     {
         if (tree_map[domain].size() > 0)
         {
-            solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter, env_config);
+            solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
             static_cast<GMRESSolver2D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map); //Here use RTTI
         }    
         else
         {
-            solver_map[domain] = new PoissonSolver2D(domain, env_config);
+            solver_map[domain] = new PoissonSolver2D(domain, variable, env_config);
         } 
     }
 
     //Construct solver for root domain
     if (tree_map[tree_root].size() > 0)
     {
-        solver_map[tree_root] = new GMRESSolver2D(tree_root, m, tol, maxIter, env_config);
+        solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
         static_cast<GMRESSolver2D*>(solver_map[tree_root])->schur_mat_construct(tree_map[tree_root], solver_map); //Here use RTTI
     }    
     else
     {
-        solver_map[tree_root] = new PoissonSolver2D(tree_root, env_config);
+        solver_map[tree_root] = new PoissonSolver2D(tree_root, variable, env_config);
     } 
 }
 
-void ConcatSolver2D::solve()
+void ConcatPoissonSolver2D::solve()
 {
     //Righthand construction
     for (auto &domain : solve_order)

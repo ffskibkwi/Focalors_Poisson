@@ -8,10 +8,7 @@
 int main(int argc, char* argv[])
 {
     Domain2DUniform Omega(20, 20, 1.0, 1.0, "Omega");
-    Omega.set_boundary(LocationType::Up,    PDEBoundaryType::Dirichlet);
-    Omega.set_boundary(LocationType::Down,    PDEBoundaryType::Dirichlet);
-    Omega.set_boundary(LocationType::Left,    PDEBoundaryType::Dirichlet);
-    Omega.set_boundary(LocationType::Right,    PDEBoundaryType::Dirichlet);
+    // 旧逻辑移除：边界条件不再设置在 Domain 上
 
     field2 Omega_field;
     Omega.construct_field(Omega_field);

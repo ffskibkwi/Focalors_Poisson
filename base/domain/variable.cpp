@@ -12,6 +12,16 @@ Variable::Variable(const std::string& in_name)
 void Variable::set_geometry(Geometry2D& g)
 {
     geometry = &g;
+    // 基于几何邻接关系，预置所有拼接面的边界为 Adjacented
+    for (auto &domainAdjPair : geometry->adjacency)
+    {
+        Domain2DUniform* domain = domainAdjPair.first;
+        for (auto &locToNeighbor : domainAdjPair.second)
+        {
+            LocationType loc = locToNeighbor.first;
+            boundary_type_map[domain][loc] = PDEBoundaryType::Adjacented;
+        }
+    }
 }
 
 /**
@@ -54,7 +64,7 @@ void Variable::set_center_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Left] = new field2(1, s->ny, name + "_" + s->name + "_left");
     buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
 
-    location_type = VariableLocationType::Center;
+    position_type = VariablePositionType::Center;
 }
 
 void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
@@ -73,7 +83,7 @@ void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
     buffer_map[s][LocationType::Up] = new field2(s->nx, 1, name + "_" + s->name + "_up");
 
-    location_type = VariableLocationType::XEdge;
+    position_type = VariablePositionType::XEdge;
 }
 
 void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
@@ -92,6 +102,27 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down] = new field2(s->nx, 1, name + "_" + s->name + "_down");
     buffer_map[s][LocationType::Up] = new field2(s->nx, 1, name + "_" + s->name + "_up");
 
-    location_type = VariableLocationType::YEdge;
+    position_type = VariablePositionType::YEdge;
+}
+
+void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
+{
+    check_geometry(s);
+    // 若该侧为几何邻接面，则仅允许设置为 Adjacented
+    if (geometry && geometry->adjacency.count(s) && geometry->adjacency[s].count(loc))
+    {
+        if (type != PDEBoundaryType::Adjacented)
+            throw std::runtime_error("Attempt to override an adjacented face with non-Adjacented boundary on domain " + s->name);
+        boundary_type_map[s][loc] = PDEBoundaryType::Adjacented;
+        return;
+    }
+
+    // 若该侧已被设置为 Adjacented，则不允许再改为其他类型
+    if (boundary_type_map[s].count(loc) && boundary_type_map[s][loc] == PDEBoundaryType::Adjacented && type != PDEBoundaryType::Adjacented)
+    {
+        throw std::runtime_error("Attempt to change previously Adjacented boundary to another type on domain " + s->name);
+    }
+
+    boundary_type_map[s][loc] = type;
 }
 

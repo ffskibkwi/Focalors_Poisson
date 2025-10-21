@@ -4,11 +4,13 @@
 #include <iostream>
 
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform*              in_domain,
+                             Variable*                     in_variable,
                              int                           in_m,
                              double                        in_tol,
                              int                           in_maxIter,
                              EnvironmentConfig*            in_env_config)
     : domain(in_domain)
+    , variable(in_variable)
     , m(in_m)
     , tol(in_tol)
     , maxIter(in_maxIter)
@@ -23,7 +25,7 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*              in_domain,
     int nx = domain->nx;
     int ny = domain->ny;
 
-    pe_solver = new PoissonSolver2D(domain, &inner_env_config);
+    pe_solver = new PoissonSolver2D(domain, variable, &inner_env_config);
 
     x_buf.init(nx, ny);
     r_buf.init(nx, ny);

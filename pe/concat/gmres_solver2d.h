@@ -11,12 +11,13 @@
 #include "Schur_mat.h"
 #include "pe/poisson/poisson_solver2d.h"
 #include <unordered_map>
-#include "io/env_config.h"
+#include "io/config.h"
 
 class GMRESSolver2D : public DomainSolver2D
 {
 public:
     GMRESSolver2D(Domain2DUniform*              in_domain,
+                  Variable*                     in_variable,
                   int                           in_m,
                   double                        in_tol,
                   int                           in_maxIter,
@@ -36,6 +37,7 @@ public:
 private:
     // 成员参数（原 gmres 的未指定入参）：
     Domain2DUniform*              domain;
+    Variable*                     variable = nullptr;
     std::vector<Schur_mat*>       S_params;
     int                           m = 0;
     double                        tol = 0.0;

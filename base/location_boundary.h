@@ -44,6 +44,7 @@ enum class PDEBoundaryType : std::uint8_t
     Dirichlet,
     Neumann,
     Periodic,
+    Adjacented,
     Null        //Default boundary type
 };
 
@@ -63,7 +64,7 @@ enum class ParticleBoundaryType : std::uint8_t
     Periodic
 };
 
-enum class VariableLocationType : std::uint8_t
+enum class VariablePositionType : std::uint8_t
 {
     Center,
     XEdge,

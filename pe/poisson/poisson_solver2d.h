@@ -2,20 +2,28 @@
 
 #include "base/pch.h"
 
-#include "base/location_boundary.h"
 #include "base/domain/domain2d.h"
-#include "poisson_fft2d.h"
-#include "chasing_method2d.h"
-#include "pe/concat/domain_solver.h"
-#include "io/config.h"
 #include "base/domain/variable.h"
+#include "base/location_boundary.h"
+#include "chasing_method2d.h"
+#include "io/config.h"
+#include "pe/concat/domain_solver.h"
+#include "poisson_fft2d.h"
 
 class PoissonSolver2D : public DomainSolver2D
 {
 public:
     PoissonSolver2D() {};
 
-    PoissonSolver2D(int in_nx, int in_ny, double in_hx, double in_hy, PDEBoundaryType in_boundary_type_left, PDEBoundaryType in_boundary_type_right, PDEBoundaryType in_boundary_type_down, PDEBoundaryType in_boundary_type_up, EnvironmentConfig* in_env_config = nullptr);
+    PoissonSolver2D(int                in_nx,
+                    int                in_ny,
+                    double             in_hx,
+                    double             in_hy,
+                    PDEBoundaryType    in_boundary_type_left,
+                    PDEBoundaryType    in_boundary_type_right,
+                    PDEBoundaryType    in_boundary_type_down,
+                    PDEBoundaryType    in_boundary_type_up,
+                    EnvironmentConfig* in_env_config = nullptr);
     PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~PoissonSolver2D();
 
@@ -42,5 +50,5 @@ private:
     ChasingMethod2D* chasing_method_x;
 
     void cal_lambda();
-    void boundary_assembly();
+    void boundary_assembly(field2& f);
 };

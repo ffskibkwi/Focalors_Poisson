@@ -50,4 +50,6 @@ private:
 
     EnvironmentConfig* env_config;
     bool showGmresRes = false;
+
+    void set_boundary();
 };

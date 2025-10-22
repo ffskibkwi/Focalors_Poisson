@@ -10,13 +10,14 @@ class Variable
 {
 public:
     std::string  name;
-    Geometry2D* geometry = nullptr;
+    Geometry2D*  geometry = nullptr;
     std::unordered_map<Domain2DUniform*, field2*> field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>> buffer_map;
     std::unordered_map<Domain2DUniform*, double> left_up_corner_map;    //Only for v
     std::unordered_map<Domain2DUniform*, double> right_down_corner_map; //Only for u
 
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
+    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, bool>> has_boundary_value_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>> boundary_value_map;
 
     Variable() = default;
@@ -35,7 +36,7 @@ public:
 
     void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
 
-    void set_boundary_value(Domain2DUniform* s, LocationType loc, double constant_value);
+    void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
     // void set_boundary_value(Domain2DUniform* s, LocationType loc, double* value);
 
     // void set_boundary_func_local(Domain2DUniform* s, LocationType loc, double* value);

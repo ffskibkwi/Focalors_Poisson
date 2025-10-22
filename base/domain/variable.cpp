@@ -126,3 +126,21 @@ void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBounda
     boundary_type_map[s][loc] = type;
 }
 
+void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
+{
+    check_geometry(s);
+    has_boundary_value_map[s][loc] = true;
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        boundary_value_map[s][loc] = new double[s->ny];
+        for (int j = 0; j < s->ny; j++)
+            boundary_value_map[s][loc][j] = in_value;
+    }
+    else if (loc == LocationType::Down || loc == LocationType::Up)
+    {
+        boundary_value_map[s][loc] = new double[s->nx];
+        for (int i = 0; i < s->nx; i++)
+            boundary_value_map[s][loc][i] = in_value;
+    }
+}
+

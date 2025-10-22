@@ -142,4 +142,17 @@ void Geometry2D::build_tree()
     is_prepared = true;
 }
 
+void Geometry2D::set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y)
+{
+    std::queue<Domain2DUniform*> q;
 
+    
+    q.push(ref_domain);
+    while (!q.empty())
+    {
+        Domain2DUniform* currentDomain = q.front();
+        q.pop();
+        currentDomain->set_position(pos_x, pos_y);
+        //
+    }
+}

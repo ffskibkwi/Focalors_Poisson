@@ -38,6 +38,8 @@ public:
     void check();
     void solve_prepare();
 
+    void set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y);
+
 private:
     // Check the single connectedness of the geometry
     bool is_single_connected() const;

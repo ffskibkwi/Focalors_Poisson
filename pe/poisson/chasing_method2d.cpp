@@ -1,19 +1,19 @@
 #include "chasing_method2d.h"
 
 void ChasingMethod2D::init(int nx_in, int ny_in, double* _x_diag, bool _is_no_Dirichlet, bool _has_last_vector,
-                           PDEBoundaryType boundaryTypeYNegative, PDEBoundaryType boundaryTypeYPositive)
+                           PDEBoundaryType boundary_type_down, PDEBoundaryType boundary_type_up)
 {
     nx               = nx_in;
     ny               = ny_in;
     x_diag           = _x_diag;
     is_no_Dirichlet  = _is_no_Dirichlet;
     has_last_vector  = _has_last_vector;
-    BoundaryTypeYNegative = boundaryTypeYNegative;
-    BoundaryTypeYPositive = boundaryTypeYPositive;
+    boundary_type_down = boundary_type_down;
+    boundary_type_up = boundary_type_up;
 
     y.init(nx, ny, "y");
 
-    if (BoundaryTypeYNegative == PDEBoundaryType::Periodic && BoundaryTypeYPositive == PDEBoundaryType::Periodic)
+    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
     {
         z_1.init(nx, ny, "z_1");
         z_2.init(nx, ny, "z_2");
@@ -29,14 +29,14 @@ void ChasingMethod2D::init(int nx_in, int ny_in, double* _x_diag, bool _is_no_Di
         c.init(nx, ny - 1, "c");
         for (int i = 0; i < nx; i++)
         {
-            chasing_standard_precompute(x_diag[i], ny, c.get_ptr(i), BoundaryTypeYNegative, BoundaryTypeYPositive);
+            chasing_standard_precompute(x_diag[i], ny, c.get_ptr(i), boundary_type_down, boundary_type_up);
         }
     }
 }
 
 void ChasingMethod2D::chasing(field2& f, field2& p)
 {
-    if (BoundaryTypeYNegative == PDEBoundaryType::Periodic && BoundaryTypeYPositive == PDEBoundaryType::Periodic)
+    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
     {
         for (int i = 0; i < nx; i++)
         {
@@ -74,8 +74,8 @@ void ChasingMethod2D::chasing(field2& f, field2& p)
                                                     c.get_ptr(i),
                                                     y.get_ptr(i),
                                                     p.get_ptr(i),
-                                                    BoundaryTypeYNegative,
-                                                    BoundaryTypeYPositive);
+                                                    boundary_type_down,
+                                                    boundary_type_up);
             }
         }
     }

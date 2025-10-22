@@ -20,14 +20,17 @@ public:
     double hx = 0.0;
     double hy = 0.0;
 
+    // Basic position (the position of the left-down corner)
+    double pos_x, pos_y;
+
     std::string name;
     Geometry2D* parent = nullptr;
 
     // Boundary conditions (four directions) and setting flags
-    PDEBoundaryType BoundaryTypeXNegative = PDEBoundaryType::Null; // Left
-    PDEBoundaryType BoundaryTypeXPositive = PDEBoundaryType::Null; // Right
-    PDEBoundaryType BoundaryTypeYNegative = PDEBoundaryType::Null; // Down
-    PDEBoundaryType BoundaryTypeYPositive = PDEBoundaryType::Null; // Up
+    PDEBoundaryType boundary_type_left = PDEBoundaryType::Null; // Left
+    PDEBoundaryType boundary_type_right = PDEBoundaryType::Null; // Right
+    PDEBoundaryType boundary_type_down = PDEBoundaryType::Null; // Down
+    PDEBoundaryType boundary_type_up = PDEBoundaryType::Null; // Up
 
     Domain2DUniform();
     Domain2DUniform(const std::string& in_name);
@@ -40,9 +43,10 @@ public:
     void set_lx(double in_lx);
     void set_ly(double in_ly);
     void set_size(double in_lx, double in_ly);
+    void set_position(double in_pos_x, double in_pos_y);
 
-    void set_boundary(LocationType loc, PDEBoundaryType type);
-    PDEBoundaryType get_boundary(LocationType loc) const;
+    // void set_boundary(LocationType loc, PDEBoundaryType type);
+    // PDEBoundaryType get_boundary(LocationType loc) const;
 
     bool check_profile() const;
     bool check_boundary() const;

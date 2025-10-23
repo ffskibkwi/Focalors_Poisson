@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     Domain2DUniform T5("T5"); T5.set_ny(20); T5.set_ly(2.0);
     Domain2DUniform T6("T6"); T6.set_nx(30); T6.set_lx(3.0);
 
-    // 边界条件将绑定在 Variable 上
+    // Set boundary on variable (new logic)
 
     // Construct geometry
     geo_tee.add_domain(T1);
@@ -69,7 +69,6 @@ int main(int argc, char* argv[])
     v.set_center_field(&T5, v_T5);
     v.set_center_field(&T6, v_T6);
 
-    // 变量层面的边界条件设置
     v.set_boundary_type(&T2, LocationType::Up,    PDEBoundaryType::Dirichlet);
 
     v.set_boundary_type(&T1, LocationType::Left,  PDEBoundaryType::Dirichlet);
@@ -98,7 +97,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    ConcatPoissonSolver2D solver(v, env_config);
+    ConcatPoissonSolver2D solver(&v, env_config);
     solver.solve();
 
     IO::field_to_csv(v_T1, "result/v_T1.txt");

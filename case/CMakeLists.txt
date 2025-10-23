@@ -7,3 +7,5 @@ function(add_cases FOLDER_NAME)
     target_link_libraries(${TARGET_NAME} PUBLIC Solver)
   endforeach()
 endfunction()
+
+add_cases(.)

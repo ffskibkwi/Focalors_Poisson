@@ -23,7 +23,9 @@ PoissonSolver2D::PoissonSolver2D(int                in_nx,
 }
 
 PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config)
-    : nx(in_domain->nx)
+    : domain(in_domain)
+    , var(in_variable)
+    , nx(in_domain->nx)
     , ny(in_domain->ny)
     , hx(in_domain->hx)
     , hy(in_domain->hy)
@@ -46,10 +48,10 @@ PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variab
     //     return it->second;
     // };
 
-    boundary_type_left  = in_variable->boundary_type_map[in_domain][LocationType::Left];
-    boundary_type_right = in_variable->boundary_type_map[in_domain][LocationType::Right];
-    boundary_type_down  = in_variable->boundary_type_map[in_domain][LocationType::Down];
-    boundary_type_up    = in_variable->boundary_type_map[in_domain][LocationType::Up];
+    boundary_type_left  = var->boundary_type_map[domain][LocationType::Left];
+    boundary_type_right = var->boundary_type_map[domain][LocationType::Right];
+    boundary_type_down  = var->boundary_type_map[domain][LocationType::Down];
+    boundary_type_up    = var->boundary_type_map[domain][LocationType::Up];
 
     init();
 }
@@ -166,8 +168,8 @@ void PoissonSolver2D::cal_lambda() // The current version is only for OpenMP
 
 void PoissonSolver2D::boundary_assembly(field2& f)
 {
-    auto& var_has_map   = in_variable->has_boundary_value_map[in_domain];
-    auto& var_value_map = in_variable->boundary_value_map[in_domain];
+    auto& var_has_map   = var->has_boundary_value_map[domain];
+    auto& var_value_map = var->boundary_value_map[domain];
 
     if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
     {

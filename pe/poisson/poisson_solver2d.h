@@ -36,6 +36,9 @@ private:
     double hx, hy;
     field2 buffer;
 
+    Variable* var = nullptr;
+    Domain2DUniform* domain = nullptr;
+
     EnvironmentConfig* env_config = nullptr;
 
     PDEBoundaryType boundary_type_left;

@@ -45,6 +45,16 @@ public:
     void set_size(double in_lx, double in_ly);
     void set_position(double in_pos_x, double in_pos_y);
 
+    double get_pos_x() const;
+    double get_pos_y() const;
+    double get_hx() const;
+    double get_hy() const;
+    double get_lx() const;
+    double get_ly() const;
+    int get_nx() const;
+    int get_ny() const;
+
+    
     // void set_boundary(LocationType loc, PDEBoundaryType type);
     // PDEBoundaryType get_boundary(LocationType loc) const;
 

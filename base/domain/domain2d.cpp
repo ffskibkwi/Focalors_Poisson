@@ -80,54 +80,6 @@ void Domain2DUniform::set_position(double in_pos_x, double in_pos_y)
     pos_y = in_pos_y;
 }
 
-// /**
-//  * @brief Set boundary condition on a given side.
-//  * @param loc Location side where the boundary condition applies.
-//  * @param type Boundary type to set.
-//  */
-// void Domain2DUniform::set_boundary(LocationType loc, PDEBoundaryType type)
-// {
-//     switch (loc)
-//     {
-//     case LocationType::Left:
-//         boundary_type_left = type;
-//         break;
-//     case LocationType::Right:
-//         boundary_type_right = type;
-//         break;
-//     case LocationType::Down:
-//         boundary_type_down = type;
-//         break;
-//     case LocationType::Up:
-//         boundary_type_up = type;
-//         break;
-//     default:
-//         throw std::invalid_argument("Unsupported LocationType for 2D domain");
-//     }
-// }
-
-// /**
-//  * @brief Get boundary condition on a given side.
-//  * @param loc Location side where the boundary condition applies.
-//  * @return Boundary type.
-//  */
-// PDEBoundaryType Domain2DUniform::get_boundary(LocationType loc) const
-// {
-//     switch (loc)
-//     {
-//     case LocationType::Left:
-//         return boundary_type_left;
-//     case LocationType::Right:
-//         return boundary_type_right;
-//     case LocationType::Down:
-//         return boundary_type_down;
-//     case LocationType::Up:
-//         return boundary_type_up;
-//     default:
-//         throw std::invalid_argument("Unsupported LocationType for 2D domain");
-//     }
-// }
-
 /**
  * @brief Check whether domain profile is valid.
  * @return true if nx, ny, lx and ly are all positive; false otherwise.
@@ -144,3 +96,12 @@ void Domain2DUniform::construct_field(field2& f)
 {
     f.init(nx, ny);
 }
+
+double Domain2DUniform::get_pos_x() const { return pos_x; }
+double Domain2DUniform::get_pos_y() const { return pos_y; }
+double Domain2DUniform::get_hx() const { return hx; }
+double Domain2DUniform::get_hy() const { return hy; }
+double Domain2DUniform::get_lx() const { return lx; }
+double Domain2DUniform::get_ly() const { return ly; }
+int Domain2DUniform::get_nx() const { return nx; }
+int Domain2DUniform::get_ny() const { return ny; }

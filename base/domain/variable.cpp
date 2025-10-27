@@ -12,7 +12,6 @@ Variable::Variable(const std::string& in_name)
 void Variable::set_geometry(Geometry2D& g)
 {
     geometry = &g;
-    // 基于几何邻接关系，预置所有拼接面的边界为 Adjacented
     for (auto &domainAdjPair : geometry->adjacency)
     {
         Domain2DUniform* domain = domainAdjPair.first;
@@ -21,6 +20,14 @@ void Variable::set_geometry(Geometry2D& g)
             LocationType loc = locToNeighbor.first;
             boundary_type_map[domain][loc] = PDEBoundaryType::Adjacented;
         }
+    }
+
+    //We suppose that when set the variable, the consstuction of the geometry has been finished
+    //So we initial the corner boundary map here
+    for (auto &domain : geometry->domains)
+    {
+        left_up_corner_boundary_map[domain] = 0.0;
+        right_down_corner_boundary_map[domain] = 0.0;
     }
 }
 
@@ -38,7 +45,6 @@ void Variable::check_geometry(Domain2DUniform* s)
     if (s->nx <= 0 || s->ny <= 0)
         throw std::runtime_error("Domain mesh size invalid");
 }
-
 
 /**
  * @brief Initialize a field and bind it to a domain within the attached geometry.
@@ -135,12 +141,41 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
         boundary_value_map[s][loc] = new double[s->ny];
         for (int j = 0; j < s->ny; j++)
             boundary_value_map[s][loc][j] = in_value;
+
+        if (loc == LocationType::Left)
+            left_up_corner_boundary_map[s] = in_value;
     }
     else if (loc == LocationType::Down || loc == LocationType::Up)
     {
         boundary_value_map[s][loc] = new double[s->nx];
         for (int i = 0; i < s->nx; i++)
             boundary_value_map[s][loc][i] = in_value;
+
+        if (loc == LocationType::Down)
+            right_down_corner_boundary_map[s] = in_value;
     }
 }
 
+void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double)> f)
+{
+    check_geometry(s);
+    // has_boundary_value_map[s][loc] = true;
+    // if (loc == LocationType::Left || loc == LocationType::Right)
+    // {
+    //     boundary_value_map[s][loc] = new double[s->ny];
+    //     for (int j = 0; j < s->ny; j++)
+    //         boundary_value_map[s][loc][j] = in_value;
+
+    //     if (loc == LocationType::Left)
+    //         left_up_corner_boundary_map[s] = in_value;
+    // }
+    // else if (loc == LocationType::Down || loc == LocationType::Up)
+    // {
+    //     boundary_value_map[s][loc] = new double[s->nx];
+    //     for (int i = 0; i < s->nx; i++)
+    //         boundary_value_map[s][loc][i] = in_value;
+
+    //     if (loc == LocationType::Down)
+    //         right_down_corner_boundary_map[s] = in_value;
+    // }
+}

@@ -27,12 +27,14 @@ public:
                        PDEBoundaryType    in_boundary_type_down,
                        PDEBoundaryType    in_boundary_type_up,
                        int                in_num_proc,
+                       int                in_start_rank = 0,
                        EnvironmentConfig* in_env_config = nullptr,
                        MPI_Comm           in_comm = MPI_COMM_WORLD);
 
     MPIPoissonSolver2D(Domain2DUniform* in_domain,
                        Variable*        in_variable,
                        int              in_num_proc,
+                       int              in_start_rank = 0,
                        EnvironmentConfig* in_env_config = nullptr,
                        MPI_Comm           in_comm = MPI_COMM_WORLD);
 
@@ -62,6 +64,7 @@ private:
     int      world_rank = 0, world_size = 1;
     int      active_rank = -1, active_size = 0;
     int      num_proc = 1;
+    int      start_rank = 0; // 起始世界进程编号（该进程成为子通信器的 rank 0）
     bool     is_active = false;
 
     // Decomposition (i-slab for first stage, j-slab after transpose)

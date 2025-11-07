@@ -16,12 +16,21 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    // 控制并行规模（示例：若未传参，默认使用全部进程；可通过第一个参数限制使用进程数）
+    // 控制并行规模与起始世界进程（argv[1]=num_proc, argv[2]=start_rank）
     int num_proc = world_size;
+    int start_rank = 0;
     if (argc >= 2)
     {
         num_proc = std::atoi(argv[1]);
         if (num_proc <= 0 || num_proc > world_size) num_proc = world_size;
+    }
+    if (argc >= 3)
+    {
+        start_rank = std::atoi(argv[2]);
+        if (start_rank < 0) start_rank = 0;
+        if (start_rank >= world_size) start_rank = 0;
+        if (start_rank + num_proc > world_size) num_proc = world_size - start_rank;
+        if (num_proc < 0) num_proc = 0;
     }
 
     // 构造计算域与变量（简单方形区域，Dirichlet=0 边界）
@@ -42,13 +51,13 @@ int main(int argc, char** argv)
     var.set_boundary_value(&domain, LocationType::Down,  0.0);
     var.set_boundary_value(&domain, LocationType::Up,    0.0);
 
-    // 环境配置（打印求解阶段）
+    // 环境配置（仅子通信器根打印求解阶段）
     EnvironmentConfig env;
-    env.showCurrentStep = (world_rank == 0);
+    env.showCurrentStep = (world_rank == start_rank);
 
-    // 仅 rank 0 持有全局 field
+    // 仅子通信器根（world_rank==start_rank）持有全局 field
     field2 f_global;
-    if (world_rank == 0)
+    if (world_rank == start_rank)
     {
         domain.construct_field(f_global);
         // 构造一个简单的右端项 f(x,y)=1（常数源项），以测试端到端流程
@@ -61,14 +70,14 @@ int main(int argc, char** argv)
         }
     }
 
-    // 构造 MPI 版本 Poisson 求解器（从 Variable 读取边界类型）
-    MPIPoissonSolver2D solver(&domain, &var, num_proc, &env, MPI_COMM_WORLD);
+    // 构造 MPI 版本 Poisson 求解器（从 Variable 读取边界类型, 指定起始世界进程）
+    MPIPoissonSolver2D solver(&domain, &var, num_proc, start_rank, &env, MPI_COMM_WORLD);
 
     // 求解：内部会在子通信器前 num_proc 个进程中并行，且自动完成分发/回收
     solver.solve(f_global);
 
-    // 打印结果：仅 rank 0 检查部分数据
-    if (world_rank == 0)
+    // 打印结果：仅子通信器根检查部分数据
+    if (world_rank == start_rank)
     {
         std::cout << "[mpi_demo] Solution sample (5 points):\n";
         std::cout << "phi(0,0)=" << f_global(0,0)

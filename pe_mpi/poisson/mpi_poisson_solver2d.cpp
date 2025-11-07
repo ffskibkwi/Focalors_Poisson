@@ -2,6 +2,26 @@
 
 #include <cstring>
 
+/**
+ * @brief Construct an MPI Poisson solver (直接指定网格与边界类型）。
+ *
+ * 与 OpenMP 版本保持数值流程一致：y-向 FFT → 全局转置 → x-向追赶法 → 反转置 → y-向逆变换。
+ * 该构造函数不依赖 Variable/Domain 的边界映射，直接通过参数指定四面边界类型。
+ *
+ * @param in_nx    全局 x 方向尺寸。
+ * @param in_ny    全局 y 方向尺寸。
+ * @param in_hx    网格步长 hx。
+ * @param in_hy    网格步长 hy。
+ * @param in_boundary_type_left   左边界类型。
+ * @param in_boundary_type_right  右边界类型。
+ * @param in_boundary_type_down   下边界类型。
+ * @param in_boundary_type_up     上边界类型。
+ * @param in_num_proc             参与并行的进程数上限（仅前 in_num_proc 个 rank 加入子通信器）。
+ * @param in_start_rank           子通信器在世界通信器中的起始 rank（该进程成为 active_comm 的 rank 0）。
+ * @param in_env_config           环境配置（可控制打印等）。
+ * @param in_comm                 输入世界通信器（默认 MPI_COMM_WORLD）。
+ */
+
 MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
                                        int                in_ny,
                                        double             in_hx,
@@ -11,6 +31,7 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
                                        PDEBoundaryType    in_boundary_type_down,
                                        PDEBoundaryType    in_boundary_type_up,
                                        int                in_num_proc,
+                                       int                in_start_rank,
                                        EnvironmentConfig* in_env_config,
                                        MPI_Comm           in_comm)
     : nx(in_nx)
@@ -22,6 +43,7 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
     , boundary_type_down(in_boundary_type_down)
     , boundary_type_up(in_boundary_type_up)
     , num_proc(in_num_proc)
+    , start_rank(in_start_rank)
 {
     env_config = in_env_config;
     setup_comm(in_comm);
@@ -30,9 +52,22 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
     build_local_solvers();
 }
 
+/**
+ * @brief 基于 Domain/Variable 构造 MPI Poisson 求解器。
+ *
+ * 边界类型从 Variable 的 boundary_type_map[domain] 读取，以与当前库数据结构对齐。
+ *
+ * @param in_domain     计算域（提供 nx, ny, hx, hy）。
+ * @param in_variable   变量（提供四面边界类型与值）。
+ * @param in_num_proc   参与并行的进程数上限。
+ * @param in_start_rank 子通信器在世界通信器中的起始 rank（该进程成为 active_comm 的 rank 0）。
+ * @param in_env_config 环境配置。
+ * @param in_comm       输入世界通信器（默认 MPI_COMM_WORLD）。
+ */
 MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
                                        Variable*        in_variable,
                                        int              in_num_proc,
+                                       int              in_start_rank,
                                        EnvironmentConfig* in_env_config,
                                        MPI_Comm           in_comm)
     : domain(in_domain)
@@ -42,6 +77,7 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
     , hx(in_domain->hx)
     , hy(in_domain->hy)
     , num_proc(in_num_proc)
+    , start_rank(in_start_rank)
 {
     env_config           = in_env_config;
     boundary_type_left   = var->boundary_type_map[domain][LocationType::Left];
@@ -55,6 +91,9 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
     build_local_solvers();
 }
 
+/**
+ * @brief 析构：释放局部求解器与子通信器。
+ */
 MPIPoissonSolver2D::~MPIPoissonSolver2D()
 {
     release_local_solvers();
@@ -65,6 +104,14 @@ MPIPoissonSolver2D::~MPIPoissonSolver2D()
     }
 }
 
+/**
+ * @brief 初始化通信环境并创建活动子通信器。
+ *
+ * 仅 rank < num_proc 的进程被划入活动通信器（active_comm），其余进程被置为非活动状态。
+ * 这允许用户指定使用的并行规模而非默认使用全部进程。
+ *
+ * @param in_comm 上层传入的世界通信器。
+ */
 void MPIPoissonSolver2D::setup_comm(MPI_Comm in_comm)
 {
     world_comm = in_comm;
@@ -72,10 +119,13 @@ void MPIPoissonSolver2D::setup_comm(MPI_Comm in_comm)
     MPI_Comm_size(world_comm, &world_size);
 
     int desired = num_proc;
-    if (desired <= 0 || desired > world_size)
-        desired = world_size;
+    if (start_rank < 0) start_rank = 0;
+    if (start_rank >= world_size) desired = 0;
+    if (desired < 0) desired = 0;
+    if (start_rank + desired > world_size)
+        desired = world_size - start_rank;
 
-    int color = (world_rank < desired) ? 1 : MPI_UNDEFINED;
+    int color = (world_rank >= start_rank && world_rank < start_rank + desired) ? 1 : MPI_UNDEFINED;
     MPI_Comm_split(world_comm, color, world_rank, &active_comm);
 
     if (color == 1)
@@ -92,11 +142,20 @@ void MPIPoissonSolver2D::setup_comm(MPI_Comm in_comm)
     }
 }
 
+/**
+ * @brief 预留入口（当前无额外问题参数设置）。
+ */
 void MPIPoissonSolver2D::setup_problem_params()
 {
     // nothing else for now
 }
 
+/**
+ * @brief 构建一维条带分解信息。
+ *
+ * - i-slab：沿 x 方向（行）切分，尺寸为 (local_i_count, ny)。用于本地 y-向 FFT。
+ * - j-slab：沿 y 方向（列）切分，尺寸为 (local_j_count, nx)。用于本地 x-向追赶法（在全局转置之后）。
+ */
 void MPIPoissonSolver2D::build_decomposition()
 {
     if (!is_active)
@@ -109,6 +168,12 @@ void MPIPoissonSolver2D::build_decomposition()
     local_j_count = j_counts[active_rank];
 }
 
+/**
+ * @brief 为本进程构建本地求解器（y-向 FFT 与 x-向追赶法）。
+ *
+ * - y 方向 FFT 的本地尺寸为 (local_i_count, ny)。
+ * - x 方向追赶法在转置域进行：尺寸 (local_j_count, nx)，并基于对应全局 j 段构造 `local_x_diag`。
+ */
 void MPIPoissonSolver2D::build_local_solvers()
 {
     if (!is_active)
@@ -150,6 +215,9 @@ void MPIPoissonSolver2D::build_local_solvers()
                            boundary_type_left, boundary_type_right);
 }
 
+/**
+ * @brief 释放本地求解器与缓存。
+ */
 void MPIPoissonSolver2D::release_local_solvers()
 {
     if (local_x_diag)
@@ -169,6 +237,12 @@ void MPIPoissonSolver2D::release_local_solvers()
     }
 }
 
+/**
+ * @brief 计算 y 向特征值 lambda_y（与 OpenMP 版本一致）。
+ *
+ * 根据上下边界类型（Periodic/Neumann/Dirichlet/Adjacented 的组合）分别使用对应的解析公式。
+ * @param lambda_y_out 输出：长度为 ny 的向量。
+ */
 void MPIPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
 {
     lambda_y_out.resize(ny);
@@ -197,6 +271,12 @@ void MPIPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
     }
 }
 
+/**
+ * @brief 构建本地 j 段的 x 向对角项切片 local_x_diag。
+ *
+ * 全局公式：x_diag[j] = -2.0 + (hx^2/hy^2) * lambda_y[j]。
+ * 在分布式场景中，仅为本进程拥有的 j 索引区间 [j_start, j_start + local_j_count) 生成对应切片。
+ */
 void MPIPoissonSolver2D::build_local_x_diag()
 {
     if (!is_active)
@@ -214,6 +294,12 @@ void MPIPoissonSolver2D::build_local_x_diag()
     }
 }
 
+/**
+ * @brief 在全局 root（active_rank==0）上对右端项 f 进行边界装配。
+ *
+ * 该步骤与 OpenMP 版本一一对应：根据 Dirichlet/Neumann 边界值修正 f 的边缘条目。
+ * @param f 全局右端项（仅 root 持有完整数据）。
+ */
 void MPIPoissonSolver2D::boundary_assembly(field2& f)
 {
     auto& var_has_map   = var->has_boundary_value_map[domain];
@@ -271,6 +357,13 @@ void MPIPoissonSolver2D::boundary_assembly(field2& f)
     }
 }
 
+/**
+ * @brief 将 root 上的全局场按 i-slab 切分并分发到各进程。
+ *
+ * 使用 MPI_Scatterv，单位为 double 元素数；利用 i_counts/i_displs 保证每个进程拿到连续的行块。
+ * @param f_global  仅 root 持有的全局场 (nx, ny)。
+ * @param f_local   输出：本地场 (local_i_count, ny)。
+ */
 void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field2& f_local) const
 {
     // Allocate local
@@ -296,6 +389,13 @@ void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field
         active_comm);
 }
 
+/**
+ * @brief 将各进程的 i-slab 本地结果回收至 root 的全局场。
+ *
+ * 使用 MPI_Gatherv，单位为 double 元素数；与分发阶段完全对称。
+ * @param f_local  本地场 (local_i_count, ny)。
+ * @param f_global 仅 root 持有的全局场 (nx, ny)。
+ */
 void MPIPoissonSolver2D::gather_local_to_global_f(const field2& f_local, field2& f_global) const
 {
     std::vector<int> recvcounts(active_size), displs(active_size);
@@ -317,6 +417,18 @@ void MPIPoissonSolver2D::gather_local_to_global_f(const field2& f_local, field2&
         active_comm);
 }
 
+/**
+ * @brief 分布式全局转置：从 i-slab 分布 (local_i_count, ny) 转换到 j-slab 分布 (local_j_count, nx)。
+ *
+ * 算法说明：
+ * - 按目标进程的 j 段打包每个本地 i 行的对应列段，形成按目的进程分组的 sendbuf；
+ * - 通过 MPI_Alltoallv 交换数据块；
+ * - 在接收端按来源进程的 i 段与本地 j 段重组为 (local_j_count, nx) 的转置布局。
+ * 保证与单机 `field2::transpose` 一致的全局重新排列。
+ *
+ * @param in_i_slab  输入：本地 i-slab 场。
+ * @param out_j_slab 输出：本地 j-slab 场（已转置）。
+ */
 void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, field2& out_j_slab) const
 {
     // in_i_slab: (local_i_count, ny)
@@ -348,6 +460,7 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
         double* dst = sendbuf.data() + sdispls[r];
         for (int i = 0; i < local_i_count; ++i)
         {
+            // 每一行 i，复制该行中属于目标进程 r 的 j 段 [j0, j0 + jc)
             std::memcpy(dst + i * jc, in_i_slab.get_ptr(i, j0), sizeof(double) * jc);
         }
     }
@@ -375,6 +488,17 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     }
 }
 
+/**
+ * @brief 分布式全局反转置：从 j-slab 分布 (local_j_count, nx) 回到 i-slab 分布 (local_i_count, ny)。
+ *
+ * 与 distributed_transpose_i_to_j 对称：
+ * - 发送端按每个目标进程的 i 段，从 (local_j_count, nx) 中抽取整列块；
+ * - MPI_Alltoallv 交换；
+ * - 接收端按 (local_i_count, ny) 重组。
+ *
+ * @param in_j_slab  输入：本地 j-slab 场。
+ * @param out_i_slab 输出：本地 i-slab 场。
+ */
 void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, field2& out_i_slab) const
 {
     // in_j_slab: (local_j_count, nx)
@@ -408,6 +532,7 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
             int i_global = i0 + il;
             for (int jl = 0; jl < local_j_count; ++jl)
             {
+                // 取列 i_global 的本地 j 段，线性化为 (ic x local_j_count) 的块
                 dst[il * local_j_count + jl] = in_j_slab(jl, i_global);
             }
         }
@@ -427,12 +552,21 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
         {
             for (int jl = 0; jl < jc; ++jl)
             {
+                // 将 (ic x jc) 的块按 j 全局偏移 j0 放入 out_i_slab 的列段
                 out_i_slab(il, j0 + jl) = src[il * jc + jl];
             }
         }
     }
 }
 
+/**
+ * @brief 求解主流程（仅活动通信器进程参与）。
+ *
+ * 流程保持与单机 OpenMP 版本一致：
+ * 1) root 做边界装配；2) 按 i-slab 分发；3) 本地 y-FFT；4) 全局转置 i→j；
+ * 5) 本地 x-追赶；6) 全局转置 j→i；7) 本地 y-逆变换；8) 回收至 root。
+ * @param f 仅 root 持有的全局场（输入右端项，输出解）。
+ */
 void MPIPoissonSolver2D::solve(field2& f)
 {
     // Only active ranks participate
@@ -482,6 +616,14 @@ void MPIPoissonSolver2D::solve(field2& f)
         std::cout << "[Poisson][MPI] solve: done" << std::endl;
 }
 
+/**
+ * @brief 将长度为 n 的一维区间均匀切分给 p 个进程，生成 counts 与 displs。
+ *
+ * @param n       全局长度。
+ * @param p       进程数。
+ * @param counts  输出：每个进程的长度。
+ * @param displs  输出：每个进程的起始偏移。
+ */
 void MPIPoissonSolver2D::split_1d(int n, int p, std::vector<int>& counts, std::vector<int>& displs)
 {
     counts.assign(p, 0);

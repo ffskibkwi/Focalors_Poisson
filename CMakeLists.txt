@@ -23,11 +23,13 @@ file(GLOB_RECURSE SOLVER_HEADER_FILES
     "${CMAKE_SOURCE_DIR}/base/*.h" "${CMAKE_SOURCE_DIR}/base/*.hpp"
     "${CMAKE_SOURCE_DIR}/io/*.h"   "${CMAKE_SOURCE_DIR}/io/*.hpp"
     "${CMAKE_SOURCE_DIR}/pe/*.h"   "${CMAKE_SOURCE_DIR}/pe/*.hpp"
+    "${CMAKE_SOURCE_DIR}/pe_mpi/*.h" "${CMAKE_SOURCE_DIR}/pe_mpi/*.hpp"
 )
 file(GLOB_RECURSE SOLVER_SOURCE_FILES
     "${CMAKE_SOURCE_DIR}/base/*.cpp"
     "${CMAKE_SOURCE_DIR}/io/*.cpp"
     "${CMAKE_SOURCE_DIR}/pe/*.cpp"
+    "${CMAKE_SOURCE_DIR}/pe_mpi/*.cpp"
 )
 
 add_library(Solver ${SOLVER_SOURCE_FILES} ${SOLVER_HEADER_FILES})

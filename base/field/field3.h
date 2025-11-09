@@ -166,7 +166,7 @@ public:
     int               get_nz() const { return nz; }
     int               get_size_n() const { return size_n; }
     bool              set_size(int in_nx, int in_ny, int in_nz);
-    double*           get_ptr(int i, int j, int k) const { return value + ny * nz * i + nz * j + k; }
+    double*           get_ptr(int i, int j, int k) const;
     const std::string get_name() const { return name; }
 
     /**

@@ -57,8 +57,8 @@ public:
     int               get_ny() const { return ny; }
     int               get_size_n() const { return size_n; }
     bool              set_size(int in_nx, int in_ny);
-    double*           get_ptr(int i, int j) const { return value + ny * i + j; }
-    double*           get_ptr(int i) const { return value + ny * i; }
+    double*           get_ptr(int i, int j) const;
+    double*           get_ptr(int i) const;
     const std::string get_name() const { return name; }
 
     void clear(double clear_value = 0.0);

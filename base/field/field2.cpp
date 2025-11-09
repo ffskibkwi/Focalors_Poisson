@@ -1,6 +1,7 @@
 #include "field2.h"
 
 #include "base/pch.h"
+#include "field_macro.h"
 
 field2::field2(int in_nx, int in_ny, const std::string& in_name) { init(in_nx, in_ny, in_name); }
 
@@ -55,6 +56,8 @@ void field2::init(int in_nx, int in_ny, const std::string& in_name)
 
 void field2::init(int in_nx, int in_ny)
 {
+    ASSERT_FIELD2_POSITIVE(in_nx, in_ny, name);
+
     nx = in_nx;
     ny = in_ny;
 
@@ -270,9 +273,29 @@ void field2::bond_add(LocationType location, const double k, const field2& neigh
     }
 }
 
-double& field2::operator()(int i, int j) { return value[i * ny + j]; }
+double& field2::operator()(int i, int j)
+{
+    ASSERT_FIELD2_BOUNDS(i, j, nx, ny, name);
+    return value[i * ny + j];
+}
 
-double field2::operator()(int i, int j) const { return value[i * ny + j]; }
+double field2::operator()(int i, int j) const
+{
+    ASSERT_FIELD2_BOUNDS(i, j, nx, ny, name);
+    return value[i * ny + j];
+}
+
+double* field2::get_ptr(int i, int j) const
+{
+    ASSERT_FIELD2_BOUNDS(i, j, nx, ny, name);
+    return value + ny * i + j;
+}
+
+double* field2::get_ptr(int i) const
+{
+    ASSERT_BOUNDS(i, size_n, name);
+    return value + ny * i;
+}
 
 bool field2::set_size(int in_nx, int in_ny)
 {

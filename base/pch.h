@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/domain/variable.h"
 #include "base/field/field2.h"
 #include "base/field/field3.h"
 #include "base/parallel/omp/enable_openmp.h"

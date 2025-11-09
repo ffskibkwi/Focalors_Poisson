@@ -1,28 +1,25 @@
 #pragma once
 
-#include <unordered_map>
-#include <stdexcept>
-#include <functional>
-#include "geometry2d.h"
-#include "domain2d.h"
 #include "base/field/field2.h"
+#include "domain2d.h"
+#include "geometry2d.h"
+#include <functional>
+#include <stdexcept>
+#include <unordered_map>
 
 class Variable
 {
 public:
-    std::string  name;
-    Geometry2D*  geometry = nullptr;
-    std::unordered_map<Domain2DUniform*, field2*> field_map;
+    std::string                                                                     name;
+    Geometry2D*                                                                     geometry = nullptr;
+    std::unordered_map<Domain2DUniform*, field2*>                                   field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>> buffer_map;
-    std::unordered_map<Domain2DUniform*, double> left_up_corner_value_map;    //Only for v, the value on the node
-    std::unordered_map<Domain2DUniform*, double> right_down_corner_value_map; //Only for u，the value on the node
-
-    std::unordered_map<Domain2DUniform*, double> left_up_corner_boundary_map;    //Only for v, the value on the boundary
-    std::unordered_map<Domain2DUniform*, double> right_down_corner_boundary_map; //Only for u, the value on the boundary
+    std::unordered_map<Domain2DUniform*, double> left_up_corner_value_map;    // Only for v, the value on the node
+    std::unordered_map<Domain2DUniform*, double> right_down_corner_value_map; // Only for u，the value on the node
 
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
-    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, bool>> has_boundary_value_map;
-    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>> boundary_value_map;
+    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;
+    std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>>         boundary_value_map;
 
     Variable() = default;
     Variable(const std::string& in_name);

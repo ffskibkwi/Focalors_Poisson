@@ -55,8 +55,8 @@ void field2::init(int in_nx, int in_ny, const std::string& in_name)
 
 void field2::init(int in_nx, int in_ny)
 {
-    nx   = in_nx;
-    ny   = in_ny;
+    nx = in_nx;
+    ny = in_ny;
 
     size_n = nx * ny;
     if (value != nullptr)
@@ -255,16 +255,16 @@ void field2::bond_add(LocationType location, const double k, const field2& neigh
     {
         case LocationType::Left:
             left_bond_add(k, neighbour_field2);
-        break;
+            break;
         case LocationType::Right:
             right_bond_add(k, neighbour_field2);
-        break;
+            break;
         case LocationType::Up:
             up_bond_add(k, neighbour_field2);
-        break;
+            break;
         case LocationType::Down:
             down_bond_add(k, neighbour_field2);
-        break;
+            break;
         default:
             throw std::invalid_argument("Invalid location type");
     }
@@ -287,10 +287,6 @@ bool field2::set_size(int in_nx, int in_ny)
         return false;
     }
 }
-
-double* field2::get_ptr(int i, unsigned int j) { return value + ny * i + j; }
-
-double* field2::get_ptr(int i) { return value + ny * i; }
 
 void field2::clear(double clear_value)
 {

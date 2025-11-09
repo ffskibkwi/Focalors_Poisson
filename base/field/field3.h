@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <array>
+#include <string>
 
 class field3
 {
@@ -83,7 +83,7 @@ public:
      *
      * @param t         The constant value to add.
      */
-    void   add(const double t);
+    void add(const double t);
     /**
      * @brief Applies an affine transformation to the field.
      *
@@ -93,7 +93,7 @@ public:
      * @param x         The field to scale and add.
      * @param b         The constant value to add.
      */
-    void   add_affine_transform(const double a, const field3& x, const double b);
+    void add_affine_transform(const double a, const field3& x, const double b);
     /**
      * @brief Transposes the field according to specified dimension permutation.
      *
@@ -102,7 +102,7 @@ public:
      * @param dst           The destination field for the transposed data.
      * @param permutation   Array specifying the new order of dimensions.
      */
-    void   transpose(field3& dst, const std::array<int, 3>& permutation);
+    void transpose(field3& dst, const std::array<int, 3>& permutation);
     /**
      * @brief Computes the sum of all elements in the field.
      *
@@ -158,79 +158,15 @@ public:
      */
     double mean_at_yz_plane(int i);
 
-    /**
-     * @brief Accessor operator for modifying elements.
-     *
-     * Provides read/write access to a specific element in the field.
-     *
-     * @param i         The x-index.
-     * @param j         The y-index.
-     * @param k         The z-index.
-     * @return          Reference to the element at the specified indices.
-     */
     double& operator()(int i, int j, int k);
-    /**
-     * @brief Accessor operator for reading elements.
-     *
-     * Provides read-only access to a specific element in the field.
-     *
-     * @param i         The x-index.
-     * @param j         The y-index.
-     * @param k         The z-index.
-     * @return          Value of the element at the specified indices.
-     */
     double  operator()(int i, int j, int k) const;
 
-    /**
-     * @brief Gets the number of grid points in the x-direction.
-     *
-     * @return          Number of grid points in the x-direction.
-     */
     int               get_nx() const { return nx; }
-    /**
-     * @brief Gets the number of grid points in the y-direction.
-     *
-     * @return          Number of grid points in the y-direction.
-     */
     int               get_ny() const { return ny; }
-    /**
-     * @brief Gets the number of grid points in the z-direction.
-     *
-     * @return          Number of grid points in the z-direction.
-     */
     int               get_nz() const { return nz; }
-    /**
-     * @brief Gets the total number of elements in the field.
-     *
-     * @return          Total number of elements.
-     */
     int               get_size_n() const { return size_n; }
-    /**
-     * @brief Sets the size of the field without reallocating memory.
-     *
-     * Changes the dimensions of the field if the total number of elements
-     * does not exceed the current allocation.
-     *
-     * @param in_nx     New number of grid points in the x-direction.
-     * @param in_ny     New number of grid points in the y-direction.
-     * @param in_nz     New number of grid points in the z-direction.
-     * @return          True if successful, false if reallocation would be needed.
-     */
     bool              set_size(int in_nx, int in_ny, int in_nz);
-    /**
-     * @brief Gets a pointer to a specific element in the field.
-     *
-     * @param i         The x-index.
-     * @param j         The y-index.
-     * @param k         The z-index.
-     * @return          Pointer to the element at the specified indices.
-     */
-    double*           get_ptr(int i, int j, int k);
-    /**
-     * @brief Gets the name of the field.
-     *
-     * @return          The name of the field.
-     */
+    double*           get_ptr(int i, int j, int k) const { return value + ny * nz * i + nz * j + k; }
     const std::string get_name() const { return name; }
 
     /**

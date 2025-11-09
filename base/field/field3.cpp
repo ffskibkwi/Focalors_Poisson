@@ -327,16 +327,6 @@ bool field3::set_size(int in_nx, int in_ny, int in_nz)
 }
 
 /**
- * @brief Gets a pointer to a specific element in the field.
- *
- * @param i         The x-index.
- * @param j         The y-index.
- * @param k         The z-index.
- * @return          Pointer to the element at the specified indices.
- */
-double* field3::get_ptr(int i, int j, int k) { return value + ny * nz * i + nz * j + k; }
-
-/**
  * @brief Copies a slice of xz-plane data to a destination array.
  *
  * @param dest      Destination array for the copied data.

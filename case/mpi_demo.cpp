@@ -6,7 +6,8 @@
 #include "base/domain/domain2d.h"
 #include "base/domain/variable.h"
 #include "base/location_boundary.h"
-#include "pe_mpi/poisson/mpi_poisson_solver2d.h"
+#include "pe_mpi/mpi_poisson_solver2d.h"
+#include "pe_mpi/mpi_concat_poisson_solver2d.h"
 
 int main(int argc, char** argv)
 {

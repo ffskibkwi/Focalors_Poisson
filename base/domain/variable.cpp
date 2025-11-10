@@ -12,22 +12,22 @@ Variable::Variable(const std::string& in_name)
 void Variable::set_geometry(Geometry2D& g)
 {
     geometry = &g;
-    for (auto &domainAdjPair : geometry->adjacency)
+    for (auto& domainAdjPair : geometry->adjacency)
     {
         Domain2DUniform* domain = domainAdjPair.first;
-        for (auto &locToNeighbor : domainAdjPair.second)
+        for (auto& locToNeighbor : domainAdjPair.second)
         {
-            LocationType loc = locToNeighbor.first;
+            LocationType loc               = locToNeighbor.first;
             boundary_type_map[domain][loc] = PDEBoundaryType::Adjacented;
         }
     }
 
-    //We suppose that when set the variable, the consstuction of the geometry has been finished
-    //So we initial the corner boundary map here
-    for (auto &domain : geometry->domains)
+    // We suppose that when set the variable, the consstuction of the geometry has been finished
+    // So we initial the corner boundary map here
+    for (auto& domain : geometry->domains)
     {
-        left_up_corner_boundary_map[domain] = 0.0;
-        right_down_corner_boundary_map[domain] = 0.0;
+        left_up_corner_value_map[domain]    = 0.0;
+        right_down_corner_value_map[domain] = 0.0;
     }
 }
 
@@ -66,7 +66,7 @@ void Variable::set_center_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    //Center variable only need left and down buffer
+    // Center variable only need left and down buffer
     buffer_map[s][LocationType::Left] = new double[s->ny];
     buffer_map[s][LocationType::Down] = new double[s->nx];
 
@@ -84,10 +84,10 @@ void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left] = new double[s->ny];
+    buffer_map[s][LocationType::Left]  = new double[s->ny];
     buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down] = new double[s->nx];
-    buffer_map[s][LocationType::Up] = new double[s->nx];
+    buffer_map[s][LocationType::Down]  = new double[s->nx];
+    buffer_map[s][LocationType::Up]    = new double[s->nx];
 
     position_type = VariablePositionType::XEdge;
 }
@@ -103,10 +103,10 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left] = new double[s->ny];
+    buffer_map[s][LocationType::Left]  = new double[s->ny];
     buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down] = new double[s->nx];
-    buffer_map[s][LocationType::Up] = new double[s->nx];
+    buffer_map[s][LocationType::Down]  = new double[s->nx];
+    buffer_map[s][LocationType::Up]    = new double[s->nx];
 
     position_type = VariablePositionType::YEdge;
 }
@@ -118,15 +118,18 @@ void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBounda
     if (geometry && geometry->adjacency.count(s) && geometry->adjacency[s].count(loc))
     {
         if (type != PDEBoundaryType::Adjacented)
-            throw std::runtime_error("Attempt to override an adjacented face with non-Adjacented boundary on domain " + s->name);
+            throw std::runtime_error("Attempt to override an adjacented face with non-Adjacented boundary on domain " +
+                                     s->name);
         boundary_type_map[s][loc] = PDEBoundaryType::Adjacented;
         return;
     }
 
     // 若该侧已被设置为 Adjacented，则不允许再改为其他类型
-    if (boundary_type_map[s].count(loc) && boundary_type_map[s][loc] == PDEBoundaryType::Adjacented && type != PDEBoundaryType::Adjacented)
+    if (boundary_type_map[s].count(loc) && boundary_type_map[s][loc] == PDEBoundaryType::Adjacented &&
+        type != PDEBoundaryType::Adjacented)
     {
-        throw std::runtime_error("Attempt to change previously Adjacented boundary to another type on domain " + s->name);
+        throw std::runtime_error("Attempt to change previously Adjacented boundary to another type on domain " +
+                                 s->name);
     }
 
     boundary_type_map[s][loc] = type;
@@ -143,7 +146,7 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
             boundary_value_map[s][loc][j] = in_value;
 
         if (loc == LocationType::Left)
-            left_up_corner_boundary_map[s] = in_value;
+            left_up_corner_value_map[s] = in_value;
     }
     else if (loc == LocationType::Down || loc == LocationType::Up)
     {
@@ -152,30 +155,12 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
             boundary_value_map[s][loc][i] = in_value;
 
         if (loc == LocationType::Down)
-            right_down_corner_boundary_map[s] = in_value;
+            right_down_corner_value_map[s] = in_value;
     }
 }
 
 void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double)> f)
 {
     check_geometry(s);
-    // has_boundary_value_map[s][loc] = true;
-    // if (loc == LocationType::Left || loc == LocationType::Right)
-    // {
-    //     boundary_value_map[s][loc] = new double[s->ny];
-    //     for (int j = 0; j < s->ny; j++)
-    //         boundary_value_map[s][loc][j] = in_value;
-
-    //     if (loc == LocationType::Left)
-    //         left_up_corner_boundary_map[s] = in_value;
-    // }
-    // else if (loc == LocationType::Down || loc == LocationType::Up)
-    // {
-    //     boundary_value_map[s][loc] = new double[s->nx];
-    //     for (int i = 0; i < s->nx; i++)
-    //         boundary_value_map[s][loc][i] = in_value;
-
-    //     if (loc == LocationType::Down)
-    //         right_down_corner_boundary_map[s] = in_value;
-    // }
+    // TODO:
 }

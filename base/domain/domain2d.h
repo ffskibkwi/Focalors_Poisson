@@ -1,8 +1,9 @@
 #pragma once
 
-#include "base/pch.h"
+#include "base/field/field2.h"
 #include "base/location_boundary.h"
 #include "base/mesh_profile/mesh_profile_2d_base.h"
+
 #include <stdexcept>
 
 class Geometry2D;
@@ -11,8 +12,8 @@ class Domain2DUniform
 {
 public:
     // Number of nodes on each dimension
-    int    nx = 0;
-    int    ny = 0;
+    int nx = 0;
+    int ny = 0;
     // Size of the domain
     double lx = 0.0;
     double ly = 0.0;
@@ -27,10 +28,10 @@ public:
     Geometry2D* parent = nullptr;
 
     // Boundary conditions (four directions) and setting flags
-    PDEBoundaryType boundary_type_left = PDEBoundaryType::Null; // Left
+    PDEBoundaryType boundary_type_left  = PDEBoundaryType::Null; // Left
     PDEBoundaryType boundary_type_right = PDEBoundaryType::Null; // Right
-    PDEBoundaryType boundary_type_down = PDEBoundaryType::Null; // Down
-    PDEBoundaryType boundary_type_up = PDEBoundaryType::Null; // Up
+    PDEBoundaryType boundary_type_down  = PDEBoundaryType::Null; // Down
+    PDEBoundaryType boundary_type_up    = PDEBoundaryType::Null; // Up
 
     Domain2DUniform();
     Domain2DUniform(const std::string& in_name);
@@ -51,10 +52,9 @@ public:
     double get_hy() const;
     double get_lx() const;
     double get_ly() const;
-    int get_nx() const;
-    int get_ny() const;
+    int    get_nx() const;
+    int    get_ny() const;
 
-    
     // void set_boundary(LocationType loc, PDEBoundaryType type);
     // PDEBoundaryType get_boundary(LocationType loc) const;
 

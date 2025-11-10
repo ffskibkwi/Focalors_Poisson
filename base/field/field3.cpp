@@ -1,6 +1,7 @@
 #include "field3.h"
 
 #include "base/pch.h"
+#include "field_macro.h"
 
 /**
  * @brief Constructor with initialization parameters.
@@ -60,6 +61,8 @@ field3& field3::operator=(const field3& rhs)
  */
 void field3::init(int in_nx, int in_ny, int in_nz, const std::string& in_name)
 {
+    ASSERT_FIELD3_POSITIVE(in_nx, in_ny, in_nz, name);
+
     nx   = in_nx;
     ny   = in_ny;
     nz   = in_nz;
@@ -276,29 +279,23 @@ double field3::mean_at_xz_plane(int j) { return sum_at_xz_plane(j) / (nx * nz); 
  */
 double field3::mean_at_yz_plane(int i) { return sum_at_yz_plane(i) / (ny * nz); }
 
-/**
- * @brief Accessor operator for modifying elements.
- *
- * Provides read/write access to a specific element in the field.
- *
- * @param i         The x-index.
- * @param j         The y-index.
- * @param k         The z-index.
- * @return          Reference to the element at the specified indices.
- */
-double& field3::operator()(int i, int j, int k) { return value[i * ny * nz + j * nz + k]; }
+double& field3::operator()(int i, int j, int k)
+{
+    ASSERT_FIELD3_BOUNDS(i, j, k, nx, ny, nz, name);
+    return value[i * ny * nz + j * nz + k];
+}
 
-/**
- * @brief Accessor operator for reading elements.
- *
- * Provides read-only access to a specific element in the field.
- *
- * @param i         The x-index.
- * @param j         The y-index.
- * @param k         The z-index.
- * @return          Value of the element at the specified indices.
- */
-double field3::operator()(int i, int j, int k) const { return value[i * ny * nz + j * nz + k]; }
+double field3::operator()(int i, int j, int k) const
+{
+    ASSERT_FIELD3_BOUNDS(i, j, k, nx, ny, nz, name);
+    return value[i * ny * nz + j * nz + k];
+}
+
+double* field3::get_ptr(int i, int j, int k) const
+{
+    ASSERT_FIELD3_BOUNDS(i, j, k, nx, ny, nz, name);
+    return value + ny * nz * i + nz * j + k;
+}
 
 /**
  * @brief Sets the size of the field without reallocating memory.
@@ -325,16 +322,6 @@ bool field3::set_size(int in_nx, int in_ny, int in_nz)
         return false;
     }
 }
-
-/**
- * @brief Gets a pointer to a specific element in the field.
- *
- * @param i         The x-index.
- * @param j         The y-index.
- * @param k         The z-index.
- * @return          Pointer to the element at the specified indices.
- */
-double* field3::get_ptr(int i, int j, int k) { return value + ny * nz * i + nz * j + k; }
 
 /**
  * @brief Copies a slice of xz-plane data to a destination array.

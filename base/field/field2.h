@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include "base/location_boundary.h"
+#include <string>
 
 class field2
 {
@@ -57,14 +57,14 @@ public:
     int               get_ny() const { return ny; }
     int               get_size_n() const { return size_n; }
     bool              set_size(int in_nx, int in_ny);
-    double*           get_ptr(int i, unsigned int j);
-    double*           get_ptr(int i);
+    double*           get_ptr(int i, int j) const;
+    double*           get_ptr(int i) const;
     const std::string get_name() const { return name; }
 
     void clear(double clear_value = 0.0);
 
     friend void swap(field2& lhs, field2& rhs);
-    void transpose(field2& dst);
+    void        transpose(field2& dst);
 
 protected:
     unsigned int nx, ny;

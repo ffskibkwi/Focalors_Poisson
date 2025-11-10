@@ -51,13 +51,24 @@ int main(int argc, char** argv)
     var.set_boundary_value(&domain, LocationType::Down,  0.0);
     var.set_boundary_value(&domain, LocationType::Up,    0.0);
 
+    // 创建外部提供给求解器的子通信器 [start_rank, start_rank+num_proc)
+    int color = (world_rank >= start_rank && world_rank < start_rank + num_proc) ? 1 : MPI_UNDEFINED;
+    MPI_Comm pe_comm = MPI_COMM_NULL;
+    MPI_Comm_split(MPI_COMM_WORLD, color, world_rank, &pe_comm);
+
+    int pe_rank = -1, pe_size = 0;
+    if (color == 1) {
+        MPI_Comm_rank(pe_comm, &pe_rank);
+        MPI_Comm_size(pe_comm, &pe_size);
+    }
+
     // 环境配置（仅子通信器根打印求解阶段）
     EnvironmentConfig env;
-    env.showCurrentStep = (world_rank == start_rank);
+    env.showCurrentStep = (color == 1 && pe_rank == 0);
 
-    // 仅子通信器根（world_rank==start_rank）持有全局 field
+    // 仅子通信器根持有全局 field
     field2 f_global;
-    if (world_rank == start_rank)
+    if (color == 1 && pe_rank == 0)
     {
         domain.construct_field(f_global);
         // 构造一个简单的右端项 f(x,y)=1（常数源项），以测试端到端流程
@@ -70,14 +81,16 @@ int main(int argc, char** argv)
         }
     }
 
-    // 构造 MPI 版本 Poisson 求解器（从 Variable 读取边界类型, 指定起始世界进程）
-    MPIPoissonSolver2D solver(&domain, &var, num_proc, start_rank, &env, MPI_COMM_WORLD);
+    if (color == 1) {
+        // 构造 MPI 版本 Poisson 求解器：直接传入外部管理的通信器 pe_comm
+        MPIPoissonSolver2D solver(&domain, &var, num_proc, start_rank, &env, pe_comm);
 
-    // 求解：内部会在子通信器前 num_proc 个进程中并行，且自动完成分发/回收
-    solver.solve(f_global);
+        // 求解：内部不再 Comm_split，完全使用 pe_comm
+        solver.solve(f_global);
+    }
 
     // 打印结果：仅子通信器根检查部分数据
-    if (world_rank == start_rank)
+    if (color == 1 && pe_rank == 0)
     {
         std::cout << "[mpi_demo] Solution sample (5 points):\n";
         std::cout << "phi(0,0)=" << f_global(0,0)
@@ -87,6 +100,10 @@ int main(int argc, char** argv)
                   << ", phi(nx-2,ny-2)=" << f_global(nx-2, ny-2) << "\n";
     }
 
+    if (pe_comm != MPI_COMM_NULL) {
+        MPI_Comm_free(&pe_comm);
+        pe_comm = MPI_COMM_NULL;
+    }
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
     return 0;

@@ -16,10 +16,10 @@
  * @param in_boundary_type_right  右边界类型。
  * @param in_boundary_type_down   下边界类型。
  * @param in_boundary_type_up     上边界类型。
- * @param in_num_proc             参与并行的进程数上限（仅前 in_num_proc 个 rank 加入子通信器）。
- * @param in_start_rank           子通信器在世界通信器中的起始 rank（该进程成为 active_comm 的 rank 0）。
+ * @param in_num_proc             参与并行的进程数上限（保留参数，实际参与由外部通信器决定）。
+ * @param in_start_rank           起始 rank（保留参数，不在类内进行 Comm_split）。
  * @param in_env_config           环境配置（可控制打印等）。
- * @param in_comm                 输入世界通信器（默认 MPI_COMM_WORLD）。
+ * @param in_comm                 外部提供的合法 MPI 通信器（本类不再内部 Comm_split）。
  */
 
 MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
@@ -59,10 +59,10 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
  *
  * @param in_domain     计算域（提供 nx, ny, hx, hy）。
  * @param in_variable   变量（提供四面边界类型与值）。
- * @param in_num_proc   参与并行的进程数上限。
- * @param in_start_rank 子通信器在世界通信器中的起始 rank（该进程成为 active_comm 的 rank 0）。
+ * @param in_num_proc   参与并行的进程数上限（保留参数，实际参与由外部通信器决定）。
+ * @param in_start_rank 起始 rank（保留参数，不在类内进行 Comm_split）。
  * @param in_env_config 环境配置。
- * @param in_comm       输入世界通信器（默认 MPI_COMM_WORLD）。
+ * @param in_comm       外部提供的合法 MPI 通信器（本类不再内部 Comm_split）。
  */
 MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
                                        Variable*        in_variable,
@@ -97,38 +97,21 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
 MPIPoissonSolver2D::~MPIPoissonSolver2D()
 {
     release_local_solvers();
-    if (active_comm != MPI_COMM_NULL)
-    {
-        MPI_Comm_free(&active_comm);
-        active_comm = MPI_COMM_NULL;
-    }
+    // 外部提供的通信器不在此处释放
 }
 
 /**
- * @brief 初始化通信环境并创建活动子通信器。
+ * @brief 初始化通信环境（不进行 Comm_split，直接使用外部提供的通信器）。
  *
- * 仅 rank < num_proc 的进程被划入活动通信器（active_comm），其余进程被置为非活动状态。
- * 这允许用户指定使用的并行规模而非默认使用全部进程。
+ * 假定外部已经根据需要准备好通信子集；本类仅记录该通信器与其 rank/size。
  *
- * @param in_comm 上层传入的世界通信器。
+ * @param in_comm 外部传入的通信器。
  */
 void MPIPoissonSolver2D::setup_comm(MPI_Comm in_comm)
 {
-    world_comm = in_comm;
-    MPI_Comm_rank(world_comm, &world_rank);
-    MPI_Comm_size(world_comm, &world_size);
-
-    int desired = num_proc;
-    if (start_rank < 0) start_rank = 0;
-    if (start_rank >= world_size) desired = 0;
-    if (desired < 0) desired = 0;
-    if (start_rank + desired > world_size)
-        desired = world_size - start_rank;
-
-    int color = (world_rank >= start_rank && world_rank < start_rank + desired) ? 1 : MPI_UNDEFINED;
-    MPI_Comm_split(world_comm, color, world_rank, &active_comm);
-
-    if (color == 1)
+    world_comm  = in_comm;
+    active_comm = in_comm;
+    if (active_comm != MPI_COMM_NULL)
     {
         is_active = true;
         MPI_Comm_rank(active_comm, &active_rank);
@@ -213,6 +196,14 @@ void MPIPoissonSolver2D::build_local_solvers()
     // For transposed layout: (local_j_count, nx)
     chasing_method_x->init(local_j_count, nx, local_x_diag, is_no_Dirichlet, has_last_vector,
                            boundary_type_left, boundary_type_right);
+
+    // Allocate persistent work fields
+    f_local.init(local_i_count, ny, "f_local");
+    fhat_local.init(local_i_count, ny, "fhat_local");
+    fhat_local_T.init(local_j_count, nx, "fhat_local_T");
+    phat_local_T.init(local_j_count, nx, "phat_local_T");
+    phat_local.init(local_i_count, ny, "phat_local");
+    p_local.init(local_i_count, ny, "p_local");
 }
 
 /**
@@ -366,9 +357,6 @@ void MPIPoissonSolver2D::boundary_assembly(field2& f)
  */
 void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field2& f_local) const
 {
-    // Allocate local
-    f_local.init(local_i_count, ny, "local_f");
-
     // Prepare counts/displs in elements
     std::vector<int> sendcounts(active_size), displs(active_size);
     for (int r = 0; r < active_size; ++r)
@@ -470,7 +458,7 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
                   active_comm);
 
     // Unpack into out_j_slab (local_j_count, nx)
-    out_j_slab.init(local_j_count, nx, "local_transposed");
+    out_j_slab.set_size(local_j_count, nx);
     for (int s = 0; s < active_size; ++s)
     {
         int ic = i_counts[s];
@@ -542,7 +530,7 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
                   recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
                   active_comm);
 
-    out_i_slab.init(local_i_count, ny, "local_back");
+    out_i_slab.set_size(local_i_count, ny);
     for (int s = 0; s < active_size; ++s)
     {
         int jc = j_counts[s];
@@ -583,30 +571,21 @@ void MPIPoissonSolver2D::solve(field2& f)
     }
 
     // 2) Scatter to i-slab local fields
-    field2 f_local;
     scatter_global_f_to_local(f, f_local);
 
     // 3) Y-direction transform locally: f_local -> fhat_local
-    field2 fhat_local;
-    fhat_local.init(local_i_count, ny, "fhat_local");
     poisson_fft_y->transform(f_local, fhat_local);
 
     // 4) Global transpose: i-slab -> j-slab
-    field2 fhat_local_T;
     distributed_transpose_i_to_j(fhat_local, fhat_local_T);
 
     // 5) X-direction chasing on transposed slabs (local_j_count, nx)
-    field2 phat_local_T;
-    phat_local_T.init(local_j_count, nx, "phat_local_T");
     chasing_method_x->chasing(fhat_local_T, phat_local_T);
 
     // 6) Global transpose back: j-slab -> i-slab
-    field2 phat_local;
     distributed_transpose_j_to_i(phat_local_T, phat_local);
 
     // 7) Inverse Y-transform locally
-    field2 p_local;
-    p_local.init(local_i_count, ny, "p_local");
     poisson_fft_y->transform_transpose(phat_local, p_local);
 
     // 8) Gather back to root

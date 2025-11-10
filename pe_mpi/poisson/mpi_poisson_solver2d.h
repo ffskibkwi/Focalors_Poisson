@@ -82,6 +82,14 @@ private:
     // Local diagonal for x-chasing (subset for owned j indices)
     double* local_x_diag = nullptr;
 
+    // Persistent work buffers (allocated after decomposition)
+    field2 f_local;        // (local_i_count, ny)
+    field2 fhat_local;     // (local_i_count, ny)
+    field2 fhat_local_T;   // (local_j_count, nx)
+    field2 phat_local_T;   // (local_j_count, nx)
+    field2 phat_local;     // (local_i_count, ny)
+    field2 p_local;        // (local_i_count, ny)
+
 private:
     void setup_comm(MPI_Comm in_comm);
     void setup_problem_params();

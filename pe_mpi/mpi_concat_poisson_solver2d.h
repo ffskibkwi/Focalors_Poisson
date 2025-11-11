@@ -57,6 +57,7 @@ private:
     std::unordered_map<Domain2DUniform*, MPI_Comm>               domain_comm_map;
     std::unordered_map<Domain2DUniform*, DomainSolver2D*>        solver_map;
     std::unordered_map<Domain2DUniform*, field2*>                temp_fields;
+    std::unordered_map<Domain2DUniform*, std::pair<int,int>>     domain_world_range; // (start,count)
 
 private:
     // 层级构建与通信器划分
@@ -74,8 +75,11 @@ private:
 
     // 数据在全局 root 与子通信器 root 之间移动
     int  comm_rank_of_local_root(MPI_Comm subcomm) const;
-    void push_field_to_comm_root(MPI_Comm subcomm, field2& f_global) const;
-    void pull_field_from_comm_root(MPI_Comm subcomm, field2& f_global) const;
+    void push_field_to_comm_root(Domain2DUniform* domain, MPI_Comm subcomm, field2& f_global) const;
+    void pull_field_from_comm_root(Domain2DUniform* domain, MPI_Comm subcomm, field2& f_global) const;
+
+    // 打印并行规划（规约到 world_rank==0）
+    void print_parallel_plan() const;
 };
 
 

@@ -31,6 +31,8 @@ public:
     ~MPIGMRESSolver2D();
 
     void solve(field2& f) override;
+    void solve_collective_root_owned(field2& f) override;
+    bool is_comm_root() const override { return comm_rank == 0; }
 
     void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>& adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);

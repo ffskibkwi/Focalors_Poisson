@@ -41,6 +41,19 @@ public:
             delete[] value[i];
         delete[] value;
     }
+    int get_size() const { return cosize_n; }
+    void store_rowmajor(double* buf) const
+    {
+        for (int i = 0; i < cosize_n; ++i)
+            for (int j = 0; j < cosize_n; ++j)
+                buf[i * cosize_n + j] = value[i][j];
+    }
+    void load_rowmajor(const double* buf)
+    {
+        for (int i = 0; i < cosize_n; ++i)
+            for (int j = 0; j < cosize_n; ++j)
+                value[i][j] = buf[i * cosize_n + j];
+    }
     void print()
     {
         for (int i = 0; i < cosize_n; i++)

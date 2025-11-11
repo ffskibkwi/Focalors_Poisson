@@ -41,6 +41,8 @@ public:
     ~MPIPoissonSolver2D();
 
     void solve(field2& f) override;
+    void solve_collective_root_owned(field2& f) override;
+    bool is_comm_root() const override { return is_active && active_rank == 0; }
 
 private:
     // Global problem size

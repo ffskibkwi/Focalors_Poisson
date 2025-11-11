@@ -162,40 +162,50 @@ void MPIPoissonSolver2D::build_local_solvers()
     if (!is_active)
         return;
 
-    poisson_fft_y = new PoissonFFT2D_PP();
+    poisson_fft_y = nullptr;
     auto isDirLike = [](PDEBoundaryType t) {
         return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented;
     };
 
-    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+    // 当本地工作量为 0 时，不构建本地算子（但仍需参与 MPI 通信）
+    if (local_i_count > 0 && ny > 0)
     {
-        poisson_fft_y = new PoissonFFT2D_PP();
+        if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+        {
+            poisson_fft_y = new PoissonFFT2D_PP();
+        }
+        else if (boundary_type_down == PDEBoundaryType::Neumann && boundary_type_up == PDEBoundaryType::Neumann)
+        {
+            poisson_fft_y = new PoissonFFT2D_NN();
+        }
+        else if (isDirLike(boundary_type_down) && isDirLike(boundary_type_up))
+        {
+            poisson_fft_y = new PoissonFFT2D_DD();
+        }
+        else if ((isDirLike(boundary_type_down) && boundary_type_up == PDEBoundaryType::Neumann) ||
+                 (boundary_type_down == PDEBoundaryType::Neumann && isDirLike(boundary_type_up)))
+        {
+            poisson_fft_y = new PoissonFFT2D_DN();
+        }
+        if (poisson_fft_y)
+            poisson_fft_y->init(local_i_count, ny);
     }
-    else if (boundary_type_down == PDEBoundaryType::Neumann && boundary_type_up == PDEBoundaryType::Neumann)
-    {
-        poisson_fft_y = new PoissonFFT2D_NN();
-    }
-    else if (isDirLike(boundary_type_down) && isDirLike(boundary_type_up))
-    {
-        poisson_fft_y = new PoissonFFT2D_DD();
-    }
-    else if ((isDirLike(boundary_type_down) && boundary_type_up == PDEBoundaryType::Neumann) ||
-             (boundary_type_down == PDEBoundaryType::Neumann && isDirLike(boundary_type_up)))
-    {
-        poisson_fft_y = new PoissonFFT2D_DN();
-    }
-    poisson_fft_y->init(local_i_count, ny);
 
-    build_local_x_diag();
+    if (local_j_count > 0)
+        build_local_x_diag();
 
     bool is_no_Dirichlet = !(isDirLike(boundary_type_left) || isDirLike(boundary_type_right) ||
                              isDirLike(boundary_type_down) || isDirLike(boundary_type_up));
     bool has_last_vector = true;
 
-    chasing_method_x = new ChasingMethod2D();
-    // For transposed layout: (local_j_count, nx)
-    chasing_method_x->init(local_j_count, nx, local_x_diag, is_no_Dirichlet, has_last_vector,
-                           boundary_type_left, boundary_type_right);
+    chasing_method_x = nullptr;
+    if (local_j_count > 0 && nx > 0)
+    {
+        chasing_method_x = new ChasingMethod2D();
+        // For transposed layout: (local_j_count, nx)
+        chasing_method_x->init(local_j_count, nx, local_x_diag, is_no_Dirichlet, has_last_vector,
+                               boundary_type_left, boundary_type_right);
+    }
 
     // Allocate persistent work fields
     f_local.init(local_i_count, ny, "f_local");
@@ -365,6 +375,15 @@ void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field
         displs[r]     = i_displs[r] * ny;
     }
 
+    if (env_config && env_config->showCurrentStep)
+    {
+        if (active_rank == 0)
+        {
+            std::cout << "[Poisson][MPI] Scatterv: start (nx=" << nx << ", ny=" << ny << ")\n";
+            for (int r = 0; r < active_size; ++r)
+                std::cout << "  - rank " << r << ": sendcount=" << sendcounts[r] << " (i_count=" << i_counts[r] << ")\n";
+        }
+    }
     MPI_Scatterv(
         f_global.value,
         sendcounts.data(),
@@ -375,6 +394,11 @@ void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field
         MPI_DOUBLE,
         0,
         active_comm);
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Scatterv: done at rank " << active_rank
+                  << " (recv=" << sendcounts[active_rank] << ")\n";
+    }
 }
 
 /**
@@ -393,6 +417,15 @@ void MPIPoissonSolver2D::gather_local_to_global_f(const field2& f_local, field2&
         displs[r]     = i_displs[r] * ny;
     }
 
+    if (env_config && env_config->showCurrentStep)
+    {
+        if (active_rank == 0)
+        {
+            std::cout << "[Poisson][MPI] Gatherv: start\n";
+            for (int r = 0; r < active_size; ++r)
+                std::cout << "  - rank " << r << ": recvcount=" << recvcounts[r] << "\n";
+        }
+    }
     MPI_Gatherv(
         f_local.value,
         recvcounts[active_rank],
@@ -403,6 +436,11 @@ void MPIPoissonSolver2D::gather_local_to_global_f(const field2& f_local, field2&
         MPI_DOUBLE,
         0,
         active_comm);
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Gatherv: done at rank " << active_rank
+                  << " (send=" << recvcounts[active_rank] << ")\n";
+    }
 }
 
 /**
@@ -441,6 +479,11 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     std::vector<double> sendbuf(sdispls.back() + sendcounts.back());
     std::vector<double> recvbuf(rdispls.back() + recvcounts.back());
 
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Alltoallv (i->j): start at rank " << active_rank
+                  << " (local_i=" << local_i_count << ", local_j=" << local_j_count << ")\n";
+    }
     for (int r = 0; r < active_size; ++r)
     {
         int j0 = j_displs[r];
@@ -456,6 +499,10 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
                   recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
                   active_comm);
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Alltoallv (i->j): done at rank " << active_rank << "\n";
+    }
 
     // Unpack into out_j_slab (local_j_count, nx)
     out_j_slab.set_size(local_j_count, nx);
@@ -510,6 +557,11 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
     std::vector<double> sendbuf(sdispls.back() + sendcounts.back());
     std::vector<double> recvbuf(rdispls.back() + recvcounts.back());
 
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Alltoallv (j->i): start at rank " << active_rank
+                  << " (local_i=" << local_i_count << ", local_j=" << local_j_count << ")\n";
+    }
     for (int r = 0; r < active_size; ++r)
     {
         int i0 = i_displs[r];
@@ -529,6 +581,10 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
     MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
                   recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
                   active_comm);
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] Alltoallv (j->i): done at rank " << active_rank << "\n";
+    }
 
     out_i_slab.set_size(local_i_count, ny);
     for (int s = 0; s < active_size; ++s)
@@ -562,37 +618,82 @@ void MPIPoissonSolver2D::solve(field2& f)
         return;
 
     if (env_config && env_config->showCurrentStep && active_rank == 0)
+    {
         std::cout << "[Poisson][MPI] solve: start" << std::endl;
+        double s_in = f.sum();
+        std::cout << "[Poisson][MPI] root input f.sum(before asm)=" << s_in << std::endl;
+    }
 
     // 1) Boundary assembly on root, since full field is only on rank 0
     if (active_rank == 0 && var && domain)
     {
         boundary_assembly(f);
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_after = f.sum();
+            std::cout << "[Poisson][MPI] root input f.sum(after asm)=" << s_after << std::endl;
+        }
+    }
+
+    if (env_config && env_config->showCurrentStep)
+    {
+        std::cout << "[Poisson][MPI] rank " << active_rank
+                  << " local_i=" << local_i_count << " local_j=" << local_j_count
+                  << " nx=" << nx << " ny=" << ny << std::endl;
     }
 
     // 2) Scatter to i-slab local fields
     scatter_global_f_to_local(f, f_local);
 
     // 3) Y-direction transform locally: f_local -> fhat_local
-    poisson_fft_y->transform(f_local, fhat_local);
+    if (poisson_fft_y && local_i_count > 0)
+        poisson_fft_y->transform(f_local, fhat_local);
 
     // 4) Global transpose: i-slab -> j-slab
     distributed_transpose_i_to_j(fhat_local, fhat_local_T);
 
     // 5) X-direction chasing on transposed slabs (local_j_count, nx)
-    chasing_method_x->chasing(fhat_local_T, phat_local_T);
+    if (chasing_method_x && local_j_count > 0)
+        chasing_method_x->chasing(fhat_local_T, phat_local_T);
 
     // 6) Global transpose back: j-slab -> i-slab
     distributed_transpose_j_to_i(phat_local_T, phat_local);
 
     // 7) Inverse Y-transform locally
-    poisson_fft_y->transform_transpose(phat_local, p_local);
+    if (poisson_fft_y && local_i_count > 0)
+        poisson_fft_y->transform_transpose(phat_local, p_local);
 
     // 8) Gather back to root
+    if (env_config && env_config->showCurrentStep && active_rank == 0)
+    {
+        double s_local = p_local.sum();
+        std::cout << "[Poisson][MPI] rank0 pre-gather p_local.sum=" << s_local
+                  << " (nx=" << nx << ", ny=" << ny << ", li=" << local_i_count << ", lj=" << local_j_count << ")\n";
+    }
     gather_local_to_global_f(p_local, f);
 
     if (env_config && env_config->showCurrentStep && active_rank == 0)
-        std::cout << "[Poisson][MPI] solve: done" << std::endl;
+    {
+        double s_f = f.sum();
+        std::cout << "[Poisson][MPI] solve: done, f.sum=" << s_f << std::endl;
+    }
+}
+
+void MPIPoissonSolver2D::solve_collective_root_owned(field2& f)
+{
+    if (!is_active)
+        return;
+    if (active_rank == 0)
+    {
+        solve(f);
+    }
+    else
+    {
+        // 非 root：提供占位缓冲参与通信
+        field2 dummy;
+        dummy.init(nx, ny);
+        solve(dummy);
+    }
 }
 
 /**

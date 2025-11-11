@@ -107,19 +107,49 @@ void ConcatPoissonSolver2D::solve()
             temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
             field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
         }
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_pre = temp_fields[domain]->sum();
+            std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+        }
         solver_map[domain]->solve(*temp_fields[domain]);
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_post = temp_fields[domain]->sum();
+            std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+        }
     }
     
     //Root equation
     for (auto &[location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
+    if (env_config && env_config->showCurrentStep)
+    {
+        double s_root_pre = field_map[tree_root]->sum();
+        std::cout << "[Concat] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre << std::endl;
+    }
     solver_map[tree_root]->solve(*field_map[tree_root]);
+    if (env_config && env_config->showCurrentStep)
+    {
+        double s_root_post = field_map[tree_root]->sum();
+        std::cout << "[Concat] Root domain " << tree_root->name << " field sum after solve=" << s_root_post << std::endl;
+    }
 
     //Branch equations
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
         Domain2DUniform* d = *it;
         field_map[d]->bond_add(parent_map[d].first, -1., *field_map[parent_map[d].second]);
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_pre = field_map[d]->sum();
+            std::cout << "[Concat] Branch domain " << d->name << " field sum before solve=" << s_pre << std::endl;
+        }
         solver_map[d]->solve(*field_map[d]);
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_post = field_map[d]->sum();
+            std::cout << "[Concat] Branch domain " << d->name << " field sum after solve=" << s_post << std::endl;
+        }
     }
 }

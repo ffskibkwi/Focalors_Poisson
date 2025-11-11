@@ -131,7 +131,10 @@ void PoissonSolver2D::solve(field2& f)
 
     std::swap(f, buffer);
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[Poisson] solve: done" << std::endl;
+    {
+        double s_f = f.sum();
+        std::cout << "[Poisson] solve: done, f.sum=" << s_f << std::endl;
+    }
 }
 
 void PoissonSolver2D::cal_lambda() // The current version is only for OpenMP

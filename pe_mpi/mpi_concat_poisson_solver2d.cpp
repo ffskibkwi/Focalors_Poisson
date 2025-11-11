@@ -434,13 +434,14 @@ void MPIConcatPoissonSolver2D::solve_branch_equations()
 {
     if (env_config && env_config->showCurrentStep && world_rank == 0)
         std::cout << "[MPIConcat] Branch equations: start" << std::endl;
-    for (int lev = static_cast<int>(levels.size()) - 1; lev >= 1; --lev)
+    // 串行逻辑：由浅到深（父域先于子域），保证回代时父域解已就绪
+    for (size_t lev = 1; lev < levels.size(); ++lev)
     {
         if (env_config && env_config->showCurrentStep && world_rank == 0)
         {
             std::ostringstream oss;
-            oss << "[MPIConcat] Branch level " << lev << ": " << levels[static_cast<size_t>(lev)].size() << " domain(s)\n";
-            for (auto* d : levels[static_cast<size_t>(lev)])
+            oss << "[MPIConcat] Branch level " << lev << ": " << levels[lev].size() << " domain(s)\n";
+            for (auto* d : levels[lev])
             {
                 auto it = domain_world_range.find(d);
                 if (it != domain_world_range.end())

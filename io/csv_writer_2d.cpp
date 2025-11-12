@@ -214,37 +214,45 @@ namespace IO
 
         for (auto& domain : domains)
         {
-            auto& field         = field_map.at(domain);
-            auto& buffers       = buffer_map.at(domain);
-            auto& boundary_type = boundary_types.at(domain);
+            try
+            {
+                auto& field         = field_map.at(domain);
+                auto& buffers       = buffer_map.at(domain);
+                auto& boundary_type = boundary_types.at(domain);
 
-            int nx = field->get_nx();
-            int ny = field->get_ny();
-
-            if (var.position_type == VariablePositionType::XEdge)
-            {
-                if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
-                    field_to_csv(*field, filename + "_" + domain->name);
+                int nx = field->get_nx();
+                int ny = field->get_ny();
+                if (var.position_type == VariablePositionType::XEdge)
+                {
+                    if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
+                        field_to_csv(*field, filename + "_" + domain->name);
+                    else
+                        field_and_buffer_to_csv(*field,
+                                                buffers.at(LocationType::Right),
+                                                filename + "_" + domain->name,
+                                                VariablePositionType::XEdge);
+                }
+                else if (var.position_type == VariablePositionType::YEdge)
+                {
+                    if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
+                        field_to_csv(*field, filename + "_" + domain->name);
+                    else
+                        field_and_buffer_to_csv(*field,
+                                                buffers.at(LocationType::Up),
+                                                filename + "_" + domain->name,
+                                                VariablePositionType::YEdge);
+                }
                 else
-                    field_and_buffer_to_csv(*field,
-                                            buffers.at(LocationType::Right),
-                                            filename + "_" + domain->name,
-                                            VariablePositionType::XEdge);
-            }
-            else if (var.position_type == VariablePositionType::YEdge)
-            {
-                if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
+                {
                     field_to_csv(*field, filename + "_" + domain->name);
-                else
-                    field_and_buffer_to_csv(*field,
-                                            buffers.at(LocationType::Up),
-                                            filename + "_" + domain->name,
-                                            VariablePositionType::YEdge);
+                }
             }
-            else
+            catch (const std::exception& e)
             {
-                field_to_csv(*field, filename + "_" + domain->name);
+                std::cerr << "[var_to_csv] Error: " << e.what() << std::endl;
+                return false;
             }
         }
+        return true;
     }
 } // namespace IO

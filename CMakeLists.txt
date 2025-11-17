@@ -32,6 +32,12 @@ file(GLOB_RECURSE SOLVER_SOURCE_FILES
     "${CMAKE_SOURCE_DIR}/pe_mpi/*.cpp"
 )
 
+# 排除 pe/poisson_old 和 pe/concat_old 目录下所有 cpp 文件
+file(GLOB_RECURSE POISSON_OLD_SOURCE_FILES "${CMAKE_SOURCE_DIR}/pe/poisson_old/*.cpp")
+file(GLOB_RECURSE CONCAT_OLD_SOURCE_FILES "${CMAKE_SOURCE_DIR}/pe/concat_old/*.cpp")
+list(REMOVE_ITEM SOLVER_SOURCE_FILES ${POISSON_OLD_SOURCE_FILES})
+list(REMOVE_ITEM SOLVER_SOURCE_FILES ${CONCAT_OLD_SOURCE_FILES})
+
 add_library(Solver ${SOLVER_SOURCE_FILES} ${SOLVER_HEADER_FILES})
 target_include_directories(Solver PUBLIC ${CMAKE_SOURCE_DIR})
 target_precompile_headers(Solver PUBLIC base/pch.h)

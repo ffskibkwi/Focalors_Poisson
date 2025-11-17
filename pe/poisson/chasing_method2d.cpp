@@ -8,8 +8,8 @@ void ChasingMethod2D::init(int nx_in, int ny_in, double* _x_diag, bool _is_no_Di
     x_diag           = _x_diag;
     is_no_Dirichlet  = _is_no_Dirichlet;
     has_last_vector  = _has_last_vector;
-    boundary_type_down = boundary_type_down;
-    boundary_type_up = boundary_type_up;
+    this->boundary_type_down = boundary_type_down;
+    this->boundary_type_up = boundary_type_up;
 
     y.init(nx, ny, "y");
 

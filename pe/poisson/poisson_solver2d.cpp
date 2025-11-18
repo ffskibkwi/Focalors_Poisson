@@ -82,6 +82,10 @@ void PoissonSolver2D::init()
     {
         poisson_fft_y = new PoissonFFT2D_DN();
     }
+    else if (boundary_type_down == PDEBoundaryType::Neumann && isDirLike(boundary_type_up))
+    {
+        poisson_fft_y = new PoissonFFT2D_ND();
+    }
     poisson_fft_y->init(nx, ny);
 
     lambda_y = new double[ny];

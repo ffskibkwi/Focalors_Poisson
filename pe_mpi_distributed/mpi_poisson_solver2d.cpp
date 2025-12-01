@@ -3,12 +3,12 @@
 #include <cstring>
 #include <iostream>
 
-MPIPoissonSolver2D::MPIPoissonSolver2D(DDomain2D*         in_domain,
-                                       PDEBoundaryType    in_bc_left,
-                                       PDEBoundaryType    in_bc_right,
-                                       PDEBoundaryType    in_bc_down,
-                                       PDEBoundaryType    in_bc_up,
-                                       EnvironmentConfig* in_env_config)
+MPIDistributedPoissonSolver2D::MPIDistributedPoissonSolver2D(DDomain2D*         in_domain,
+                                                             PDEBoundaryType    in_bc_left,
+                                                             PDEBoundaryType    in_bc_right,
+                                                             PDEBoundaryType    in_bc_down,
+                                                             PDEBoundaryType    in_bc_up,
+                                                             EnvironmentConfig* in_env_config)
     : domain(in_domain)
     , bc_left(in_bc_left)
     , bc_right(in_bc_right)
@@ -19,29 +19,39 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(DDomain2D*         in_domain,
     build_local_solvers();
 }
 
-MPIPoissonSolver2D::~MPIPoissonSolver2D()
+MPIDistributedPoissonSolver2D::~MPIDistributedPoissonSolver2D() { release_local_solvers(); }
+
+void MPIDistributedPoissonSolver2D::release_local_solvers()
 {
-    release_local_solvers();
+    if (poisson_fft_y)
+    {
+        delete poisson_fft_y;
+        poisson_fft_y = nullptr;
+    }
+    if (chasing_method_x)
+    {
+        delete chasing_method_x;
+        chasing_method_x = nullptr;
+    }
+    if (local_x_diag)
+    {
+        delete[] local_x_diag;
+        local_x_diag = nullptr;
+    }
 }
 
-void MPIPoissonSolver2D::release_local_solvers()
+void MPIDistributedPoissonSolver2D::build_local_solvers()
 {
-    if (poisson_fft_y) { delete poisson_fft_y; poisson_fft_y = nullptr; }
-    if (chasing_method_x) { delete chasing_method_x; chasing_method_x = nullptr; }
-    if (local_x_diag) { delete[] local_x_diag; local_x_diag = nullptr; }
-}
-
-void MPIPoissonSolver2D::build_local_solvers()
-{
-    if (!domain) return;
+    if (!domain)
+        return;
 
     int local_nx = domain->get_local_nx();
-    int ny = domain->get_global_ny();
-    int nx = domain->get_global_nx();
+    int ny       = domain->get_global_ny();
+    int nx       = domain->get_global_nx();
 
     // 1. Y-direction FFT (Local)
     // Works on columns of size ny. Local data has local_nx columns.
-    poisson_fft_y = nullptr;
+    poisson_fft_y  = nullptr;
     auto isDirLike = [](PDEBoundaryType t) {
         return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented;
     };
@@ -68,7 +78,7 @@ void MPIPoissonSolver2D::build_local_solvers()
     // We need to know local_j_count.
     std::vector<int> j_counts, j_displs;
     domain->get_j_decomposition(j_counts, j_displs);
-    int rank = domain->get_rank();
+    int rank          = domain->get_rank();
     int local_j_count = j_counts[rank];
 
     if (local_j_count > 0)
@@ -93,7 +103,7 @@ void MPIPoissonSolver2D::build_local_solvers()
     phat_local.init(local_nx, ny, "phat_local");
 }
 
-void MPIPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
+void MPIDistributedPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
 {
     int ny = domain->get_global_ny();
     lambda_y_out.resize(ny);
@@ -113,21 +123,22 @@ void MPIPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
     }
 }
 
-void MPIPoissonSolver2D::build_local_x_diag()
+void MPIDistributedPoissonSolver2D::build_local_x_diag()
 {
-    if (!domain) return;
+    if (!domain)
+        return;
     std::vector<int> j_counts, j_displs;
     domain->get_j_decomposition(j_counts, j_displs);
-    int rank = domain->get_rank();
+    int rank          = domain->get_rank();
     int local_j_count = j_counts[rank];
-    int j_start = j_displs[rank];
+    int j_start       = j_displs[rank];
 
     std::vector<double> lambda_y_vec;
     cal_lambda(lambda_y_vec);
 
     local_x_diag = new double[local_j_count];
-    double hx = domain->get_hx();
-    double hy = domain->get_hy();
+    double hx    = domain->get_hx();
+    double hy    = domain->get_hy();
 
     for (int j = 0; j < local_j_count; ++j)
     {
@@ -135,13 +146,13 @@ void MPIPoissonSolver2D::build_local_x_diag()
     }
 }
 
-void MPIPoissonSolver2D::boundary_assembly_local(DField2D& f)
+void MPIDistributedPoissonSolver2D::boundary_assembly_local(DField2D& f)
 {
     // Apply BCs to the local part of the field
     // Note: We assume homogeneous Dirichlet/Neumann for the solver core (RHS modification).
     // The actual values are usually 0 for the solver, but if we have non-zero BCs, we modify RHS.
     // Here we assume standard Poisson solver logic: modify RHS for Dirichlet/Neumann.
-    
+
     // BUT: The original code used `var->boundary_value_map`. We don't have `var` here.
     // We only have `bc_left` etc.
     // If the user wants to support non-zero BCs, they should have modified f before calling solve,
@@ -159,15 +170,16 @@ void MPIPoissonSolver2D::boundary_assembly_local(DField2D& f)
     // *Correction*: The user asked to analyze the *algorithm flow*.
     // The algorithm flow includes boundary assembly.
     // If we drop it, we lose functionality.
-    // But `MPIPoissonSolver2D` constructor with `DDomain2D` doesn't take `Variable`.
+    // But `MPIDistributedPoissonSolver2D` constructor with `DDomain2D` doesn't take `Variable`.
     // So we can't do it.
     // We will assume the user handles RHS modification before calling `solve`.
 }
 
-void MPIPoissonSolver2D::solve(DField2D& f)
+void MPIDistributedPoissonSolver2D::solve(DField2D& f)
 {
-    if (!domain) return;
-    
+    if (!domain)
+        return;
+
     // 1. Boundary Assembly (Skipped as discussed, assume f is prepared)
     // boundary_assembly_local(f);
 
@@ -192,23 +204,23 @@ void MPIPoissonSolver2D::solve(DField2D& f)
         poisson_fft_y->transform_transpose(phat_local, f_local); // Result back to f_local
 }
 
-void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, field2& out_j_slab) const
+void MPIDistributedPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, field2& out_j_slab) const
 {
     // Logic similar to original but using DDomain2D info
-    int rank = domain->get_rank();
-    int size = domain->get_size();
+    int      rank = domain->get_rank();
+    int      size = domain->get_size();
     MPI_Comm comm = domain->get_comm();
 
     const std::vector<int>& i_counts = domain->get_i_counts();
     const std::vector<int>& i_displs = domain->get_i_displs();
-    
+
     std::vector<int> j_counts, j_displs;
     domain->get_j_decomposition(j_counts, j_displs);
 
     int local_i_count = i_counts[rank];
     int local_j_count = j_counts[rank];
-    int ny = domain->get_global_ny();
-    int nx = domain->get_global_nx();
+    int ny            = domain->get_global_ny();
+    int nx            = domain->get_global_nx();
 
     // Prepare Alltoallv
     std::vector<int> sendcounts(size), sdispls(size);
@@ -219,12 +231,13 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
         sendcounts[r] = local_i_count * j_counts[r];
         recvcounts[r] = i_counts[r] * local_j_count;
     }
-    
-    sdispls[0] = 0; rdispls[0] = 0;
+
+    sdispls[0] = 0;
+    rdispls[0] = 0;
     for (int r = 1; r < size; ++r)
     {
-        sdispls[r] = sdispls[r-1] + sendcounts[r-1];
-        rdispls[r] = rdispls[r-1] + recvcounts[r-1];
+        sdispls[r] = sdispls[r - 1] + sendcounts[r - 1];
+        rdispls[r] = rdispls[r - 1] + recvcounts[r - 1];
     }
 
     std::vector<double> sendbuf(sdispls.back() + sendcounts.back());
@@ -233,8 +246,8 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     // Pack
     for (int r = 0; r < size; ++r)
     {
-        int j0 = j_displs[r];
-        int jc = j_counts[r];
+        int     j0  = j_displs[r];
+        int     jc  = j_counts[r];
         double* dst = sendbuf.data() + sdispls[r];
         for (int i = 0; i < local_i_count; ++i)
         {
@@ -242,16 +255,22 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
         }
     }
 
-    MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
-                  recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
+    MPI_Alltoallv(sendbuf.data(),
+                  sendcounts.data(),
+                  sdispls.data(),
+                  MPI_DOUBLE,
+                  recvbuf.data(),
+                  recvcounts.data(),
+                  rdispls.data(),
+                  MPI_DOUBLE,
                   comm);
 
     // Unpack
     out_j_slab.set_size(local_j_count, nx);
     for (int s = 0; s < size; ++s)
     {
-        int ic = i_counts[s];
-        int i0 = i_displs[s];
+        int           ic  = i_counts[s];
+        int           i0  = i_displs[s];
         const double* src = recvbuf.data() + rdispls[s];
         for (int il = 0; il < ic; ++il)
         {
@@ -264,21 +283,21 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     }
 }
 
-void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, field2& out_i_slab) const
+void MPIDistributedPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, field2& out_i_slab) const
 {
-    int rank = domain->get_rank();
-    int size = domain->get_size();
+    int      rank = domain->get_rank();
+    int      size = domain->get_size();
     MPI_Comm comm = domain->get_comm();
 
     const std::vector<int>& i_counts = domain->get_i_counts();
     const std::vector<int>& i_displs = domain->get_i_displs();
-    
+
     std::vector<int> j_counts, j_displs;
     domain->get_j_decomposition(j_counts, j_displs);
 
     int local_i_count = i_counts[rank];
     int local_j_count = j_counts[rank];
-    int ny = domain->get_global_ny();
+    int ny            = domain->get_global_ny();
 
     std::vector<int> sendcounts(size), sdispls(size);
     std::vector<int> recvcounts(size), rdispls(size);
@@ -288,11 +307,12 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
         sendcounts[r] = i_counts[r] * local_j_count;
         recvcounts[r] = local_i_count * j_counts[r];
     }
-    sdispls[0] = 0; rdispls[0] = 0;
+    sdispls[0] = 0;
+    rdispls[0] = 0;
     for (int r = 1; r < size; ++r)
     {
-        sdispls[r] = sdispls[r-1] + sendcounts[r-1];
-        rdispls[r] = rdispls[r-1] + recvcounts[r-1];
+        sdispls[r] = sdispls[r - 1] + sendcounts[r - 1];
+        rdispls[r] = rdispls[r - 1] + recvcounts[r - 1];
     }
 
     std::vector<double> sendbuf(sdispls.back() + sendcounts.back());
@@ -301,8 +321,8 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
     // Pack
     for (int r = 0; r < size; ++r)
     {
-        int i0 = i_displs[r];
-        int ic = i_counts[r];
+        int     i0  = i_displs[r];
+        int     ic  = i_counts[r];
         double* dst = sendbuf.data() + sdispls[r];
         for (int il = 0; il < ic; ++il)
         {
@@ -313,16 +333,22 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
         }
     }
 
-    MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
-                  recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
+    MPI_Alltoallv(sendbuf.data(),
+                  sendcounts.data(),
+                  sdispls.data(),
+                  MPI_DOUBLE,
+                  recvbuf.data(),
+                  recvcounts.data(),
+                  rdispls.data(),
+                  MPI_DOUBLE,
                   comm);
 
     // Unpack
     out_i_slab.set_size(local_i_count, ny);
     for (int s = 0; s < size; ++s)
     {
-        int jc = j_counts[s];
-        int j0 = j_displs[s];
+        int           jc  = j_counts[s];
+        int           j0  = j_displs[s];
         const double* src = recvbuf.data() + rdispls[s];
         for (int il = 0; il < local_i_count; ++il)
         {

@@ -6,12 +6,14 @@ void TimeAdvancingConfig::set_dt(double in_dt)
     if (t_max != 0.0 && num_iterations == 0)
     {
         num_iterations = static_cast<int>(t_max / dt);
-    }else if(t_max == 0.0 && num_iterations != 0)
+    }
+    else if (t_max == 0.0 && num_iterations != 0)
     {
         t_max = static_cast<double>(num_iterations) * dt;
-    }else if(t_max != 0.0 && num_iterations != 0)
+    }
+    else if (t_max != 0.0 && num_iterations != 0)
     {
-        //We think total number of iterations is more important
+        // We think total number of iterations is more important
         t_max = static_cast<double>(num_iterations) * dt;
     }
 }
@@ -33,6 +35,8 @@ void TimeAdvancingConfig::set_num_iterations(int in_num_iterations)
         t_max = static_cast<double>(num_iterations) * dt;
     }
 }
+
+void TimeAdvancingConfig::set_corr_iter(int in_corr_iter) { corr_iter = in_corr_iter; }
 
 void PhysicsConfig::set_nu(double in_nu)
 {

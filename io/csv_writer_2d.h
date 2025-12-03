@@ -13,4 +13,6 @@ namespace IO
     bool field_and_buffer_to_csv(field2& field, const std::string& filename, VariablePositionType pos_type);
 
     bool var_to_csv(const Variable& var, const std::string& filename);
+
+    bool var_to_csv_full(const Variable& var, const std::string& filename);
 } // namespace IO

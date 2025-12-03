@@ -255,4 +255,45 @@ namespace IO
         }
         return true;
     }
+
+    bool var_to_csv_full(const Variable& var, const std::string& filename)
+    {
+        auto& domains    = var.geometry->domains;
+        auto& field_map  = var.field_map;
+        auto& buffer_map = var.buffer_map;
+
+        for (auto& domain : domains)
+        {
+            try
+            {
+                auto& field   = field_map.at(domain);
+                auto& buffers = buffer_map.at(domain);
+
+                if (var.position_type == VariablePositionType::XEdge)
+                {
+                    field_and_buffer_to_csv(*field,
+                                            buffers.at(LocationType::Right),
+                                            filename + "_" + domain->name,
+                                            VariablePositionType::XEdge);
+                }
+                else if (var.position_type == VariablePositionType::YEdge)
+                {
+                    field_and_buffer_to_csv(*field,
+                                            buffers.at(LocationType::Up),
+                                            filename + "_" + domain->name,
+                                            VariablePositionType::YEdge);
+                }
+                else
+                {
+                    field_to_csv(*field, filename + "_" + domain->name);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[var_to_csv_full] Error: " << e.what() << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
 } // namespace IO

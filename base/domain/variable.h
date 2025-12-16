@@ -34,6 +34,7 @@ public:
     void set_center_field(Domain2DUniform* s, field2& f);
     void set_x_edge_field(Domain2DUniform* s, field2& f);
     void set_y_edge_field(Domain2DUniform* s, field2& f);
+    void set_corner_field(Domain2DUniform* s, field2& f);
 
     void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
 

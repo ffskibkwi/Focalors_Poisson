@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <stdexcept>
 
 enum class LocationType : std::uint8_t
@@ -69,5 +70,18 @@ enum class VariablePositionType : std::uint8_t
     Center,
     XEdge,
     YEdge,
+    Corner,
     Null
 };
+
+namespace std
+{
+template <>
+struct hash<LocationType>
+{
+    std::size_t operator()(const LocationType& k) const
+    {
+        return std::hash<std::uint8_t>()(static_cast<std::uint8_t>(k));
+    }
+};
+} // namespace std

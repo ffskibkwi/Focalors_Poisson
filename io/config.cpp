@@ -49,3 +49,27 @@ void PhysicsConfig::set_Re(double in_Re)
     Re = in_Re;
     nu = 1.0 / Re;
 }
+
+// Basic parameter setters
+void PhysicsConfig::set_model_type(int in_model_type) { model_type = in_model_type; }
+
+void PhysicsConfig::set_mu_min(double in_mu_min) { mu_min = in_mu_min; }
+
+void PhysicsConfig::set_mu_max(double in_mu_max) { mu_max = in_mu_max; }
+
+// Power Law model setter (K and n)
+void PhysicsConfig::set_power_law(double in_k, double in_n)
+{
+    k = in_k;
+    n = in_n;
+}
+
+// Carreau model setter (mu_0, mu_inf, a, lambda, n)
+void PhysicsConfig::set_carreau(double in_mu_0, double in_mu_inf, double in_a, double in_lambda, double in_n)
+{
+    mu_0   = in_mu_0;
+    mu_inf = in_mu_inf;
+    a      = in_a;
+    lambda = in_lambda;
+    n      = in_n;
+}

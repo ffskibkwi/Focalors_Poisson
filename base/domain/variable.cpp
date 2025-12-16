@@ -111,6 +111,25 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::YEdge;
 }
 
+void Variable::set_corner_field(Domain2DUniform* s, field2& f)
+{
+    check_geometry(s);
+
+    if (f.get_name() == "Default")
+        f.init(s->nx + 1, s->ny + 1, name + "_" + s->name);
+    else
+        f.init(s->nx + 1, s->ny + 1);
+
+    field_map[s] = &f;
+
+    buffer_map[s][LocationType::Left]  = new double[s->ny + 1];
+    buffer_map[s][LocationType::Right] = new double[s->ny + 1];
+    buffer_map[s][LocationType::Down]  = new double[s->nx + 1];
+    buffer_map[s][LocationType::Up]    = new double[s->nx + 1];
+
+    position_type = VariablePositionType::Corner;
+}
+
 void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
 {
     check_geometry(s);

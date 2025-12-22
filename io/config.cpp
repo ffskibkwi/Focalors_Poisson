@@ -64,6 +64,14 @@ void PhysicsConfig::set_power_law(double in_k, double in_n)
     n = in_n;
 }
 
+void PhysicsConfig::set_power_law_dimensionless(double in_Re_PL, double in_n)
+{
+    // Re_PL = rho * U^(2-n) * L^n / k
+    // k = 1.0 / Re_PL
+    k = 1.0 / in_Re_PL;
+    n = in_n;
+}
+
 // Carreau model setter (mu_0, mu_inf, a, lambda, n)
 void PhysicsConfig::set_carreau(double in_mu_0, double in_mu_inf, double in_a, double in_lambda, double in_n)
 {
@@ -72,4 +80,19 @@ void PhysicsConfig::set_carreau(double in_mu_0, double in_mu_inf, double in_a, d
     a      = in_a;
     lambda = in_lambda;
     n      = in_n;
+}
+
+void PhysicsConfig::set_carreau_dimensionless(double in_Re_0, double in_Re_inf, double in_Wi, double in_a, double in_n)
+{
+    // Re_0 = rho * U * L / mu_0   => mu_0 = 1.0 / Re_0
+    mu_0 = 1.0 / in_Re_0;
+
+    // Re_inf = rho * U * L / mu_inf => mu_inf = 1.0 / Re_inf
+    mu_inf = 1.0 / in_Re_inf;
+
+    // Wi = lambda * U / L        => lambda = Wi
+    lambda = in_Wi;
+
+    a = in_a;
+    n = in_n;
 }

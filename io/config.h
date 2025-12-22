@@ -58,7 +58,16 @@ public:
 
     // Power Law model setter (K and n)
     void set_power_law(double in_k, double in_n);
+    // Power Law model setter (Re_PL and n)
+    // Re_PL = rho * U^(2-n) * L^n / k
+    // k = 1.0 / Re_PL (assuming rho=1, U=1, L=1)
+    void set_power_law_dimensionless(double in_Re_PL, double in_n);
 
     // Carreau model setter (mu_0, mu_inf, a, lambda, n)
     void set_carreau(double in_mu_0, double in_mu_inf, double in_a, double in_lambda, double in_n);
+    // Carreau model setter (Re_0, Re_inf, Wi, a, n)
+    // Re_0 = rho * U * L / mu_0   => mu_0 = 1.0 / Re_0
+    // Re_inf = rho * U * L / mu_inf => mu_inf = 1.0 / Re_inf
+    // Wi = lambda * U / L        => lambda = Wi
+    void set_carreau_dimensionless(double in_Re_0, double in_Re_inf, double in_Wi, double in_a, double in_n);
 };

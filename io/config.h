@@ -61,7 +61,9 @@ public:
     // Power Law model setter (Re_PL and n)
     // Re_PL = rho * U^(2-n) * L^n / k
     // k = 1.0 / Re_PL (assuming rho=1, U=1, L=1)
-    void set_power_law_dimensionless(double in_Re_PL, double in_n);
+    // Optional parameters in_mu_min and in_mu_max allow user to override default viscosity limits.
+    // Use -1.0 as sentinel value to indicate "use default value".
+    void set_power_law_dimensionless(double in_Re_PL, double in_n, double in_mu_min = -1.0, double in_mu_max = -1.0);
 
     // Carreau model setter (mu_0, mu_inf, a, lambda, n)
     void set_carreau(double in_mu_0, double in_mu_inf, double in_a, double in_lambda, double in_n);

@@ -64,12 +64,45 @@ void PhysicsConfig::set_power_law(double in_k, double in_n)
     n = in_n;
 }
 
-void PhysicsConfig::set_power_law_dimensionless(double in_Re_PL, double in_n)
+void PhysicsConfig::set_power_law_dimensionless(double in_Re_PL, double in_n, double in_mu_min, double in_mu_max)
 {
     // Re_PL = rho * U^(2-n) * L^n / k
     // k = 1.0 / Re_PL
     k = 1.0 / in_Re_PL;
     n = in_n;
+
+    // For shear-thinning fluids (n <= 1), set viscosity limits to avoid numerical instability.
+    // Power Law viscosity: mu = K * gamma_dot^(n-1)
+    // When n < 1 (n-1 < 0):
+    //   - As gamma_dot -> 0, mu -> infinity (causes numerical blow-up)
+    //   - As gamma_dot -> infinity, mu -> 0 (may cause division issues)
+    // Therefore, we need to clamp viscosity within reasonable bounds.
+    if (in_n <= 1.0)
+    {
+        // mu_max: Upper limit to prevent viscosity from becoming too large at low shear rates
+        // If user specified a valid value (>= 0), use it; otherwise use default (100 * k)
+        if (in_mu_max >= 0.0)
+        {
+            mu_max = in_mu_max;
+        }
+        else
+        {
+            // Default: 100 times the reference viscosity (k = 1/Re_PL)
+            mu_max = 10000.0 / in_Re_PL;
+        }
+
+        // mu_min: Lower limit to prevent viscosity from becoming too small at high shear rates
+        // If user specified a valid value (>= 0), use it; otherwise use default (1e-4)
+        if (in_mu_min >= 0.0)
+        {
+            mu_min = in_mu_min;
+        }
+        else
+        {
+            // Default: 0.01 times the reference viscosity (k = 1/Re_PL)
+            mu_min = 0.01 / in_Re_PL;
+        }
+    }
 }
 
 // Carreau model setter (mu_0, mu_inf, a, lambda, n)

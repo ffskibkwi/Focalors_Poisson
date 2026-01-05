@@ -211,7 +211,7 @@ void PoissonSolver2D::boundary_assembly(field2& f)
     }
     if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
     {
-        double* boundary_value = var_value_map[LocationType::Left];
+        double* boundary_value = var_value_map[LocationType::Right];
         for (int j = 0; j < ny; j++)
             f(nx - 1, j) -= boundary_value[j] / hx;
     }

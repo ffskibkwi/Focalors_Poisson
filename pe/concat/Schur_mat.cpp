@@ -1,4 +1,15 @@
 #include "Schur_mat.h"
+#include "io/csv_writer_2d.h"
+#include <filesystem>
+#include <iostream>
+
+
+void Schur_mat::dump_to_csv(const std::string& directory)
+{
+    std::string filename = directory + "/" + name + ".csv";
+    // Check if IO module available
+    IO::array_to_csv(value, cosize_n, cosize_n, filename);
+}
 
 void Schur_mat_left::construct(DomainSolver2D* branch_solver)
 {

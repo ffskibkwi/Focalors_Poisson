@@ -1,12 +1,18 @@
 #pragma once
 
+#include <string>
+
 class EnvironmentConfig
 {
 public:
     bool showCurrentStep = false; // Print current step
     bool showGmresRes    = false; // Print residual history of GMRES
 
-    EnvironmentConfig() {};
+    // Debug Output Control
+    bool        debugMode      = false;
+    std::string debugOutputDir = "./debug_output/";
+
+    EnvironmentConfig() = default;
 };
 
 class TimeAdvancingConfig

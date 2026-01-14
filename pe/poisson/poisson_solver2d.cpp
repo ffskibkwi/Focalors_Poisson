@@ -176,7 +176,7 @@ void PoissonSolver2D::cal_lambda() // The current version is only for OpenMP
                  (boundary_type_up == PDEBoundaryType::Dirichlet ||
                   boundary_type_up == PDEBoundaryType::Adjacented)) // D/Adj - D/Adj
         {
-            lambda_y[i - 1] = -2.0 - 2.0 * std::cos(pi / (ny + 1) * i);
+            lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / (ny + 1) * i);
         }
         else if (((boundary_type_down == PDEBoundaryType::Dirichlet ||
                    boundary_type_down == PDEBoundaryType::Adjacented) &&

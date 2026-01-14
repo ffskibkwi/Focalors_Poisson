@@ -5,6 +5,7 @@
 #include "base/domain/domain3d.h"
 #include "base/domain/geometry3d.h"
 #include "base/domain/variable.h"
+#include "base/domain/variable3d.h"
 #include "base/domain/geometry_tree.hpp"
 
 #include "domain_solver.h"
@@ -19,9 +20,9 @@ class ConcatPoissonSolver3D
 {
     //Simple: Only for single main domain geometry
 public:
-    Variable* variable = nullptr;
+    Variable3D* variable = nullptr;
     
-    ConcatPoissonSolver3D(Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ConcatPoissonSolver3D(Variable3D* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~ConcatPoissonSolver3D();
 
     void set_parameter(int in_m, double in_tol, int in_maxIter);

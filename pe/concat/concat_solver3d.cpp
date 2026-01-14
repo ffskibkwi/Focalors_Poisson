@@ -7,7 +7,7 @@ void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIte
     maxIter = in_maxIter;
 }
 
-ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable* in_variable, EnvironmentConfig* in_env_config)
+ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable, EnvironmentConfig* in_env_config)
     : variable(in_variable)
     , env_config(in_env_config)
 {

@@ -1,0 +1,41 @@
+#pragma once
+
+#include "base/field/field3.h"
+#include "domain3d.h"
+#include "geometry3d.h"
+#include <functional>
+#include <stdexcept>
+#include <unordered_map>
+
+class Variable3D
+{
+public:
+    std::string                                                                     name;
+    Geometry3D*                                                                     geometry = nullptr;
+    std::unordered_map<Domain3DUniform*, field3*>                                   field_map;
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, double*>> buffer_map;
+
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, double*>>         boundary_value_map;
+
+    Variable3D() = default;
+    Variable3D(const std::string& in_name);
+    ~Variable3D();
+
+    VariablePositionType position_type = VariablePositionType::Null;
+
+    void set_geometry(Geometry3D& g);
+
+    void check_geometry(Domain3DUniform* s);
+
+    void set_center_field(Domain3DUniform* s, field3& f);
+
+    void set_boundary_type(Domain3DUniform* s, LocationType loc, PDEBoundaryType type);
+
+    void set_boundary_value(Domain3DUniform* s, LocationType loc, double in_value);
+    void set_boundary_value(Domain3DUniform* s, LocationType loc, std::function<double(double, double, double)> f);
+
+private:
+    void cleanup_buffers();
+};

@@ -30,7 +30,7 @@ PoissonSolver3D::PoissonSolver3D(int                in_nx,
     init();
 }
 
-PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config)
+PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable, EnvironmentConfig* in_env_config)
     : domain(in_domain)
     , var(in_variable)
     , nx(in_domain->nx)
@@ -152,15 +152,17 @@ void PoissonSolver3D::solve(field3& f)
 
     boundary_assembly(f);
 
-    buffer.set_size(nx, ny);
+    buffer.set_size(nx, ny, nz);
     poisson_fft_y->transform(f, buffer);
 
-    buffer.transpose(f);
-    buffer.set_size(ny, nx);
+    std::array<int, 3> perm_yx = {1, 0, 2}; // swap x and y, keep z
+    buffer.transpose(f, perm_yx);
+    buffer.set_size(ny, nx, nz);
     chasing_method_x->chasing(f, buffer);
 
-    buffer.transpose(f);
-    buffer.set_size(nx, ny);
+    std::array<int, 3> perm_xy = {0, 1, 2}; // swap back: x, y, z
+    buffer.transpose(f, perm_xy);
+    buffer.set_size(nx, ny, nz);
     poisson_fft_y->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
@@ -175,33 +177,33 @@ void PoissonSolver3D::cal_lambda(double*           lambda,
                                  int               global_length,
                                  int               begin,
                                  int               local_length,
-                                 FluidBoundaryType BoundTypeNegative,
-                                 FluidBoundaryType BoundTypePositive) // The current version is only for OpenMP
+                                 PDEBoundaryType BoundTypeNegative,
+                                 PDEBoundaryType BoundTypePositive) // The current version is only for OpenMP
 {
     // This function is calcualting the lambda of the equation with all the diagonal elements equal to 0
     for (int i = begin; i < begin + local_length; i++)
     {
-        if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic) // P-P
+        if (BoundTypeNegative == PDEBoundaryType::Periodic && BoundTypePositive == PDEBoundaryType::Periodic) // P-P
         {
             lambda[i - begin] = -2.0 - 2.0 * std::cos(2.0 * pi / global_length * std::floor(i / 2.0));
         }
-        else if (boundary_type_down == PDEBoundaryType::Neumann && boundary_type_up == PDEBoundaryType::Neumann) // N-N
+        else if (BoundTypeNegative == PDEBoundaryType::Neumann && BoundTypePositive == PDEBoundaryType::Neumann) // N-N
         {
             lambda[i - begin] = -2.0 - 2.0 * std::cos(pi / global_length * i);
         }
-        else if ((boundary_type_down == PDEBoundaryType::Dirichlet ||
-                  boundary_type_down == PDEBoundaryType::Adjacented) &&
-                 (boundary_type_up == PDEBoundaryType::Dirichlet ||
-                  boundary_type_up == PDEBoundaryType::Adjacented)) // D/Adj - D/Adj
+        else if ((BoundTypeNegative == PDEBoundaryType::Dirichlet ||
+                  BoundTypeNegative == PDEBoundaryType::Adjacented) &&
+                 (BoundTypePositive == PDEBoundaryType::Dirichlet ||
+                  BoundTypePositive == PDEBoundaryType::Adjacented)) // D/Adj - D/Adj
         {
             lambda[i - begin] = -2.0 + 2.0 * std::cos(pi / (global_length + 1) * i);
         }
-        else if (((boundary_type_down == PDEBoundaryType::Dirichlet ||
-                   boundary_type_down == PDEBoundaryType::Adjacented) &&
-                  boundary_type_up == PDEBoundaryType::Neumann) ||
-                 (boundary_type_down == PDEBoundaryType::Neumann &&
-                  (boundary_type_up == PDEBoundaryType::Dirichlet ||
-                   boundary_type_up == PDEBoundaryType::Adjacented))) // (D/Adj)-N or N-(D/Adj)
+        else if (((BoundTypeNegative == PDEBoundaryType::Dirichlet ||
+                   BoundTypeNegative == PDEBoundaryType::Adjacented) &&
+                  BoundTypePositive == PDEBoundaryType::Neumann) ||
+                 (BoundTypeNegative == PDEBoundaryType::Neumann &&
+                  (BoundTypePositive == PDEBoundaryType::Dirichlet ||
+                   BoundTypePositive == PDEBoundaryType::Adjacented))) // (D/Adj)-N or N-(D/Adj)
         {
             lambda[i - begin] = -2.0 - 2.0 * std::cos(2.0 * pi * i / (2 * global_length + 1));
         }
@@ -213,54 +215,95 @@ void PoissonSolver3D::boundary_assembly(field3& f)
     auto& var_has_map   = var->has_boundary_value_map[domain];
     auto& var_value_map = var->boundary_value_map[domain];
 
+    // Left/Right boundaries: y-z plane (ny * nz)
     if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
     {
         double* boundary_value = var_value_map[LocationType::Left];
         for (int j = 0; j < ny; j++)
-            f(0, j) -= boundary_value[j] / hx / hx;
+            for (int k = 0; k < nz; k++)
+                f(0, j, k) -= boundary_value[j * nz + k] / hx / hx;
     }
     if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
     {
         double* boundary_value = var_value_map[LocationType::Right];
         for (int j = 0; j < ny; j++)
-            f(nx - 1, j) -= boundary_value[j] / hx / hx;
+            for (int k = 0; k < nz; k++)
+                f(nx - 1, j, k) -= boundary_value[j * nz + k] / hx / hx;
     }
 
+    // Front/Back boundaries: x-z plane (nx * nz)
+    if (boundary_type_front == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Front])
+    {
+        double* boundary_value = var_value_map[LocationType::Front];
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                f(i, 0, k) -= boundary_value[i * nz + k] / hy / hy;
+    }
+    if (boundary_type_back == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Back])
+    {
+        double* boundary_value = var_value_map[LocationType::Back];
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                f(i, ny - 1, k) -= boundary_value[i * nz + k] / hy / hy;
+    }
+
+    // Down/Up boundaries: x-y plane (nx * ny)
     if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
     {
         double* boundary_value = var_value_map[LocationType::Down];
         for (int i = 0; i < nx; i++)
-            f(i, 0) -= boundary_value[i] / hy / hy;
+            for (int j = 0; j < ny; j++)
+                f(i, j, 0) -= boundary_value[i * ny + j] / hz / hz;
     }
     if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
     {
         double* boundary_value = var_value_map[LocationType::Up];
         for (int i = 0; i < nx; i++)
-            f(i, ny - 1) -= boundary_value[i] / hy / hy;
+            for (int j = 0; j < ny; j++)
+                f(i, j, nz - 1) -= boundary_value[i * ny + j] / hz / hz;
     }
 
+    // Neumann boundaries
     if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
     {
         double* boundary_value = var_value_map[LocationType::Left];
         for (int j = 0; j < ny; j++)
-            f(0, j) += boundary_value[j] / hx;
+            for (int k = 0; k < nz; k++)
+                f(0, j, k) += boundary_value[j * nz + k] / hx;
     }
     if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
     {
         double* boundary_value = var_value_map[LocationType::Right];
         for (int j = 0; j < ny; j++)
-            f(nx - 1, j) -= boundary_value[j] / hx;
+            for (int k = 0; k < nz; k++)
+                f(nx - 1, j, k) -= boundary_value[j * nz + k] / hx;
+    }
+    if (boundary_type_front == PDEBoundaryType::Neumann && var_has_map[LocationType::Front])
+    {
+        double* boundary_value = var_value_map[LocationType::Front];
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                f(i, 0, k) += boundary_value[i * nz + k] / hy;
+    }
+    if (boundary_type_back == PDEBoundaryType::Neumann && var_has_map[LocationType::Back])
+    {
+        double* boundary_value = var_value_map[LocationType::Back];
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+                f(i, ny - 1, k) -= boundary_value[i * nz + k] / hy;
     }
     if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
     {
         double* boundary_value = var_value_map[LocationType::Down];
         for (int i = 0; i < nx; i++)
-            f(i, 0) += boundary_value[i] / hy;
+            for (int j = 0; j < ny; j++)
+                f(i, j, 0) += boundary_value[i * ny + j] / hz;
     }
     if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
     {
         double* boundary_value = var_value_map[LocationType::Up];
         for (int i = 0; i < nx; i++)
-            f(i, ny - 1) -= boundary_value[i] / hy;
+            for (int j = 0; j < ny; j++)
+                f(i, j, nz - 1) -= boundary_value[i * ny + j] / hz;
     }
 }

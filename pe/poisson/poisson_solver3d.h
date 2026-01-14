@@ -4,6 +4,7 @@
 
 #include "base/domain/domain3d.h"
 #include "base/domain/variable.h"
+#include "base/domain/variable3d.h"
 #include "base/location_boundary.h"
 #include "chasing_method3d.h"
 #include "io/config.h"
@@ -28,7 +29,7 @@ public:
                     PDEBoundaryType    in_boundary_type_down,
                     PDEBoundaryType    in_boundary_type_up,
                     EnvironmentConfig* in_env_config = nullptr);
-    PoissonSolver3D(Domain3DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~PoissonSolver3D();
 
     void init();
@@ -40,7 +41,7 @@ private:
     double hx, hy, hz;
     field3 buffer;
 
-    Variable*        var    = nullptr;
+    Variable3D*        var    = nullptr;
     Domain3DUniform* domain = nullptr;
 
     EnvironmentConfig* env_config = nullptr;
@@ -58,6 +59,6 @@ private:
     PoissonFFT3D*    poisson_fft_y;
     ChasingMethod3D* chasing_method_x;
 
-    void cal_lambda();
+    void cal_lambda(double* lambda, int global_length, int begin, int local_length, PDEBoundaryType BoundTypeNegative, PDEBoundaryType BoundTypePositive);
     void boundary_assembly(field3& f);
 };

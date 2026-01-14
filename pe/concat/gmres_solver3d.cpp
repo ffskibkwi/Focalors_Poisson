@@ -4,7 +4,7 @@
 #include <iostream>
 
 GMRESSolver3D::GMRESSolver3D(Domain3DUniform*              in_domain,
-                             Variable*                     in_variable,
+                             Variable3D*                     in_variable,
                              int                           in_m,
                              double                        in_tol,
                              int                           in_maxIter,

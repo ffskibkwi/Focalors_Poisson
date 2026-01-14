@@ -123,7 +123,8 @@ void PoissonSolver2D::solve(field2& f)
 
     if (env_config && env_config->debugMode)
     {
-        std::string fname_rhs = env_config->debugOutputDir + "/rhs_" + domain->name + ".csv";
+        std::string fname_rhs =
+            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
         IO::field_to_csv(f, fname_rhs);
     }
 
@@ -144,9 +145,12 @@ void PoissonSolver2D::solve(field2& f)
 
     if (env_config && env_config->debugMode)
     {
-        std::string fname_sol = env_config->debugOutputDir + "/sol_" + domain->name + ".csv";
+        std::string fname_sol =
+            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
         IO::field_to_csv(f, fname_sol);
     }
+
+    solve_call_count++;
     if (env_config && env_config->showCurrentStep)
     {
         double s_f = f.sum();

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 
-
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
                              Variable*          in_variable,
                              int                in_m,
@@ -22,6 +21,7 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
     if (env_config)
         inner_env_config.showGmresRes = env_config->showGmresRes;
     inner_env_config.showCurrentStep = false;
+    inner_env_config.debugMode       = false;
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
@@ -135,10 +135,23 @@ void GMRESSolver2D::maybe_print_res() const
     }
 }
 
+#include "io/csv_writer_2d.h"
+#include <string>
+
+// ... (keep existing includes if not covered)
+
 void GMRESSolver2D::solve(field2& b)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;
+
+    if (env_config && env_config->debugMode)
+    {
+        std::string fname_rhs =
+            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+        IO::field_to_csv(b, fname_rhs);
+    }
+
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);
 
@@ -254,6 +267,15 @@ void GMRESSolver2D::solve(field2& b)
     // 达到最大迭代，返回当前近似解
     b = x_buf;
     maybe_print_res();
+
+    if (env_config && env_config->debugMode)
+    {
+        std::string fname_sol =
+            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+        IO::field_to_csv(b, fname_sol);
+    }
+    solve_call_count++;
+
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] solve: done" << std::endl;
 }

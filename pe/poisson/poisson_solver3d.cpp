@@ -79,7 +79,7 @@ void PoissonSolver3D::init()
         return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented;
     };
 
-    auto create_fft = [&](PoissonFFT3D* fft, PDEBoundaryType bound_neg, PDEBoundaryType bound_pos) {
+    auto create_fft = [&](PoissonFFT3D*& fft, PDEBoundaryType bound_neg, PDEBoundaryType bound_pos, int n1, int n2, int n3) {
         if (bound_neg == PDEBoundaryType::Periodic && bound_pos == PDEBoundaryType::Periodic)
         {
             fft = new PoissonFFT3D_PP();
@@ -100,10 +100,10 @@ void PoissonSolver3D::init()
         {
             fft = new PoissonFFT3D_ND();
         }
-        fft->init(nx, ny, nz);
+        fft->init(n1, n2, n3);
     };
-    create_fft(poisson_fft_z, boundary_type_down, boundary_type_up);
-    create_fft(poisson_fft_y, boundary_type_front, boundary_type_back);
+    create_fft(poisson_fft_z, boundary_type_down, boundary_type_up, nx, ny, nz);
+    create_fft(poisson_fft_y, boundary_type_front, boundary_type_back, nz, nx, ny);
 
     double* lambda_z = new double[nz];
     double* lambda_y = new double[ny];
@@ -153,24 +153,33 @@ void PoissonSolver3D::solve(field3& f)
     boundary_assembly(f);
 
     buffer.set_size(nx, ny, nz);
+    poisson_fft_z->transform(f, buffer);
+
+    f.set_size(nz, nx, ny);
+    buffer.transpose(f, {2, 0, 1});
+
+    buffer.set_size(nz, nx, ny);
     poisson_fft_y->transform(f, buffer);
 
-    std::array<int, 3> perm_yx = {1, 0, 2}; // swap x and y, keep z
-    buffer.transpose(f, perm_yx);
-    buffer.set_size(ny, nx, nz);
-    chasing_method_x->chasing(f, buffer);
+    f.set_size(ny, nz, nx);
+    buffer.transpose(f, {0, 2, 1});
 
-    std::array<int, 3> perm_xy = {0, 1, 2}; // swap back: x, y, z
-    buffer.transpose(f, perm_xy);
-    buffer.set_size(nx, ny, nz);
+    buffer.set_size(ny, nz, nx);
+    chasing_method_x->chasing(f, buffer); // Solve for x
+
+    f.set_size(nz, nx, ny);
+    buffer.transpose(f, {0, 2, 1}); // Transpose back
+
+    buffer.set_size(nz, nx, ny);
     poisson_fft_y->transform_transpose(f, buffer);
 
+    f.set_size(nx, ny, nz);
+    buffer.transpose(f, {1, 2, 0});
+
+    buffer.set_size(nx, ny, nz);
+    poisson_fft_z->transform_transpose(f, buffer);
+
     std::swap(f, buffer);
-    if (env_config && env_config->showCurrentStep)
-    {
-        double s_f = f.sum();
-        std::cout << "[Poisson] solve: done, f.sum=" << s_f << std::endl;
-    }
 }
 
 void PoissonSolver3D::cal_lambda(double*           lambda,

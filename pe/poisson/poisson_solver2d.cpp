@@ -121,10 +121,10 @@ void PoissonSolver2D::solve(field2& f)
     if (env_config && env_config->showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
 
-    if (env_config && env_config->debugMode)
+    if (env_config && env_config->debugMode && is_debug_enabled)
     {
         std::string fname_rhs =
-            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::field_to_csv(f, fname_rhs);
     }
 
@@ -143,10 +143,10 @@ void PoissonSolver2D::solve(field2& f)
 
     std::swap(f, buffer);
 
-    if (env_config && env_config->debugMode)
+    if (env_config && env_config->debugMode && is_debug_enabled)
     {
         std::string fname_sol =
-            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::field_to_csv(f, fname_sol);
     }
 

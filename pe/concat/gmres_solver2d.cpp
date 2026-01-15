@@ -58,12 +58,18 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
     {
         // Construct the Schur matrix for each neibour domain of main domain
         Schur_mat* current = nullptr;
+
+        // Suppress debug output for branch solver during Schur matrix construction
+        // because this process calls solve() many times
+        DomainSolver2D* branch_solver = solver_map.at(neighbour_domain);
+        branch_solver->set_debug_mode(false);
+
         switch (location)
         {
             case LocationType::Left: {
                 current = new Schur_mat_left(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
-                current->construct(solver_map.at(neighbour_domain));
+                current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
@@ -72,7 +78,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             case LocationType::Right: {
                 current = new Schur_mat_right(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
-                current->construct(solver_map.at(neighbour_domain));
+                current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
@@ -81,7 +87,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             case LocationType::Up: {
                 current = new Schur_mat_up(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
-                current->construct(solver_map.at(neighbour_domain));
+                current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
@@ -90,15 +96,17 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             case LocationType::Down: {
                 current = new Schur_mat_down(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
-                current->construct(solver_map.at(neighbour_domain));
+                current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
             break;
             default:
+                branch_solver->set_debug_mode(true); // Restore before throw
                 throw std::invalid_argument("Invalid location type");
         }
+        branch_solver->set_debug_mode(true); // Restore debug output
     }
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] Schur construct: done" << std::endl;
@@ -113,7 +121,7 @@ field2& GMRESSolver2D::Afun(field2& x)
         mul_buf = (*s) * x;                             // 仍会产生一次临时，但接口所限
         ft_buf.add_affine_transform(1.0, mul_buf, 0.0); // ft += mul_buf
     }
-    pe_solver->solve(ft_buf);
+    pe_solver->solve(ft_buf, false);
 
     afun_buf = x; // afun_buf = x - ft_buf（避免新分配）
     afun_buf.add_affine_transform(-1.0, ft_buf, 0.0);
@@ -140,7 +148,7 @@ void GMRESSolver2D::maybe_print_res() const
 
 // ... (keep existing includes if not covered)
 
-void GMRESSolver2D::solve(field2& b)
+void GMRESSolver2D::solve(field2& b, bool is_debugmode)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;
@@ -148,7 +156,7 @@ void GMRESSolver2D::solve(field2& b)
     if (env_config && env_config->debugMode)
     {
         std::string fname_rhs =
-            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::field_to_csv(b, fname_rhs);
     }
 
@@ -271,7 +279,7 @@ void GMRESSolver2D::solve(field2& b)
     if (env_config && env_config->debugMode)
     {
         std::string fname_sol =
-            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count) + ".csv";
+            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::field_to_csv(b, fname_sol);
     }
     solve_call_count++;

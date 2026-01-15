@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <iostream>
 
-
 void Schur_mat::dump_to_csv(const std::string& directory)
 {
     std::string filename = directory + "/" + name + ".csv";
@@ -18,7 +17,7 @@ void Schur_mat_left::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(branch_nx - 1, i) = 1.;
-        branch_solver->solve_collective_root_owned(t_a);
+        branch_solver->solve_collective_root_owned(t_a, false);
         for (int j = 0; j < cosize_n; j++)
             value[j][i] = t_a(branch_nx - 1, j);
     }
@@ -45,7 +44,7 @@ void Schur_mat_right::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(0, i) = 1.;
-        branch_solver->solve_collective_root_owned(t_a);
+        branch_solver->solve_collective_root_owned(t_a, false);
         for (int j = 0; j < cosize_n; j++)
             value[j][i] = t_a(0, j);
     }
@@ -72,7 +71,7 @@ void Schur_mat_up::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(i, 0) = 1.;
-        branch_solver->solve_collective_root_owned(t_a);
+        branch_solver->solve_collective_root_owned(t_a, false);
         for (int j = 0; j < cosize_n; j++)
             value[j][i] = t_a(j, 0);
     }
@@ -99,7 +98,7 @@ void Schur_mat_down::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(i, branch_ny - 1) = 1.;
-        branch_solver->solve_collective_root_owned(t_a);
+        branch_solver->solve_collective_root_owned(t_a, false);
         for (int j = 0; j < cosize_n; j++)
             value[j][i] = t_a(j, branch_ny - 1);
     }

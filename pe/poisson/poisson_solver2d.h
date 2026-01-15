@@ -31,6 +31,10 @@ public:
 
     void solve(field2& f) override;
 
+    void set_debug_mode(bool enable) override { is_debug_enabled = enable; }
+
+    double get_hx() const override { return hx; }
+
 private:
     int    nx, ny;
     double hx, hy;
@@ -55,5 +59,8 @@ private:
     void cal_lambda();
     void boundary_assembly(field2& f);
 
-    int solve_call_count = 0;
+    void boundary_assembly(field2& f);
+
+    int  solve_call_count = 0;
+    bool is_debug_enabled = true;
 };

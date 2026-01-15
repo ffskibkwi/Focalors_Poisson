@@ -62,7 +62,6 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
         // Suppress debug output for branch solver during Schur matrix construction
         // because this process calls solve() many times
         DomainSolver2D* branch_solver = solver_map.at(neighbour_domain);
-        branch_solver->set_debug_mode(false);
 
         switch (location)
         {
@@ -103,10 +102,8 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             default:
-                branch_solver->set_debug_mode(true); // Restore before throw
                 throw std::invalid_argument("Invalid location type");
         }
-        branch_solver->set_debug_mode(true); // Restore debug output
     }
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] Schur construct: done" << std::endl;

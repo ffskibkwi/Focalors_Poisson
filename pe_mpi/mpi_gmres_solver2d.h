@@ -2,13 +2,14 @@
 
 #include "base/pch.h"
 
-#include "base/location_boundary.h"
 #include "base/domain/domain2d.h"
-#include "pe/concat/domain_solver.h"
-#include "pe/concat/Schur_mat.h"
-#include "pe/concat/gmres.h"
+#include "base/location_boundary.h"
 #include "io/config.h"
 #include "mpi_poisson_solver2d.h"
+#include "pe/concat/Schur_mat.h"
+#include "pe/concat/domain_solver.h"
+#include "pe/concat/gmres.h"
+
 
 #include <mpi.h>
 #include <unordered_map>
@@ -30,11 +31,14 @@ public:
                      EnvironmentConfig* in_env_config = nullptr);
     ~MPIGMRESSolver2D();
 
-    void solve(field2& f) override;
-    void solve_collective_root_owned(field2& f) override;
+    void solve(field2& f, bool is_debugmode = true) override;
+    void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
     bool is_comm_root() const override { return comm_rank == 0; }
 
-    void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>& adjacency_key,
+    double get_hx() const override { return domain->hx; }
+    double get_hy() const override { return domain->hy; }
+
+    void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);
 
     void set_initial_guess(field2* x0) { x0_override = x0; }
@@ -42,17 +46,17 @@ public:
 private:
     // 输入与配置
     Domain2DUniform*   domain;
-    Variable*          variable = nullptr;
+    Variable*          variable   = nullptr;
     EnvironmentConfig* env_config = nullptr;
     EnvironmentConfig  inner_env_config; // 内部 Poisson：关闭 step 打印
 
     // Krylov 配置
-    int    m = 0;
-    double tol = 0.0;
+    int    m       = 0;
+    double tol     = 0.0;
     int    maxIter = 0;
 
     // 通信器
-    MPI_Comm comm = MPI_COMM_NULL;
+    MPI_Comm comm      = MPI_COMM_NULL;
     int      comm_rank = -1, comm_size = 0;
 
     // Schur 矩阵参数
@@ -71,7 +75,5 @@ private:
 
     // 内部方法
     field2& Afun(field2& x);
-    void     maybe_print_res() const;
+    void    maybe_print_res() const;
 };
-
-

@@ -143,7 +143,7 @@ void PoissonSolver2D::solve(field2& f, bool is_debugmode)
 
     std::swap(f, buffer);
 
-    if (env_config && env_config->debugMode && is_debug_enabled)
+    if (env_config && env_config->debugMode && is_debugmode)
     {
         std::string fname_sol =
             env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);

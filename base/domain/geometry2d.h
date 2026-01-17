@@ -43,6 +43,10 @@ public:
     void set_global_spatial_step(double hx, double hy);
 
     void axis(Domain2DUniform* d, LocationType loc);
+
+    void update_offset_x(Domain2DUniform* d);
+    void update_offset_y(Domain2DUniform* d);
+
     void global_move_x(double x);
     void global_move_y(double y);
 

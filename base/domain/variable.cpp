@@ -187,10 +187,79 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
     }
 }
 
-void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double)> f)
+void Variable::set_boundary_value_from_func_global(Domain2DUniform*                      s,
+                                                   LocationType                          loc,
+                                                   std::function<double(double, double)> f)
 {
     check_geometry(s);
-    // TODO:
+    has_boundary_value_map[s][loc] = true;
+
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XEdge:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YEdge:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
+
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        int j_size = (position_type == VariablePositionType::Corner || position_type == VariablePositionType::XEdge) ?
+                         s->ny + 1 :
+                         s->ny;
+        if (position_type == VariablePositionType::Center || position_type == VariablePositionType::YEdge)
+            j_size = s->ny;
+
+        boundary_value_map[s][loc] = new double[j_size];
+
+        // Determine i index (ghost node or boundary node)
+        // Left: i = -1. Right: i = nx.
+        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+
+        for (int j = 0; j < j_size; j++)
+        {
+            double gx                     = s->get_offset_x() + (shift_x + i_idx) * s->get_hx();
+            double gy                     = s->get_offset_y() + (shift_y + j) * s->get_hy();
+            boundary_value_map[s][loc][j] = f(gx, gy);
+        }
+    }
+    else if (loc == LocationType::Down || loc == LocationType::Up)
+    {
+        int i_size;
+        if (position_type == VariablePositionType::Corner)
+            i_size = s->nx + 1;
+        else
+            i_size = s->nx;
+
+        boundary_value_map[s][loc] = new double[i_size];
+
+        // Down: j = -1. Up: j = ny.
+        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            double gx                     = s->get_offset_x() + (shift_x + i) * s->get_hx();
+            double gy                     = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
+            boundary_value_map[s][loc][i] = f(gx, gy);
+        }
+    }
 }
 
 void Variable::set_value_from_func_global(std::function<double(double, double)> func)

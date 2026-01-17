@@ -192,3 +192,50 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, std::fun
     check_geometry(s);
     // TODO:
 }
+
+void Variable::set_value_from_func_global(std::function<double(double, double)> func)
+{
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XEdge:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YEdge:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            // Or throw exception? Defaulting to Center for now or Null
+            break;
+    }
+
+    for (auto& pair : field_map)
+    {
+        Domain2DUniform* s = pair.first;
+        field2*          f = pair.second;
+
+// Iterate over the field
+#pragma omp parallel for collapse(2)
+        for (int i = 0; i < f->get_nx(); ++i)
+        {
+            for (int j = 0; j < f->get_ny(); ++j)
+            {
+                double gx  = s->get_offset_x() + (shift_x + i) * s->get_hx();
+                double gy  = s->get_offset_y() + (shift_y + j) * s->get_hy();
+                (*f)(i, j) = func(gx, gy);
+            }
+        }
+    }
+}

@@ -196,3 +196,97 @@ void Geometry2D::set_position(Domain2DUniform* ref_domain, double pos_x, double 
         //
     }
 }
+
+void Geometry2D::axis(Domain2DUniform* d, LocationType loc)
+{
+    if (std::find(domains.begin(), domains.end(), d) == domains.end())
+        throw std::runtime_error("axis: Domain is not in geometry");
+
+    // Check direction type to decide if we are setting X or Y
+    bool is_x_axis = (loc == LocationType::Left || loc == LocationType::Right);
+
+    // Initialize offset for the starting domain
+    if (is_x_axis)
+    {
+        if (loc == LocationType::Left)
+            d->set_offset_x(0.0);
+        else // Right
+            d->set_offset_x(-d->get_lx());
+    }
+    else
+    {
+        if (loc == LocationType::Down)
+            d->set_offset_y(0.0);
+        else if (loc == LocationType::Up)
+            d->set_offset_y(-d->get_ly());
+        else
+            throw std::runtime_error("axis: Invalid LocationType for 2D");
+    }
+
+    // BFS to propagate offsets
+    std::unordered_set<Domain2DUniform*> visited;
+    std::queue<Domain2DUniform*>         q;
+    q.push(d);
+    visited.insert(d);
+
+    while (!q.empty())
+    {
+        Domain2DUniform* u = q.front();
+        q.pop();
+
+        auto it = adjacency.find(u);
+        if (it == adjacency.end())
+            continue;
+
+        for (const auto& pair : it->second)
+        {
+            LocationType     dir = pair.first;
+            Domain2DUniform* v   = pair.second;
+
+            if (visited.count(v))
+                continue;
+
+            if (is_x_axis)
+            {
+                double current_x = u->get_offset_x();
+                double new_x     = current_x;
+                if (dir == LocationType::Right)
+                    new_x = current_x + u->get_lx();
+                else if (dir == LocationType::Left)
+                    new_x = current_x - v->get_lx();
+                // For Up/Down, X offset is propagated unchanged (assuming alignment)
+                v->set_offset_x(new_x);
+            }
+            else
+            {
+                double current_y = u->get_offset_y();
+                double new_y     = current_y;
+                if (dir == LocationType::Up)
+                    new_y = current_y + u->get_ly();
+                else if (dir == LocationType::Down)
+                    new_y = current_y - v->get_ly();
+                // For Left/Right, Y offset is propagated unchanged
+                v->set_offset_y(new_y);
+            }
+
+            visited.insert(v);
+            q.push(v);
+        }
+    }
+}
+
+void Geometry2D::global_move_x(double x)
+{
+    for (auto* d : domains)
+    {
+        d->set_offset_x(d->get_offset_x() + x);
+    }
+}
+
+void Geometry2D::global_move_y(double y)
+{
+    for (auto* d : domains)
+    {
+        d->set_offset_y(d->get_offset_y() + y);
+    }
+}

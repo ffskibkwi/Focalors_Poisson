@@ -44,4 +44,6 @@ public:
 
     // void set_boundary_func_local(Domain2DUniform* s, LocationType loc, double* value);
     // void set_boundary_func_global(Domain2DUniform* s, LocationType loc, double* value);
+
+    void set_value_from_func_global(std::function<double(double, double)> func);
 };

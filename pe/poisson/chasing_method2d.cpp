@@ -1,15 +1,20 @@
 #include "chasing_method2d.h"
 
-void ChasingMethod2D::init(int nx_in, int ny_in, double* _x_diag, bool _is_no_Dirichlet, bool _has_last_vector,
-                           PDEBoundaryType boundary_type_down, PDEBoundaryType boundary_type_up)
+void ChasingMethod2D::init(int             nx_in,
+                           int             ny_in,
+                           double*         _x_diag,
+                           bool            _is_no_Dirichlet,
+                           bool            _has_last_vector,
+                           PDEBoundaryType boundary_type_down,
+                           PDEBoundaryType boundary_type_up)
 {
-    nx               = nx_in;
-    ny               = ny_in;
-    x_diag           = _x_diag;
-    is_no_Dirichlet  = _is_no_Dirichlet;
-    has_last_vector  = _has_last_vector;
+    nx                       = nx_in;
+    ny                       = ny_in;
+    x_diag                   = _x_diag;
+    is_no_Dirichlet          = _is_no_Dirichlet;
+    has_last_vector          = _has_last_vector;
     this->boundary_type_down = boundary_type_down;
-    this->boundary_type_up = boundary_type_up;
+    this->boundary_type_up   = boundary_type_up;
 
     y.init(nx, ny, "y");
 
@@ -38,6 +43,7 @@ void ChasingMethod2D::chasing(field2& f, field2& p)
 {
     if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
     {
+        OPENMP_PARALLEL_FOR()
         for (int i = 0; i < nx; i++)
         {
             if (is_no_Dirichlet && has_last_vector && i == (nx - 1))
@@ -60,6 +66,7 @@ void ChasingMethod2D::chasing(field2& f, field2& p)
     }
     else
     {
+        OPENMP_PARALLEL_FOR()
         for (int i = 0; i < nx; i++)
         {
             if (is_no_Dirichlet && has_last_vector && i == (nx - 1))
@@ -80,5 +87,3 @@ void ChasingMethod2D::chasing(field2& f, field2& p)
         }
     }
 }
-
-

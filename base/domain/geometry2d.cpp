@@ -48,8 +48,7 @@ void Geometry2D::connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& 
 {
     // Here defaultly add the first domain and the second domain into geo
     // Maybe it is dangerous~
-    add_domain(&a);
-    add_domain(&b);
+    add_domain({&a, &b});
     if (dir == LocationType::Front || dir == LocationType::Back)
         throw std::invalid_argument("Geometry2D does not support Front/Back");
 

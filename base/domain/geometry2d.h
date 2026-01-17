@@ -4,12 +4,14 @@
 #include "domain2d.h"
 #include "geometry_tree.hpp"
 #include <algorithm>
+#include <initializer_list>
 #include <queue>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 
 class Geometry2D
 {

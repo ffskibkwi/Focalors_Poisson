@@ -17,6 +17,12 @@ Domain2DUniform::Domain2DUniform(int in_nx, int in_ny, double in_lx, double in_l
     hy = in_ly / in_ny;
 }
 
+Domain2DUniform::Domain2DUniform(int in_nx, int in_ny, const std::string& in_name)
+    : nx(in_nx)
+    , ny(in_ny)
+    , name(in_name)
+{}
+
 Domain2DUniform::~Domain2DUniform() = default;
 
 /**
@@ -59,6 +65,14 @@ void Domain2DUniform::set_ly(double in_ly)
     hy = in_ly / ny;
 }
 
+void Domain2DUniform::set_spatial_step(double in_hx, double in_hy)
+{
+    hx = in_hx;
+    hy = in_hy;
+    lx = nx * hx;
+    ly = ny * hy;
+}
+
 /**
  * @brief Set the domain size along both directions.
  * @param in_lx Physical length along x (> 0).
@@ -68,7 +82,7 @@ void Domain2DUniform::set_size(double in_lx, double in_ly)
 {
     lx = in_lx;
     ly = in_ly;
-    if (nx != 0 )
+    if (nx != 0)
         hx = in_lx / nx;
     if (ny != 0)
         hy = in_ly / ny;
@@ -90,12 +104,13 @@ bool Domain2DUniform::check_profile() const { return nx > 0 && ny > 0 && lx > 0.
  * @brief Check whether domain boundary is valid.
  * @return true if all boundaries are not Null; false otherwise.
  */
-bool Domain2DUniform::check_boundary() const { return boundary_type_left != PDEBoundaryType::Null && boundary_type_right != PDEBoundaryType::Null && boundary_type_down != PDEBoundaryType::Null && boundary_type_up != PDEBoundaryType::Null; }
-
-void Domain2DUniform::construct_field(field2& f)
+bool Domain2DUniform::check_boundary() const
 {
-    f.init(nx, ny);
+    return boundary_type_left != PDEBoundaryType::Null && boundary_type_right != PDEBoundaryType::Null &&
+           boundary_type_down != PDEBoundaryType::Null && boundary_type_up != PDEBoundaryType::Null;
 }
+
+void Domain2DUniform::construct_field(field2& f) { f.init(nx, ny); }
 
 double Domain2DUniform::get_pos_x() const { return pos_x; }
 double Domain2DUniform::get_pos_y() const { return pos_y; }
@@ -103,5 +118,5 @@ double Domain2DUniform::get_hx() const { return hx; }
 double Domain2DUniform::get_hy() const { return hy; }
 double Domain2DUniform::get_lx() const { return lx; }
 double Domain2DUniform::get_ly() const { return ly; }
-int Domain2DUniform::get_nx() const { return nx; }
-int Domain2DUniform::get_ny() const { return ny; }
+int    Domain2DUniform::get_nx() const { return nx; }
+int    Domain2DUniform::get_ny() const { return ny; }

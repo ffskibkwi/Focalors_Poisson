@@ -154,6 +154,15 @@ void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBounda
     boundary_type_map[s][loc] = type;
 }
 
+void Variable::set_boundary_type(Domain2DUniform*                                                s,
+                                 std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list)
+{
+    for (const auto& pair : list)
+    {
+        set_boundary_type(s, pair.first, pair.second);
+    }
+}
+
 void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);

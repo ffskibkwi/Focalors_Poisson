@@ -12,7 +12,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 class Geometry2D
 {
 public:
@@ -40,6 +39,8 @@ public:
 
     void check();
     void solve_prepare();
+
+    void set_global_spatial_step(double hx, double hy);
 
     void set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y);
 

@@ -36,6 +36,7 @@ public:
     Domain2DUniform();
     Domain2DUniform(const std::string& in_name);
     Domain2DUniform(int in_nx, int in_ny, double in_lx, double in_ly, const std::string& in_name);
+    Domain2DUniform(int in_nx, int in_ny, const std::string& in_name);
 
     ~Domain2DUniform();
 
@@ -43,6 +44,9 @@ public:
     void set_ny(int in_ny);
     void set_lx(double in_lx);
     void set_ly(double in_ly);
+    void set_ly(double in_ly);
+    void set_spatial_step(double hx, double hy);
+    void set_size(double in_lx, double in_ly);
     void set_size(double in_lx, double in_ly);
     void set_position(double in_pos_x, double in_pos_y);
 

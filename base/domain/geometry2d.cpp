@@ -175,6 +175,14 @@ void Geometry2D::build_tree()
     is_prepared = true;
 }
 
+void Geometry2D::set_global_spatial_step(double hx, double hy)
+{
+    for (auto* s : domains)
+    {
+        s->set_spatial_step(hx, hy);
+    }
+}
+
 void Geometry2D::set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y)
 {
     std::queue<Domain2DUniform*> q;

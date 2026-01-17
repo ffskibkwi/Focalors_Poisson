@@ -1,14 +1,14 @@
 #include "gmres_solver3d.h"
 #include <cmath>
-#include <vector>
 #include <iostream>
+#include <vector>
 
-GMRESSolver3D::GMRESSolver3D(Domain3DUniform*              in_domain,
-                             Variable3D*                     in_variable,
-                             int                           in_m,
-                             double                        in_tol,
-                             int                           in_maxIter,
-                             EnvironmentConfig*            in_env_config)
+GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
+                             Variable3D*        in_variable,
+                             int                in_m,
+                             double             in_tol,
+                             int                in_maxIter,
+                             EnvironmentConfig* in_env_config)
     : domain(in_domain)
     , variable(in_variable)
     , m(in_m)
@@ -17,11 +17,11 @@ GMRESSolver3D::GMRESSolver3D(Domain3DUniform*              in_domain,
 {
     env_config = in_env_config;
     // 内部 Poisson 的配置：关闭 showCurrentStep，保持 showGmresRes 同步
-    inner_env_config = EnvironmentConfig{};
+    inner_env_config = EnvironmentConfig {};
     if (env_config)
         inner_env_config.showGmresRes = env_config->showGmresRes;
     inner_env_config.showCurrentStep = false;
-    
+
     // 预分配 field3 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
@@ -55,54 +55,48 @@ GMRESSolver3D::~GMRESSolver3D()
         delete s;
 }
 
-void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>& adjacency_key, 
+void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES3D] Schur construct: start" << std::endl;
-    for (auto &[location, neighbour_domain] : adjacency_key)
+    for (auto& [location, neighbour_domain] : adjacency_key)
     {
-        //Construct the Schur matrix for each neighbour domain of main domain
+        // Construct the Schur matrix for each neighbour domain of main domain
         Schur_mat3d* current = nullptr;
         switch (location)
         {
-            case LocationType::Left:
-            {
+            case LocationType::Left: {
                 current = new Schur_mat3d_left(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
-            }  
+            }
             break;
-            case LocationType::Right:
-            {
+            case LocationType::Right: {
                 current = new Schur_mat3d_right(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Front:
-            {
+            case LocationType::Front: {
                 current = new Schur_mat3d_front(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Back:
-            {
+            case LocationType::Back: {
                 current = new Schur_mat3d_back(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Down:
-            {
+            case LocationType::Down: {
                 current = new Schur_mat3d_down(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Up:
-            {
+            case LocationType::Up: {
                 current = new Schur_mat3d_up(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
@@ -122,12 +116,12 @@ field3& GMRESSolver3D::Afun(field3& x)
     ft_buf.clear(0.);
     for (auto& s : S_params)
     {
-        mul_buf = (*s) * x;                // Schur 矩阵乘法
+        mul_buf = (*s) * x;                             // Schur 矩阵乘法
         ft_buf.add_affine_transform(1.0, mul_buf, 0.0); // ft += mul_buf
     }
     pe_solver->solve(ft_buf);
 
-    afun_buf = x;                          // afun_buf = x - ft_buf
+    afun_buf = x; // afun_buf = x - ft_buf
     afun_buf.add_affine_transform(-1.0, ft_buf, 0.0);
     return afun_buf;
 }
@@ -140,7 +134,8 @@ void GMRESSolver3D::maybe_print_res() const
         for (size_t i = 0; i < resVec.size(); ++i)
         {
             std::cout << resVec[i];
-            if (i + 1 < resVec.size()) std::cout << ", ";
+            if (i + 1 < resVec.size())
+                std::cout << ", ";
         }
         std::cout << "]" << std::endl;
     }
@@ -150,8 +145,8 @@ void GMRESSolver3D::solve(field3& b)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES3D] solve: start" << std::endl;
-    
-    //Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
+
+    // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);
 
     // 每次执行前清空残差历史
@@ -170,9 +165,9 @@ void GMRESSolver3D::solve(field3& b)
         {
             // r = b - Afun(x)
             field3& Ax = Afun(x_buf);
-            r_buf = b;
+            r_buf      = b;
             r_buf.add_affine_transform(-1.0, Ax, 0.0);
-            
+
             // 计算残差范数
             beta = 0.0;
             for (int i = 0; i < r_buf.get_nx(); i++)
@@ -180,7 +175,7 @@ void GMRESSolver3D::solve(field3& b)
                     for (int k = 0; k < r_buf.get_nz(); k++)
                         beta += r_buf(i, j, k) * r_buf(i, j, k);
             beta = std::sqrt(beta);
-            
+
             resVec.push_back(beta);
             if (beta < tol)
             {
@@ -211,7 +206,7 @@ void GMRESSolver3D::solve(field3& b)
             // w = Afun(V[j])
             {
                 field3& AVj = Afun(V[j]);
-                w_buf = AVj;
+                w_buf       = AVj;
 
                 // Arnoldi 正交化
                 for (int i = 0; i <= j; i++)
@@ -222,7 +217,7 @@ void GMRESSolver3D::solve(field3& b)
                         for (int jj = 0; jj < w_buf.get_ny(); jj++)
                             for (int kk = 0; kk < w_buf.get_nz(); kk++)
                                 dot_product += V[i](ii, jj, kk) * w_buf(ii, jj, kk);
-                    
+
                     H[i * m + j] = dot_product;
                     // w -= H(i,j)*V[i]
                     w_buf.add_affine_transform(-H[i * m + j], V[i], 0.0);
@@ -235,7 +230,7 @@ void GMRESSolver3D::solve(field3& b)
                         for (int k = 0; k < w_buf.get_nz(); k++)
                             h_j1j += w_buf(i, j, k) * w_buf(i, j, k);
                 h_j1j = std::sqrt(h_j1j);
-                
+
                 if (h_j1j < 1e-12)
                     break; // 提前终止
 
@@ -251,9 +246,9 @@ void GMRESSolver3D::solve(field3& b)
             // 应用已有的 Givens 旋转到 H 的第 j 列
             for (int i = 0; i < j; i++)
             {
-                const double temp       = cs[i] * H[i * m + j] + sn[i] * H[(i + 1) * m + j];
-                H[(i + 1) * m + j]      = -sn[i] * H[i * m + j] + cs[i] * H[(i + 1) * m + j];
-                H[i * m + j]            = temp;
+                const double temp  = cs[i] * H[i * m + j] + sn[i] * H[(i + 1) * m + j];
+                H[(i + 1) * m + j] = -sn[i] * H[i * m + j] + cs[i] * H[(i + 1) * m + j];
+                H[i * m + j]       = temp;
             }
 
             // 新的 Givens 旋转

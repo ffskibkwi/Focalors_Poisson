@@ -79,29 +79,30 @@ void PoissonSolver3D::init()
         return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented;
     };
 
-    auto create_fft = [&](PoissonFFT3D*& fft, PDEBoundaryType bound_neg, PDEBoundaryType bound_pos, int n1, int n2, int n3) {
-        if (bound_neg == PDEBoundaryType::Periodic && bound_pos == PDEBoundaryType::Periodic)
-        {
-            fft = new PoissonFFT3D_PP();
-        }
-        else if (bound_neg == PDEBoundaryType::Neumann && bound_pos == PDEBoundaryType::Neumann)
-        {
-            fft = new PoissonFFT3D_NN();
-        }
-        else if (isDirLike(bound_neg) && isDirLike(bound_pos))
-        {
-            fft = new PoissonFFT3D_DD();
-        }
-        else if (isDirLike(bound_neg) && bound_pos == PDEBoundaryType::Neumann)
-        {
-            fft = new PoissonFFT3D_DN();
-        }
-        else if (bound_neg == PDEBoundaryType::Neumann && isDirLike(bound_pos))
-        {
-            fft = new PoissonFFT3D_ND();
-        }
-        fft->init(n1, n2, n3);
-    };
+    auto create_fft =
+        [&](PoissonFFT3D*& fft, PDEBoundaryType bound_neg, PDEBoundaryType bound_pos, int n1, int n2, int n3) {
+            if (bound_neg == PDEBoundaryType::Periodic && bound_pos == PDEBoundaryType::Periodic)
+            {
+                fft = new PoissonFFT3D_PP();
+            }
+            else if (bound_neg == PDEBoundaryType::Neumann && bound_pos == PDEBoundaryType::Neumann)
+            {
+                fft = new PoissonFFT3D_NN();
+            }
+            else if (isDirLike(bound_neg) && isDirLike(bound_pos))
+            {
+                fft = new PoissonFFT3D_DD();
+            }
+            else if (isDirLike(bound_neg) && bound_pos == PDEBoundaryType::Neumann)
+            {
+                fft = new PoissonFFT3D_DN();
+            }
+            else if (bound_neg == PDEBoundaryType::Neumann && isDirLike(bound_pos))
+            {
+                fft = new PoissonFFT3D_ND();
+            }
+            fft->init(n1, n2, n3);
+        };
     create_fft(poisson_fft_z, boundary_type_down, boundary_type_up, nx, ny, nz);
     create_fft(poisson_fft_y, boundary_type_front, boundary_type_back, nz, nx, ny);
 
@@ -182,10 +183,10 @@ void PoissonSolver3D::solve(field3& f)
     std::swap(f, buffer);
 }
 
-void PoissonSolver3D::cal_lambda(double*           lambda,
-                                 int               global_length,
-                                 int               begin,
-                                 int               local_length,
+void PoissonSolver3D::cal_lambda(double*         lambda,
+                                 int             global_length,
+                                 int             begin,
+                                 int             local_length,
                                  PDEBoundaryType BoundTypeNegative,
                                  PDEBoundaryType BoundTypePositive) // The current version is only for OpenMP
 {

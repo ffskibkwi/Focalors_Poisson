@@ -13,11 +13,12 @@ public:
     std::string                                                                     name;
     Geometry3D*                                                                     geometry = nullptr;
     std::unordered_map<Domain3DUniform*, field3*>                                   field_map;
-    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, double*>> buffer_map;
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, field2*>> buffer_map;
+    std::unordered_map<Domain3DUniform*, double*> corner_value_map_x, corner_value_map_y, corner_value_map_z;
 
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;
-    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, double*>>         boundary_value_map;
+    std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, field2*>>         boundary_value_map;
 
     Variable3D() = default;
     Variable3D(const std::string& in_name);

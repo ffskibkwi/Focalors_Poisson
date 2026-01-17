@@ -40,7 +40,6 @@ public:
     void set_boundary_type(Domain2DUniform* s, std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
 
     void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
-    void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
     void
     set_boundary_value_from_func_global(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f);
 

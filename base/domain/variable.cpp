@@ -221,10 +221,10 @@ void Variable::set_boundary_value_from_func_global(Domain2DUniform*             
 
     if (loc == LocationType::Left || loc == LocationType::Right)
     {
-        int j_size = (position_type == VariablePositionType::Corner || position_type == VariablePositionType::XEdge) ?
-                         s->ny + 1 :
-                         s->ny;
-        if (position_type == VariablePositionType::Center || position_type == VariablePositionType::YEdge)
+        int j_size;
+        if (position_type == VariablePositionType::Corner)
+            j_size = s->ny + 1;
+        else
             j_size = s->ny;
 
         boundary_value_map[s][loc] = new double[j_size];

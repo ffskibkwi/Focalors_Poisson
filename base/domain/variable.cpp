@@ -1,5 +1,16 @@
 #include "variable.h"
 #include <algorithm>
+#include <array>
+
+namespace
+{
+constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
+    LocationType::Left,
+    LocationType::Right,
+    LocationType::Down,
+    LocationType::Up,
+};
+}
 
 Variable::Variable(const std::string& in_name)
     : name(in_name)
@@ -163,6 +174,23 @@ void Variable::set_boundary_type(Domain2DUniform*                               
     }
 }
 
+void Variable::fill_boundary_type(PDEBoundaryType type)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable has no geometry set");
+
+    for (auto* domain : geometry->domains)
+    {
+        auto& type_map = boundary_type_map[domain];
+        for (LocationType loc : kBoundaryLocations2D)
+        {
+            if (type_map.find(loc) != type_map.end())
+                continue;
+            set_boundary_type(domain, loc, type);
+        }
+    }
+}
+
 void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);
@@ -258,6 +286,31 @@ void Variable::set_boundary_value_from_func_global(Domain2DUniform*             
             double gx                     = s->get_offset_x() + (shift_x + i) * s->get_hx();
             double gy                     = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
             boundary_value_map[s][loc][i] = f(gx, gy);
+        }
+    }
+}
+
+void Variable::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable has no geometry set");
+
+    for (auto* domain : geometry->domains)
+    {
+        auto& type_map = boundary_type_map[domain];
+        auto& has_map  = has_boundary_value_map[domain];
+        for (LocationType loc : kBoundaryLocations2D)
+        {
+            auto type_it = type_map.find(loc);
+            if (type_it == type_map.end())
+                continue;
+            if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
+                continue;
+            auto has_it = has_map.find(loc);
+            if (has_it != has_map.end() && has_it->second)
+                continue;
+
+            set_boundary_value_from_func_global(domain, loc, f);
         }
     }
 }

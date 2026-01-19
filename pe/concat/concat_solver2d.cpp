@@ -109,7 +109,7 @@ void ConcatPoissonSolver2D::solve()
     for (auto& domain : variable->geometry->domains)
     {
         field2& f = *field_map[domain];
-        f *= domain->hx * domain->hx;
+        f = f * (domain->hx * domain->hx);
     }
 
     // Righthand construction

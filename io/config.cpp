@@ -129,3 +129,15 @@ void PhysicsConfig::set_carreau_dimensionless(double in_Re_0, double in_Re_inf, 
     a = in_a;
     n = in_n;
 }
+
+// MHD parameter setters
+void PhysicsConfig::set_enable_mhd(bool in_enable_mhd) { enable_mhd = in_enable_mhd; }
+
+void PhysicsConfig::set_magnetic_field(double in_Bx, double in_By, double in_Bz)
+{
+    Bx = in_Bx;
+    By = in_By;
+    Bz = in_Bz;
+}
+
+void PhysicsConfig::set_Ha(double in_Ha) { Ha = in_Ha; }

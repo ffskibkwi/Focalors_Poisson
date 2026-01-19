@@ -53,6 +53,13 @@ public:
     double mu_min = 0.0;  // Minimum viscosity limit
     double mu_max = 1e20; // Maximum viscosity limit
 
+    // MHD parameters
+    bool   enable_mhd = false; // Enable MHD module
+    double Bx         = 0.0;   // Magnetic field X component
+    double By         = 0.0;   // Magnetic field Y component
+    double Bz         = 0.0;   // Magnetic field Z component
+    double Ha         = 0.0;   // Hartmann number
+
     PhysicsConfig() {}
     void set_nu(double in_nu);
     void set_Re(double in_Re);
@@ -78,4 +85,9 @@ public:
     // Re_inf = rho * U * L / mu_inf => mu_inf = 1.0 / Re_inf
     // Wi = lambda * U / L        => lambda = Wi
     void set_carreau_dimensionless(double in_Re_0, double in_Re_inf, double in_Wi, double in_a, double in_n);
+
+    // MHD parameter setters
+    void set_enable_mhd(bool in_enable_mhd);
+    void set_magnetic_field(double in_Bx, double in_By, double in_Bz);
+    void set_Ha(double in_Ha);
 };

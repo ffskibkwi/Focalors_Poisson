@@ -33,23 +33,9 @@ PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variab
     , hy(in_domain->hy)
 {
     env_config = in_env_config;
-    // 新逻辑：必须从 Variable 的 boundary_type_map 读取边界；禁止回退到 Domain
-    // if (in_variable == nullptr)
-    //     throw std::runtime_error("PoissonSolver2D requires Variable with boundary_type_map; do not use Domain
-    //     boundary");
 
-    // auto domIt = in_variable->boundary_type_map.find(in_domain);
-    // if (domIt == in_variable->boundary_type_map.end())
-    //     throw std::runtime_error("Variable has no boundary map for domain " + in_domain->name);
-
-    // const auto &mp = domIt->second;
-    // auto get_required = [&](LocationType loc){
-    //     auto it = mp.find(loc);
-    //     if (it == mp.end() || it->second == PDEBoundaryType::Null)
-    //         throw std::runtime_error("Boundary type missing for domain " + in_domain->name);
-    //     return it->second;
-    // };
-
+    // For PoissonSolver, var is only use to define the boundary type, the boundary value is not defined here but in
+    // ConcatSolver
     boundary_type_left  = var->boundary_type_map[domain][LocationType::Left];
     boundary_type_right = var->boundary_type_map[domain][LocationType::Right];
     boundary_type_down  = var->boundary_type_map[domain][LocationType::Down];
@@ -96,7 +82,7 @@ void PoissonSolver2D::init()
 
     for (int j = 0; j < ny; j++)
     {
-        x_diag[j] = -2.0 + hx * hx / hy / hy * lambda_y[j];
+        x_diag[j] = -2.0 + hx * hx / hy / hy * (lambda_y[j] - 2.0);
     }
     delete[] lambda_y;
 
@@ -127,8 +113,6 @@ void PoissonSolver2D::solve(field2& f, bool is_debugmode)
             env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::field_to_csv(f, fname_rhs);
     }
-
-    boundary_assembly(f);
 
     buffer.set_size(nx, ny);
     poisson_fft_y->transform(f, buffer);
@@ -165,18 +149,18 @@ void PoissonSolver2D::cal_lambda() // The current version is only for OpenMP
     {
         if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic) // P-P
         {
-            lambda_y[i - 1] = -2.0 - 2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
+            lambda_y[i - 1] = -2.0 * std::cos(2.0 * pi / ny * std::floor(i / 2.0));
         }
         else if (boundary_type_down == PDEBoundaryType::Neumann && boundary_type_up == PDEBoundaryType::Neumann) // N-N
         {
-            lambda_y[i - 1] = -2.0 - 2.0 * std::cos(pi / ny * i);
+            lambda_y[i - 1] = -2.0 * std::cos(pi / ny * i);
         }
         else if ((boundary_type_down == PDEBoundaryType::Dirichlet ||
                   boundary_type_down == PDEBoundaryType::Adjacented) &&
                  (boundary_type_up == PDEBoundaryType::Dirichlet ||
                   boundary_type_up == PDEBoundaryType::Adjacented)) // D/Adj - D/Adj
         {
-            lambda_y[i - 1] = -2.0 + 2.0 * std::cos(pi / (ny + 1) * i);
+            lambda_y[i - 1] = +2.0 * std::cos(pi / (ny + 1) * i);
         }
         else if (((boundary_type_down == PDEBoundaryType::Dirichlet ||
                    boundary_type_down == PDEBoundaryType::Adjacented) &&
@@ -185,64 +169,7 @@ void PoissonSolver2D::cal_lambda() // The current version is only for OpenMP
                   (boundary_type_up == PDEBoundaryType::Dirichlet ||
                    boundary_type_up == PDEBoundaryType::Adjacented))) // (D/Adj)-N or N-(D/Adj)
         {
-            lambda_y[i - 1] = -2.0 - 2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
+            lambda_y[i - 1] = -2.0 * std::cos(2.0 * pi * i / (2 * ny + 1));
         }
-    }
-}
-
-void PoissonSolver2D::boundary_assembly(field2& f)
-{
-    auto& var_has_map   = var->has_boundary_value_map[domain];
-    auto& var_value_map = var->boundary_value_map[domain];
-
-    if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
-    {
-        double* boundary_value = var_value_map[LocationType::Left];
-        for (int j = 0; j < ny; j++)
-            f(0, j) -= boundary_value[j] / hx / hx;
-    }
-    if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
-    {
-        double* boundary_value = var_value_map[LocationType::Right];
-        for (int j = 0; j < ny; j++)
-            f(nx - 1, j) -= boundary_value[j] / hx / hx;
-    }
-
-    if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
-    {
-        double* boundary_value = var_value_map[LocationType::Down];
-        for (int i = 0; i < nx; i++)
-            f(i, 0) -= boundary_value[i] / hy / hy;
-    }
-    if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
-    {
-        double* boundary_value = var_value_map[LocationType::Up];
-        for (int i = 0; i < nx; i++)
-            f(i, ny - 1) -= boundary_value[i] / hy / hy;
-    }
-
-    if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
-    {
-        double* boundary_value = var_value_map[LocationType::Left];
-        for (int j = 0; j < ny; j++)
-            f(0, j) += boundary_value[j] / hx;
-    }
-    if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
-    {
-        double* boundary_value = var_value_map[LocationType::Right];
-        for (int j = 0; j < ny; j++)
-            f(nx - 1, j) -= boundary_value[j] / hx;
-    }
-    if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
-    {
-        double* boundary_value = var_value_map[LocationType::Down];
-        for (int i = 0; i < nx; i++)
-            f(i, 0) += boundary_value[i] / hy;
-    }
-    if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
-    {
-        double* boundary_value = var_value_map[LocationType::Up];
-        for (int i = 0; i < nx; i++)
-            f(i, ny - 1) -= boundary_value[i] / hy;
     }
 }

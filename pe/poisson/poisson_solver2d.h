@@ -56,7 +56,6 @@ private:
     ChasingMethod2D* chasing_method_x;
 
     void cal_lambda();
-    void boundary_assembly(field2& f);
 
     int solve_call_count = 0;
 };

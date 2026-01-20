@@ -31,6 +31,9 @@ public:
     void check_geometry(Domain3DUniform* s);
 
     void set_center_field(Domain3DUniform* s, field3& f);
+    void set_x_face_center_field(Domain3DUniform* s, field3& f);
+    void set_y_face_center_field(Domain3DUniform* s, field3& f);
+    void set_z_face_center_field(Domain3DUniform* s, field3& f);
 
     void set_boundary_type(Domain3DUniform* s, LocationType loc, PDEBoundaryType type);
 

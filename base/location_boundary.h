@@ -68,9 +68,9 @@ enum class ParticleBoundaryType : std::uint8_t
 enum class VariablePositionType : std::uint8_t
 {
     Center,
-    XEdge,
-    YEdge,
-    ZEdge,
+    XFaceCenter,
+    YFaceCenter,
+    ZFaceCenter,
     Corner,
     Null
 };

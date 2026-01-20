@@ -228,92 +228,92 @@ void PoissonSolver3D::boundary_assembly(field3& f)
     // Left/Right boundaries: y-z plane (ny * nz)
     if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
     {
-        double* boundary_value = var_value_map[LocationType::Left];
+        field2& boundary_value = *var_value_map[LocationType::Left];
         for (int j = 0; j < ny; j++)
             for (int k = 0; k < nz; k++)
-                f(0, j, k) -= boundary_value[j * nz + k] / hx / hx;
+                f(0, j, k) -= boundary_value(j, k) / hx / hx;
     }
     if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
     {
-        double* boundary_value = var_value_map[LocationType::Right];
+        field2& boundary_value = *var_value_map[LocationType::Right];
         for (int j = 0; j < ny; j++)
             for (int k = 0; k < nz; k++)
-                f(nx - 1, j, k) -= boundary_value[j * nz + k] / hx / hx;
+                f(nx - 1, j, k) -= boundary_value(j, k) / hx / hx;
     }
 
     // Front/Back boundaries: x-z plane (nx * nz)
     if (boundary_type_front == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Front])
     {
-        double* boundary_value = var_value_map[LocationType::Front];
+        field2& boundary_value = *var_value_map[LocationType::Front];
         for (int i = 0; i < nx; i++)
             for (int k = 0; k < nz; k++)
-                f(i, 0, k) -= boundary_value[i * nz + k] / hy / hy;
+                f(i, 0, k) -= boundary_value(i, k) / hy / hy;
     }
     if (boundary_type_back == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Back])
     {
-        double* boundary_value = var_value_map[LocationType::Back];
+        field2& boundary_value = *var_value_map[LocationType::Back];
         for (int i = 0; i < nx; i++)
             for (int k = 0; k < nz; k++)
-                f(i, ny - 1, k) -= boundary_value[i * nz + k] / hy / hy;
+                f(i, ny - 1, k) -= boundary_value(i, k) / hy / hy;
     }
 
     // Down/Up boundaries: x-y plane (nx * ny)
     if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
     {
-        double* boundary_value = var_value_map[LocationType::Down];
+        field2& boundary_value = *var_value_map[LocationType::Down];
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
-                f(i, j, 0) -= boundary_value[i * ny + j] / hz / hz;
+                f(i, j, 0) -= boundary_value(i, j) / hz / hz;
     }
     if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
     {
-        double* boundary_value = var_value_map[LocationType::Up];
+        field2& boundary_value = *var_value_map[LocationType::Up];
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
-                f(i, j, nz - 1) -= boundary_value[i * ny + j] / hz / hz;
+                f(i, j, nz - 1) -= boundary_value(i, j) / hz / hz;
     }
 
     // Neumann boundaries
     if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
     {
-        double* boundary_value = var_value_map[LocationType::Left];
+        field2& boundary_value = *var_value_map[LocationType::Left];
         for (int j = 0; j < ny; j++)
             for (int k = 0; k < nz; k++)
-                f(0, j, k) += boundary_value[j * nz + k] / hx;
+                f(0, j, k) += boundary_value(j, k) / hx;
     }
     if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
     {
-        double* boundary_value = var_value_map[LocationType::Right];
+        field2& boundary_value = *var_value_map[LocationType::Right];
         for (int j = 0; j < ny; j++)
             for (int k = 0; k < nz; k++)
-                f(nx - 1, j, k) -= boundary_value[j * nz + k] / hx;
+                f(nx - 1, j, k) -= boundary_value(j, k) / hx;
     }
     if (boundary_type_front == PDEBoundaryType::Neumann && var_has_map[LocationType::Front])
     {
-        double* boundary_value = var_value_map[LocationType::Front];
+        field2& boundary_value = *var_value_map[LocationType::Front];
         for (int i = 0; i < nx; i++)
             for (int k = 0; k < nz; k++)
-                f(i, 0, k) += boundary_value[i * nz + k] / hy;
+                f(i, 0, k) += boundary_value(i, k) / hy;
     }
     if (boundary_type_back == PDEBoundaryType::Neumann && var_has_map[LocationType::Back])
     {
-        double* boundary_value = var_value_map[LocationType::Back];
+        field2& boundary_value = *var_value_map[LocationType::Back];
         for (int i = 0; i < nx; i++)
             for (int k = 0; k < nz; k++)
-                f(i, ny - 1, k) -= boundary_value[i * nz + k] / hy;
+                f(i, ny - 1, k) -= boundary_value(i, k) / hy;
     }
     if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
     {
-        double* boundary_value = var_value_map[LocationType::Down];
+        field2& boundary_value = *var_value_map[LocationType::Down];
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
-                f(i, j, 0) += boundary_value[i * ny + j] / hz;
+                f(i, j, 0) += boundary_value(i, j) / hz;
     }
     if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
     {
-        double* boundary_value = var_value_map[LocationType::Up];
+        field2& boundary_value = *var_value_map[LocationType::Up];
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
-                f(i, j, nz - 1) -= boundary_value[i * ny + j] / hz;
+                f(i, j, nz - 1) -= boundary_value(i, j) / hz;
     }
 }

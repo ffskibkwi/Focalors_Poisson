@@ -1,5 +1,16 @@
 #include "variable.h"
 #include <algorithm>
+#include <array>
+
+namespace
+{
+constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
+    LocationType::Left,
+    LocationType::Right,
+    LocationType::Down,
+    LocationType::Up,
+};
+}
 
 Variable::Variable(const std::string& in_name)
     : name(in_name)
@@ -154,6 +165,32 @@ void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBounda
     boundary_type_map[s][loc] = type;
 }
 
+void Variable::set_boundary_type(Domain2DUniform*                                                s,
+                                 std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list)
+{
+    for (const auto& pair : list)
+    {
+        set_boundary_type(s, pair.first, pair.second);
+    }
+}
+
+void Variable::fill_boundary_type(PDEBoundaryType type)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable has no geometry set");
+
+    for (auto* domain : geometry->domains)
+    {
+        auto& type_map = boundary_type_map[domain];
+        for (LocationType loc : kBoundaryLocations2D)
+        {
+            if (type_map.find(loc) != type_map.end())
+                continue;
+            set_boundary_type(domain, loc, type);
+        }
+    }
+}
+
 void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);
@@ -178,8 +215,149 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
     }
 }
 
-void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double)> f)
+void Variable::set_boundary_value_from_func_global(Domain2DUniform*                      s,
+                                                   LocationType                          loc,
+                                                   std::function<double(double, double)> f)
 {
     check_geometry(s);
-    // TODO:
+    has_boundary_value_map[s][loc] = true;
+
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XEdge:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YEdge:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
+
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        int j_size;
+        if (position_type == VariablePositionType::Corner)
+            j_size = s->ny + 1;
+        else
+            j_size = s->ny;
+
+        boundary_value_map[s][loc] = new double[j_size];
+
+        // Determine i index (ghost node or boundary node)
+        // Left: i = -1. Right: i = nx.
+        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+
+        for (int j = 0; j < j_size; j++)
+        {
+            double gx                     = s->get_offset_x() + (shift_x + i_idx) * s->get_hx();
+            double gy                     = s->get_offset_y() + (shift_y + j) * s->get_hy();
+            boundary_value_map[s][loc][j] = f(gx, gy);
+        }
+    }
+    else if (loc == LocationType::Down || loc == LocationType::Up)
+    {
+        int i_size;
+        if (position_type == VariablePositionType::Corner)
+            i_size = s->nx + 1;
+        else
+            i_size = s->nx;
+
+        boundary_value_map[s][loc] = new double[i_size];
+
+        // Down: j = -1. Up: j = ny.
+        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            double gx                     = s->get_offset_x() + (shift_x + i) * s->get_hx();
+            double gy                     = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
+            boundary_value_map[s][loc][i] = f(gx, gy);
+        }
+    }
+}
+
+void Variable::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable has no geometry set");
+
+    for (auto* domain : geometry->domains)
+    {
+        auto& type_map = boundary_type_map[domain];
+        auto& has_map  = has_boundary_value_map[domain];
+        for (LocationType loc : kBoundaryLocations2D)
+        {
+            auto type_it = type_map.find(loc);
+            if (type_it == type_map.end())
+                continue;
+            if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
+                continue;
+            auto has_it = has_map.find(loc);
+            if (has_it != has_map.end() && has_it->second)
+                continue;
+
+            set_boundary_value_from_func_global(domain, loc, f);
+        }
+    }
+}
+
+void Variable::set_value_from_func_global(std::function<double(double, double)> func)
+{
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XEdge:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YEdge:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            // Or throw exception? Defaulting to Center for now or Null
+            break;
+    }
+
+    for (auto& pair : field_map)
+    {
+        Domain2DUniform* s = pair.first;
+        field2*          f = pair.second;
+
+// Iterate over the field
+#pragma omp parallel for collapse(2)
+        for (int i = 0; i < f->get_nx(); ++i)
+        {
+            for (int j = 0; j < f->get_ny(); ++j)
+            {
+                double gx  = s->get_offset_x() + (shift_x + i) * s->get_hx();
+                double gy  = s->get_offset_y() + (shift_y + j) * s->get_hy();
+                (*f)(i, j) = func(gx, gy);
+            }
+        }
+    }
 }

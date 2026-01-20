@@ -102,6 +102,16 @@ void ConcatPoissonSolver2D::construct_solver_map()
 
 void ConcatPoissonSolver2D::solve()
 {
+    // Boundary
+    boundary_assembly();
+
+    // *hx*hx for each field
+    for (auto& domain : variable->geometry->domains)
+    {
+        field2& f = *field_map[domain];
+        f = f * (domain->hx * domain->hx);
+    }
+
     // Righthand construction
     for (auto& domain : solve_order)
     {
@@ -161,6 +171,83 @@ void ConcatPoissonSolver2D::solve()
         {
             double s_post = field_map[d]->sum();
             std::cout << "[Concat] Branch domain " << d->name << " field sum after solve=" << s_post << std::endl;
+        }
+    }
+}
+
+void ConcatPoissonSolver2D::boundary_assembly()
+{
+    // Apply boundary conditions to all domains in the geometry
+    for (auto& domain : variable->geometry->domains)
+    {
+        if (variable->has_boundary_value_map.find(domain) == variable->has_boundary_value_map.end())
+            continue;
+
+        auto& var_has_map   = variable->has_boundary_value_map[domain];
+        auto& var_value_map = variable->boundary_value_map[domain];
+        auto& var_type_map  = variable->boundary_type_map[domain];
+
+        field2& f = *field_map[domain];
+
+        int    nx = domain->get_nx();
+        int    ny = domain->get_ny();
+        double hx = domain->get_hx();
+        double hy = domain->get_hy();
+
+        PDEBoundaryType boundary_type_left  = var_type_map[LocationType::Left];
+        PDEBoundaryType boundary_type_right = var_type_map[LocationType::Right];
+        PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
+        PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
+
+        if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
+        {
+            double* boundary_value = var_value_map[LocationType::Left];
+            for (int j = 0; j < ny; j++)
+                f(0, j) -= boundary_value[j] / hx / hx;
+        }
+        if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
+        {
+            double* boundary_value = var_value_map[LocationType::Right];
+            for (int j = 0; j < ny; j++)
+                f(nx - 1, j) -= boundary_value[j] / hx / hx;
+        }
+
+        if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
+        {
+            double* boundary_value = var_value_map[LocationType::Down];
+            for (int i = 0; i < nx; i++)
+                f(i, 0) -= boundary_value[i] / hy / hy;
+        }
+        if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
+        {
+            double* boundary_value = var_value_map[LocationType::Up];
+            for (int i = 0; i < nx; i++)
+                f(i, ny - 1) -= boundary_value[i] / hy / hy;
+        }
+
+        if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
+        {
+            double* boundary_value = var_value_map[LocationType::Left];
+            for (int j = 0; j < ny; j++)
+                f(0, j) += boundary_value[j] / hx;
+        }
+        if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
+        {
+            double* boundary_value = var_value_map[LocationType::Right];
+            for (int j = 0; j < ny; j++)
+                f(nx - 1, j) -= boundary_value[j] / hx;
+        }
+        if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
+        {
+            double* boundary_value = var_value_map[LocationType::Down];
+            for (int i = 0; i < nx; i++)
+                f(i, 0) += boundary_value[i] / hy;
+        }
+        if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
+        {
+            double* boundary_value = var_value_map[LocationType::Up];
+            for (int i = 0; i < nx; i++)
+                f(i, ny - 1) -= boundary_value[i] / hy;
         }
     }
 }

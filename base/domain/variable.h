@@ -37,10 +37,15 @@ public:
     void set_corner_field(Domain2DUniform* s, field2& f);
 
     void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
+    void set_boundary_type(Domain2DUniform* s, std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
+    void fill_boundary_type(PDEBoundaryType type);
 
     void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
-    void set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double)> f);
+    void set_boundary_value_from_func_global(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f);
+    void fill_boundary_value_from_func_global(std::function<double(double, double)> f);
 
     // void set_boundary_func_local(Domain2DUniform* s, LocationType loc, double* value);
     // void set_boundary_func_global(Domain2DUniform* s, LocationType loc, double* value);
+
+    void set_value_from_func_global(std::function<double(double, double)> func);
 };

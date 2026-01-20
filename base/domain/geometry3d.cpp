@@ -11,11 +11,11 @@ Geometry3D::~Geometry3D()
  * Ensures uniqueness of `s` within the geometry and sets its `parent`
  * pointer to this `Geometry3D` instance.
  */
-void Geometry3D::add_domain(Domain3DUniform& s)
+void Geometry3D::add_domain(Domain3DUniform* s)
 {
-    if (std::find(domains.begin(), domains.end(), &s) == domains.end())
-        domains.push_back(&s);
-    s.parent = this;
+    if (std::find(domains.begin(), domains.end(), s) == domains.end())
+        domains.push_back(s);
+    s->parent = this;
 }
 
 /**
@@ -26,37 +26,37 @@ void Geometry3D::add_domain(Domain3DUniform& s)
  *
  * The connection is stored symmetrically: `a --dir--> b` and `b --opposite(dir)--> a`.
  */
-void Geometry3D::connect(Domain3DUniform& a, LocationType dir, Domain3DUniform& b)
+void Geometry3D::connect(Domain3DUniform* a, LocationType dir, Domain3DUniform* b)
 {
     //Here defaultly add the first domain and the second domain into geo
     add_domain(a);
     add_domain(b);
 
-    adjacency[&a][dir] = &b;
-    adjacency[&b][opposite(dir)] = &a;
+    adjacency[a][dir] = b;
+    adjacency[b][opposite(dir)] = a;
 
     //Set the size
     //In this function, b is decided by a
     if (dir == LocationType::Left || dir == LocationType::Right)
     {
-        b.set_ly(a.ly);
-        b.set_ny(a.ny);
-        b.set_lz(a.lz);
-        b.set_nz(a.nz);
+        b->set_ly(a->ly);
+        b->set_ny(a->ny);
+        b->set_lz(a->lz);
+        b->set_nz(a->nz);
     }
     else if (dir == LocationType::Front || dir == LocationType::Back)
     {
-        b.set_lx(a.lx);
-        b.set_nx(a.nx);
-        b.set_lz(a.lz);
-        b.set_nz(a.nz);
+        b->set_lx(a->lx);
+        b->set_nx(a->nx);
+        b->set_lz(a->lz);
+        b->set_nz(a->nz);
     }
     else if (dir == LocationType::Down || dir == LocationType::Up)
     {
-        b.set_lx(a.lx);
-        b.set_nx(a.nx);
-        b.set_ly(a.ly);
-        b.set_ny(a.ny);
+        b->set_lx(a->lx);
+        b->set_nx(a->nx);
+        b->set_ly(a->ly);
+        b->set_ny(a->ny);
     }
 }
 

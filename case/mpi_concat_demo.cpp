@@ -58,11 +58,11 @@ int main(int argc, char* argv[])
     geo_tee.add_domain(&T5);
     geo_tee.add_domain(&T6);
 
-    geo_tee.connect(T2, LocationType::Left, T1);
-    geo_tee.connect(T2, LocationType::Right, T3);
-    geo_tee.connect(T2, LocationType::Down, T4);
-    geo_tee.connect(T4, LocationType::Down, T5);
-    geo_tee.connect(T5, LocationType::Right, T6);
+    geo_tee.connect(&T2, LocationType::Left, &T1);
+    geo_tee.connect(&T2, LocationType::Right, &T3);
+    geo_tee.connect(&T2, LocationType::Down, &T4);
+    geo_tee.connect(&T4, LocationType::Down, &T5);
+    geo_tee.connect(&T5, LocationType::Right, &T6);
 
     // Variable and fields
     Variable v("v");

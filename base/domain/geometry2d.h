@@ -35,7 +35,7 @@ public:
 
     void add_domain(Domain2DUniform* s);
     void add_domain(std::initializer_list<Domain2DUniform*> list);
-    void connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& b);
+    void connect(Domain2DUniform* a, LocationType dir, Domain2DUniform* b);
 
     void check();
     void solve_prepare();

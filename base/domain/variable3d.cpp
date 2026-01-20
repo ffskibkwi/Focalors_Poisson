@@ -27,21 +27,21 @@ void Variable3D::cleanup_buffers()
         }
     }
 
-    if (position_type == VariablePositionType::XFaceCenter)
+    if (position_type == VariablePositionType::XFace)
     {
         for (auto& pair : corner_value_map_y)
             delete[] pair.second;
         for (auto& pair : corner_value_map_z)
             delete[] pair.second;
     }
-    else if (position_type == VariablePositionType::YFaceCenter)
+    else if (position_type == VariablePositionType::YFace)
     {
         for (auto& pair : corner_value_map_x)
             delete[] pair.second;
         for (auto& pair : corner_value_map_z)
             delete[] pair.second;
     }
-    else if (position_type == VariablePositionType::ZFaceCenter)
+    else if (position_type == VariablePositionType::ZFace)
     {
         for (auto& pair : corner_value_map_x)
             delete[] pair.second;
@@ -142,7 +142,7 @@ void Variable3D::set_x_face_center_field(Domain3DUniform* s, field3& f)
     corner_value_map_y[s] = new double[s->ny];
     corner_value_map_z[s] = new double[s->nz];
 
-    position_type = VariablePositionType::XFaceCenter;
+    position_type = VariablePositionType::XFace;
 }
 
 void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
@@ -170,7 +170,7 @@ void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
     corner_value_map_x[s] = new double[s->nx];
     corner_value_map_z[s] = new double[s->nz];
 
-    position_type = VariablePositionType::YFaceCenter;
+    position_type = VariablePositionType::YFace;
 }
 
 void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
@@ -198,7 +198,7 @@ void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
     corner_value_map_x[s] = new double[s->nx];
     corner_value_map_y[s] = new double[s->ny];
 
-    position_type = VariablePositionType::ZFaceCenter;
+    position_type = VariablePositionType::ZFace;
 }
 
 void Variable3D::set_boundary_type(Domain3DUniform* s, LocationType loc, PDEBoundaryType type)

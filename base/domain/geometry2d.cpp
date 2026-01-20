@@ -44,16 +44,16 @@ void Geometry2D::add_domain(std::initializer_list<Domain2DUniform*> list)
  * The connection is stored symmetrically: `a --dir--> b` and `b --opposite(dir)--> a`.
  * Default boundary types on the connected faces are set to Dirichlet for both domains.
  */
-void Geometry2D::connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& b)
+void Geometry2D::connect(Domain2DUniform* a, LocationType dir, Domain2DUniform* b)
 {
     // Here defaultly add the first domain and the second domain into geo
     // Maybe it is dangerous~
-    add_domain({&a, &b});
+    add_domain({a, b});
     if (dir == LocationType::Front || dir == LocationType::Back)
         throw std::invalid_argument("Geometry2D does not support Front/Back");
 
-    adjacency[&a][dir]           = &b;
-    adjacency[&b][opposite(dir)] = &a;
+    adjacency[a][dir]           = b;
+    adjacency[b][opposite(dir)] = a;
 
     // 不再在几何层面设置边界类型，边界类型应绑定在 Variable 上
 
@@ -61,13 +61,13 @@ void Geometry2D::connect(Domain2DUniform& a, LocationType dir, Domain2DUniform& 
     // In  this function, b is decided by a
     if (dir == LocationType::Left || dir == LocationType::Right)
     {
-        b.set_ly(a.ly);
-        b.set_ny(a.ny);
+        b->set_ly(a->ly);
+        b->set_ny(a->ny);
     }
     else if (dir == LocationType::Up || dir == LocationType::Down)
     {
-        b.set_lx(a.lx);
-        b.set_nx(a.nx);
+        b->set_lx(a->lx);
+        b->set_nx(a->nx);
     }
 }
 

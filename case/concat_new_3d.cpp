@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
 
     // 3D连接：T型结构
     // T2为中心，左边连接T1，右边连接T3，下边连接T4
-    geo_tee.connect(T2, LocationType::Left, T1);
-    geo_tee.connect(T2, LocationType::Right, T3);
-    geo_tee.connect(T2, LocationType::Down, T4);
+    geo_tee.connect(&T2, LocationType::Left, &T1);
+    geo_tee.connect(&T2, LocationType::Right, &T3);
+    geo_tee.connect(&T2, LocationType::Down, &T4);
 
     Variable3D v("v");
     v.set_geometry(geo_tee);

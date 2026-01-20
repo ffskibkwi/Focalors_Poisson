@@ -4,10 +4,10 @@
 
 #include "chasing_method_2d.hpp"
 #include "base/location_boundary.h"
-#include "base/mesh_profile/mesh_profile_2d_uniform.h"
+// #include "base/mesh_profile/mesh_profile_2d_uniform.h"
 #include "poisson_fft_2d.hpp"
 #include "poisson_solver_interface.h"
-
+# ifdef 0
 template<PDEBoundaryType BoundTypeXNegative,
          PDEBoundaryType BoundTypeXPositive,
          PDEBoundaryType BoundTypeYNegative,
@@ -145,3 +145,5 @@ private:
         }
     }
 };
+
+#endif

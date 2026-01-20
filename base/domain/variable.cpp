@@ -100,7 +100,7 @@ void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down]  = new double[s->nx];
     buffer_map[s][LocationType::Up]    = new double[s->nx];
 
-    position_type = VariablePositionType::XFaceCenter;
+    position_type = VariablePositionType::XFace;
 }
 
 void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
@@ -119,7 +119,7 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down]  = new double[s->nx];
     buffer_map[s][LocationType::Up]    = new double[s->nx];
 
-    position_type = VariablePositionType::YFaceCenter;
+    position_type = VariablePositionType::YFace;
 }
 
 void Variable::set_corner_field(Domain2DUniform* s, field2& f)
@@ -231,11 +231,11 @@ void Variable::set_boundary_value_from_func_global(Domain2DUniform*             
             shift_x = 0.5;
             shift_y = 0.5;
             break;
-        case VariablePositionType::XEdge:
+        case VariablePositionType::XFace:
             shift_x = 0.0;
             shift_y = 0.5;
             break;
-        case VariablePositionType::YEdge:
+        case VariablePositionType::YFace:
             shift_x = 0.5;
             shift_y = 0.0;
             break;
@@ -326,11 +326,11 @@ void Variable::set_value_from_func_global(std::function<double(double, double)> 
             shift_x = 0.5;
             shift_y = 0.5;
             break;
-        case VariablePositionType::XEdge:
+        case VariablePositionType::XFace:
             shift_x = 0.0;
             shift_y = 0.5;
             break;
-        case VariablePositionType::YEdge:
+        case VariablePositionType::YFace:
             shift_x = 0.5;
             shift_y = 0.0;
             break;

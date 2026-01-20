@@ -28,8 +28,8 @@ public:
     Geometry3D() = default;
     ~Geometry3D();
 
-    void add_domain(Domain3DUniform& s);
-    void connect(Domain3DUniform& a, LocationType dir, Domain3DUniform& b);
+    void add_domain(Domain3DUniform* s);
+    void connect(Domain3DUniform* a, LocationType dir, Domain3DUniform* b);
 
     void check();
     void solve_prepare();

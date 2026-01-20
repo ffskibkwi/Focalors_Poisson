@@ -111,7 +111,7 @@ namespace IO
         int ny = field.get_ny();
         int nz = field.get_nz();
 
-        if (pos_type == VariablePositionType::XFaceCenter)
+        if (pos_type == VariablePositionType::XFace)
         {
             for (int i = 0; i < nx + 1; i++)
             {
@@ -141,7 +141,7 @@ namespace IO
                 }
             }
         }
-        else if (pos_type == VariablePositionType::YFaceCenter)
+        else if (pos_type == VariablePositionType::YFace)
         {
             for (int i = 0; i < nx; i++)
             {
@@ -171,7 +171,7 @@ namespace IO
                 }
             }
         }
-        else if (pos_type == VariablePositionType::ZFaceCenter)
+        else if (pos_type == VariablePositionType::ZFace)
         {
             for (int i = 0; i < nx; i++)
             {
@@ -230,7 +230,7 @@ namespace IO
                 int nx = field->get_nx();
                 int ny = field->get_ny();
                 int nz = field->get_nz();
-                if (var.position_type == VariablePositionType::XFaceCenter)
+                if (var.position_type == VariablePositionType::XFace)
                 {
                     if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
                         field_to_csv(*field, filename + "_" + domain->name);
@@ -238,9 +238,9 @@ namespace IO
                         field_and_buffer_to_csv(*field,
                                                 *buffers.at(LocationType::Right),
                                                 filename + "_" + domain->name,
-                                                VariablePositionType::XFaceCenter);
+                                                VariablePositionType::XFace);
                 }
-                else if (var.position_type == VariablePositionType::YFaceCenter)
+                else if (var.position_type == VariablePositionType::YFace)
                 {
                     if (boundary_type.at(LocationType::Back) == PDEBoundaryType::Adjacented)
                         field_to_csv(*field, filename + "_" + domain->name);
@@ -248,9 +248,9 @@ namespace IO
                         field_and_buffer_to_csv(*field,
                                                 *buffers.at(LocationType::Back),
                                                 filename + "_" + domain->name,
-                                                VariablePositionType::YFaceCenter);
+                                                VariablePositionType::YFace);
                 }
-                else if (var.position_type == VariablePositionType::ZFaceCenter)
+                else if (var.position_type == VariablePositionType::ZFace)
                 {
                     if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
                         field_to_csv(*field, filename + "_" + domain->name);
@@ -258,7 +258,7 @@ namespace IO
                         field_and_buffer_to_csv(*field,
                                                 *buffers.at(LocationType::Up),
                                                 filename + "_" + domain->name,
-                                                VariablePositionType::ZFaceCenter);
+                                                VariablePositionType::ZFace);
                 }
                 else
                 {

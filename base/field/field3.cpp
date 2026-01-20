@@ -193,6 +193,14 @@ void field3::add_affine_transform(const double a, const field3& x, const double 
     }
 }
 
+double field3::norm()
+{
+    double sum = 0.;
+    for (size_t i = 0; i < size_n; ++i)
+        sum += value[i] * value[i];
+    return std::sqrt(sum);
+}
+
 /**
  * @brief Computes the sum of all elements in the field.
  *

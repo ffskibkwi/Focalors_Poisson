@@ -122,6 +122,9 @@ public:
      * @param permutation   Array specifying the new order of dimensions.
      */
     void transpose(field3& dst, const std::array<int, 3>& permutation);
+
+    double norm();
+
     /**
      * @brief Computes the sum of all elements in the field.
      *

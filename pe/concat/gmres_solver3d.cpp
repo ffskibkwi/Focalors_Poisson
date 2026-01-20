@@ -223,24 +223,13 @@ void GMRESSolver3D::solve(field3& b)
                     w_buf.add_affine_transform(-H[i * m + j], V[i], 0.0);
                 }
 
-                // 计算 w 的范数
-                double h_j1j = 0.0;
-                for (int i = 0; i < w_buf.get_nx(); i++)
-                    for (int j = 0; j < w_buf.get_ny(); j++)
-                        for (int k = 0; k < w_buf.get_nz(); k++)
-                            h_j1j += w_buf(i, j, k) * w_buf(i, j, k);
-                h_j1j = std::sqrt(h_j1j);
-
+                const double h_j1j = w_buf.norm();
                 if (h_j1j < 1e-12)
                     break; // 提前终止
 
                 H[(j + 1) * m + j] = h_j1j;
                 V[j + 1].clear(0.0);
-                double inv_h_j1j = 1.0 / h_j1j;
-                for (int i = 0; i < w_buf.get_nx(); i++)
-                    for (int j = 0; j < w_buf.get_ny(); j++)
-                        for (int k = 0; k < w_buf.get_nz(); k++)
-                            V[j + 1](i, j, k) = w_buf(i, j, k) * inv_h_j1j;
+                V[j + 1].add_affine_transform(1.0 / h_j1j, w_buf, 0.0);
             }
 
             // 应用已有的 Givens 旋转到 H 的第 j 列

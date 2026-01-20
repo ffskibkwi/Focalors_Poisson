@@ -29,14 +29,17 @@ public:
 
     void init();
 
-    void solve(field2& f) override;
+    void solve(field2& f, bool is_debugmode = true) override;
+
+    double get_hx() const override { return hx; }
+    double get_hy() const override { return hy; }
 
 private:
     int    nx, ny;
     double hx, hy;
     field2 buffer;
 
-    Variable* var = nullptr;
+    Variable*        var    = nullptr;
     Domain2DUniform* domain = nullptr;
 
     EnvironmentConfig* env_config = nullptr;
@@ -54,4 +57,6 @@ private:
 
     void cal_lambda();
     void boundary_assembly(field2& f);
+
+    int solve_call_count = 0;
 };

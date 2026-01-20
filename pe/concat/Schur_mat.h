@@ -2,8 +2,9 @@
 
 #include "base/pch.h"
 
-#include "domain_solver.h"
 #include "base/domain/domain2d.h"
+#include "domain_solver.h"
+
 
 class Schur_mat
 {
@@ -41,7 +42,7 @@ public:
             delete[] value[i];
         delete[] value;
     }
-    int get_size() const { return cosize_n; }
+    int  get_size() const { return cosize_n; }
     void store_rowmajor(double* buf) const
     {
         for (int i = 0; i < cosize_n; ++i)
@@ -65,6 +66,12 @@ public:
 
     virtual void   construct(DomainSolver2D* branch_solver) = 0;
     virtual field2 operator*(const field2& root)            = 0;
+
+    void set_name(const std::string& in_name) { name = in_name; }
+    void dump_to_csv(const std::string& directory);
+
+protected:
+    std::string name = "SchurMat";
 };
 
 class Schur_mat_left : public Schur_mat
@@ -80,7 +87,6 @@ public:
 class Schur_mat_right : public Schur_mat
 {
 public:
-    
     Schur_mat_right(const Domain2DUniform& root, const Domain2DUniform& branch)
         : Schur_mat(root, branch, root.ny)
     {}

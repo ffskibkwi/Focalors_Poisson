@@ -7,8 +7,9 @@
 #include "base/location_boundary.h"
 #include "io/config.h"
 #include "pe/concat/domain_solver.h"
-#include "pe/poisson/poisson_fft2d.h"
 #include "pe/poisson/chasing_method2d.h"
+#include "pe/poisson/poisson_fft2d.h"
+
 
 #include <mpi.h>
 #include <vector>
@@ -29,20 +30,23 @@ public:
                        int                in_num_proc,
                        int                in_start_rank = 0,
                        EnvironmentConfig* in_env_config = nullptr,
-                       MPI_Comm           in_comm = MPI_COMM_WORLD);
+                       MPI_Comm           in_comm       = MPI_COMM_WORLD);
 
-    MPIPoissonSolver2D(Domain2DUniform* in_domain,
-                       Variable*        in_variable,
-                       int              in_num_proc,
-                       int              in_start_rank = 0,
+    MPIPoissonSolver2D(Domain2DUniform*   in_domain,
+                       Variable*          in_variable,
+                       int                in_num_proc,
+                       int                in_start_rank = 0,
                        EnvironmentConfig* in_env_config = nullptr,
-                       MPI_Comm           in_comm = MPI_COMM_WORLD);
+                       MPI_Comm           in_comm       = MPI_COMM_WORLD);
 
     ~MPIPoissonSolver2D();
 
-    void solve(field2& f) override;
-    void solve_collective_root_owned(field2& f) override;
+    void solve(field2& f, bool is_debugmode = true) override;
+    void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
     bool is_comm_root() const override { return is_active && active_rank == 0; }
+
+    double get_hx() const override { return hx; }
+    double get_hy() const override { return hy; }
 
 private:
     // Global problem size
@@ -50,8 +54,8 @@ private:
     double hx = 0.0, hy = 0.0;
 
     // Domain/variable and env
-    Variable*         var = nullptr;
-    Domain2DUniform*  domain = nullptr;
+    Variable*          var        = nullptr;
+    Domain2DUniform*   domain     = nullptr;
     EnvironmentConfig* env_config = nullptr;
 
     // Boundary types
@@ -61,13 +65,13 @@ private:
     PDEBoundaryType boundary_type_up    = PDEBoundaryType::Null;
 
     // MPI
-    MPI_Comm world_comm = MPI_COMM_WORLD;
+    MPI_Comm world_comm  = MPI_COMM_WORLD;
     MPI_Comm active_comm = MPI_COMM_NULL;
     int      world_rank = 0, world_size = 1;
     int      active_rank = -1, active_size = 0;
-    int      num_proc = 1;
+    int      num_proc   = 1;
     int      start_rank = 0; // 起始世界进程编号（该进程成为子通信器的 rank 0）
-    bool     is_active = false;
+    bool     is_active  = false;
 
     // Decomposition (i-slab for first stage, j-slab after transpose)
     std::vector<int> i_counts, i_displs; // split nx over active_size
@@ -78,19 +82,19 @@ private:
     int local_j_count = 0; // owned j count (y-direction slabs after transpose)
 
     // Local solvers
-    PoissonFFT2D*    poisson_fft_y = nullptr;  // local y-direction FFT per i
+    PoissonFFT2D*    poisson_fft_y    = nullptr; // local y-direction FFT per i
     ChasingMethod2D* chasing_method_x = nullptr; // local x-direction chasing on transposed slabs
 
     // Local diagonal for x-chasing (subset for owned j indices)
     double* local_x_diag = nullptr;
 
     // Persistent work buffers (allocated after decomposition)
-    field2 f_local;        // (local_i_count, ny)
-    field2 fhat_local;     // (local_i_count, ny)
-    field2 fhat_local_T;   // (local_j_count, nx)
-    field2 phat_local_T;   // (local_j_count, nx)
-    field2 phat_local;     // (local_i_count, ny)
-    field2 p_local;        // (local_i_count, ny)
+    field2 f_local;      // (local_i_count, ny)
+    field2 fhat_local;   // (local_i_count, ny)
+    field2 fhat_local_T; // (local_j_count, nx)
+    field2 phat_local_T; // (local_j_count, nx)
+    field2 phat_local;   // (local_i_count, ny)
+    field2 p_local;      // (local_i_count, ny)
 
 private:
     void setup_comm(MPI_Comm in_comm);
@@ -115,6 +119,3 @@ private:
     // Util
     static void split_1d(int n, int p, std::vector<int>& counts, std::vector<int>& displs);
 };
-
-
-

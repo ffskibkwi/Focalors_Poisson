@@ -64,10 +64,10 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(int                in_nx,
  * @param in_env_config 环境配置。
  * @param in_comm       外部提供的合法 MPI 通信器（本类不再内部 Comm_split）。
  */
-MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
-                                       Variable*        in_variable,
-                                       int              in_num_proc,
-                                       int              in_start_rank,
+MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform*   in_domain,
+                                       Variable*          in_variable,
+                                       int                in_num_proc,
+                                       int                in_start_rank,
                                        EnvironmentConfig* in_env_config,
                                        MPI_Comm           in_comm)
     : domain(in_domain)
@@ -79,11 +79,11 @@ MPIPoissonSolver2D::MPIPoissonSolver2D(Domain2DUniform* in_domain,
     , num_proc(in_num_proc)
     , start_rank(in_start_rank)
 {
-    env_config           = in_env_config;
-    boundary_type_left   = var->boundary_type_map[domain][LocationType::Left];
-    boundary_type_right  = var->boundary_type_map[domain][LocationType::Right];
-    boundary_type_down   = var->boundary_type_map[domain][LocationType::Down];
-    boundary_type_up     = var->boundary_type_map[domain][LocationType::Up];
+    env_config          = in_env_config;
+    boundary_type_left  = var->boundary_type_map[domain][LocationType::Left];
+    boundary_type_right = var->boundary_type_map[domain][LocationType::Right];
+    boundary_type_down  = var->boundary_type_map[domain][LocationType::Down];
+    boundary_type_up    = var->boundary_type_map[domain][LocationType::Up];
 
     setup_comm(in_comm);
     setup_problem_params();
@@ -119,7 +119,7 @@ void MPIPoissonSolver2D::setup_comm(MPI_Comm in_comm)
     }
     else
     {
-        is_active = false;
+        is_active   = false;
         active_rank = -1;
         active_size = 0;
     }
@@ -162,7 +162,7 @@ void MPIPoissonSolver2D::build_local_solvers()
     if (!is_active)
         return;
 
-    poisson_fft_y = nullptr;
+    poisson_fft_y  = nullptr;
     auto isDirLike = [](PDEBoundaryType t) {
         return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented;
     };
@@ -203,8 +203,8 @@ void MPIPoissonSolver2D::build_local_solvers()
     {
         chasing_method_x = new ChasingMethod2D();
         // For transposed layout: (local_j_count, nx)
-        chasing_method_x->init(local_j_count, nx, local_x_diag, is_no_Dirichlet, has_last_vector,
-                               boundary_type_left, boundary_type_right);
+        chasing_method_x->init(
+            local_j_count, nx, local_x_diag, is_no_Dirichlet, has_last_vector, boundary_type_left, boundary_type_right);
     }
 
     // Allocate persistent work fields
@@ -257,12 +257,14 @@ void MPIPoissonSolver2D::cal_lambda(std::vector<double>& lambda_y_out) const
         {
             lambda_y_out[i - 1] = -2.0 + 2.0 * std::cos(pi / ny * i);
         }
-        else if ((boundary_type_down == PDEBoundaryType::Dirichlet || boundary_type_down == PDEBoundaryType::Adjacented) &&
+        else if ((boundary_type_down == PDEBoundaryType::Dirichlet ||
+                  boundary_type_down == PDEBoundaryType::Adjacented) &&
                  (boundary_type_up == PDEBoundaryType::Dirichlet || boundary_type_up == PDEBoundaryType::Adjacented))
         {
             lambda_y_out[i - 1] = -2.0 + 2.0 * std::cos(pi / (ny + 1) * i);
         }
-        else if (((boundary_type_down == PDEBoundaryType::Dirichlet || boundary_type_down == PDEBoundaryType::Adjacented) &&
+        else if (((boundary_type_down == PDEBoundaryType::Dirichlet ||
+                   boundary_type_down == PDEBoundaryType::Adjacented) &&
                   boundary_type_up == PDEBoundaryType::Neumann) ||
                  (boundary_type_down == PDEBoundaryType::Neumann &&
                   (boundary_type_up == PDEBoundaryType::Dirichlet || boundary_type_up == PDEBoundaryType::Adjacented)))
@@ -381,23 +383,23 @@ void MPIPoissonSolver2D::scatter_global_f_to_local(const field2& f_global, field
         {
             std::cout << "[Poisson][MPI] Scatterv: start (nx=" << nx << ", ny=" << ny << ")\n";
             for (int r = 0; r < active_size; ++r)
-                std::cout << "  - rank " << r << ": sendcount=" << sendcounts[r] << " (i_count=" << i_counts[r] << ")\n";
+                std::cout << "  - rank " << r << ": sendcount=" << sendcounts[r] << " (i_count=" << i_counts[r]
+                          << ")\n";
         }
     }
-    MPI_Scatterv(
-        f_global.value,
-        sendcounts.data(),
-        displs.data(),
-        MPI_DOUBLE,
-        f_local.value,
-        sendcounts[active_rank],
-        MPI_DOUBLE,
-        0,
-        active_comm);
+    MPI_Scatterv(f_global.value,
+                 sendcounts.data(),
+                 displs.data(),
+                 MPI_DOUBLE,
+                 f_local.value,
+                 sendcounts[active_rank],
+                 MPI_DOUBLE,
+                 0,
+                 active_comm);
     if (env_config && env_config->showCurrentStep)
     {
-        std::cout << "[Poisson][MPI] Scatterv: done at rank " << active_rank
-                  << " (recv=" << sendcounts[active_rank] << ")\n";
+        std::cout << "[Poisson][MPI] Scatterv: done at rank " << active_rank << " (recv=" << sendcounts[active_rank]
+                  << ")\n";
     }
 }
 
@@ -426,20 +428,19 @@ void MPIPoissonSolver2D::gather_local_to_global_f(const field2& f_local, field2&
                 std::cout << "  - rank " << r << ": recvcount=" << recvcounts[r] << "\n";
         }
     }
-    MPI_Gatherv(
-        f_local.value,
-        recvcounts[active_rank],
-        MPI_DOUBLE,
-        f_global.value,
-        recvcounts.data(),
-        displs.data(),
-        MPI_DOUBLE,
-        0,
-        active_comm);
+    MPI_Gatherv(f_local.value,
+                recvcounts[active_rank],
+                MPI_DOUBLE,
+                f_global.value,
+                recvcounts.data(),
+                displs.data(),
+                MPI_DOUBLE,
+                0,
+                active_comm);
     if (env_config && env_config->showCurrentStep)
     {
-        std::cout << "[Poisson][MPI] Gatherv: done at rank " << active_rank
-                  << " (send=" << recvcounts[active_rank] << ")\n";
+        std::cout << "[Poisson][MPI] Gatherv: done at rank " << active_rank << " (send=" << recvcounts[active_rank]
+                  << ")\n";
     }
 }
 
@@ -481,13 +482,13 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
 
     if (env_config && env_config->showCurrentStep)
     {
-        std::cout << "[Poisson][MPI] Alltoallv (i->j): start at rank " << active_rank
-                  << " (local_i=" << local_i_count << ", local_j=" << local_j_count << ")\n";
+        std::cout << "[Poisson][MPI] Alltoallv (i->j): start at rank " << active_rank << " (local_i=" << local_i_count
+                  << ", local_j=" << local_j_count << ")\n";
     }
     for (int r = 0; r < active_size; ++r)
     {
-        int j0 = j_displs[r];
-        int jc = j_counts[r];
+        int     j0  = j_displs[r];
+        int     jc  = j_counts[r];
         double* dst = sendbuf.data() + sdispls[r];
         for (int i = 0; i < local_i_count; ++i)
         {
@@ -496,8 +497,14 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
         }
     }
 
-    MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
-                  recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
+    MPI_Alltoallv(sendbuf.data(),
+                  sendcounts.data(),
+                  sdispls.data(),
+                  MPI_DOUBLE,
+                  recvbuf.data(),
+                  recvcounts.data(),
+                  rdispls.data(),
+                  MPI_DOUBLE,
                   active_comm);
     if (env_config && env_config->showCurrentStep)
     {
@@ -508,15 +515,15 @@ void MPIPoissonSolver2D::distributed_transpose_i_to_j(const field2& in_i_slab, f
     out_j_slab.set_size(local_j_count, nx);
     for (int s = 0; s < active_size; ++s)
     {
-        int ic = i_counts[s];
-        int i0 = i_displs[s];
+        int           ic  = i_counts[s];
+        int           i0  = i_displs[s];
         const double* src = recvbuf.data() + rdispls[s];
         for (int il = 0; il < ic; ++il)
         {
             int i_global = i0 + il;
             for (int jl = 0; jl < local_j_count; ++jl)
             {
-                double v = src[il * local_j_count + jl];
+                double v                 = src[il * local_j_count + jl];
                 out_j_slab(jl, i_global) = v;
             }
         }
@@ -559,13 +566,13 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
 
     if (env_config && env_config->showCurrentStep)
     {
-        std::cout << "[Poisson][MPI] Alltoallv (j->i): start at rank " << active_rank
-                  << " (local_i=" << local_i_count << ", local_j=" << local_j_count << ")\n";
+        std::cout << "[Poisson][MPI] Alltoallv (j->i): start at rank " << active_rank << " (local_i=" << local_i_count
+                  << ", local_j=" << local_j_count << ")\n";
     }
     for (int r = 0; r < active_size; ++r)
     {
-        int i0 = i_displs[r];
-        int ic = i_counts[r];
+        int     i0  = i_displs[r];
+        int     ic  = i_counts[r];
         double* dst = sendbuf.data() + sdispls[r];
         for (int il = 0; il < ic; ++il)
         {
@@ -578,8 +585,14 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
         }
     }
 
-    MPI_Alltoallv(sendbuf.data(), sendcounts.data(), sdispls.data(), MPI_DOUBLE,
-                  recvbuf.data(), recvcounts.data(), rdispls.data(), MPI_DOUBLE,
+    MPI_Alltoallv(sendbuf.data(),
+                  sendcounts.data(),
+                  sdispls.data(),
+                  MPI_DOUBLE,
+                  recvbuf.data(),
+                  recvcounts.data(),
+                  rdispls.data(),
+                  MPI_DOUBLE,
                   active_comm);
     if (env_config && env_config->showCurrentStep)
     {
@@ -589,8 +602,8 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
     out_i_slab.set_size(local_i_count, ny);
     for (int s = 0; s < active_size; ++s)
     {
-        int jc = j_counts[s];
-        int j0 = j_displs[s];
+        int           jc  = j_counts[s];
+        int           j0  = j_displs[s];
         const double* src = recvbuf.data() + rdispls[s];
         for (int il = 0; il < local_i_count; ++il)
         {
@@ -610,8 +623,9 @@ void MPIPoissonSolver2D::distributed_transpose_j_to_i(const field2& in_j_slab, f
  * 1) root 做边界装配；2) 按 i-slab 分发；3) 本地 y-FFT；4) 全局转置 i→j；
  * 5) 本地 x-追赶；6) 全局转置 j→i；7) 本地 y-逆变换；8) 回收至 root。
  * @param f 仅 root 持有的全局场（输入右端项，输出解）。
+ * @param is_debugmode 是否输出调试信息（暂未完全集成到 MPI 内部流程，仅控制顶层打印）。
  */
-void MPIPoissonSolver2D::solve(field2& f)
+void MPIPoissonSolver2D::solve(field2& f, bool is_debugmode)
 {
     // Only active ranks participate
     if (!is_active)
@@ -637,9 +651,8 @@ void MPIPoissonSolver2D::solve(field2& f)
 
     if (env_config && env_config->showCurrentStep)
     {
-        std::cout << "[Poisson][MPI] rank " << active_rank
-                  << " local_i=" << local_i_count << " local_j=" << local_j_count
-                  << " nx=" << nx << " ny=" << ny << std::endl;
+        std::cout << "[Poisson][MPI] rank " << active_rank << " local_i=" << local_i_count
+                  << " local_j=" << local_j_count << " nx=" << nx << " ny=" << ny << std::endl;
     }
 
     // 2) Scatter to i-slab local fields
@@ -667,8 +680,8 @@ void MPIPoissonSolver2D::solve(field2& f)
     if (env_config && env_config->showCurrentStep && active_rank == 0)
     {
         double s_local = p_local.sum();
-        std::cout << "[Poisson][MPI] rank0 pre-gather p_local.sum=" << s_local
-                  << " (nx=" << nx << ", ny=" << ny << ", li=" << local_i_count << ", lj=" << local_j_count << ")\n";
+        std::cout << "[Poisson][MPI] rank0 pre-gather p_local.sum=" << s_local << " (nx=" << nx << ", ny=" << ny
+                  << ", li=" << local_i_count << ", lj=" << local_j_count << ")\n";
     }
     gather_local_to_global_f(p_local, f);
 
@@ -679,20 +692,20 @@ void MPIPoissonSolver2D::solve(field2& f)
     }
 }
 
-void MPIPoissonSolver2D::solve_collective_root_owned(field2& f)
+void MPIPoissonSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
 {
     if (!is_active)
         return;
     if (active_rank == 0)
     {
-        solve(f);
+        solve(f, is_debugmode);
     }
     else
     {
         // 非 root：提供占位缓冲参与通信
         field2 dummy;
         dummy.init(nx, ny);
-        solve(dummy);
+        solve(dummy, is_debugmode);
     }
 }
 
@@ -718,5 +731,3 @@ void MPIPoissonSolver2D::split_1d(int n, int p, std::vector<int>& counts, std::v
         off += counts[r];
     }
 }
-
-

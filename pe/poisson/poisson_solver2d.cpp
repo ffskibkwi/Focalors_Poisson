@@ -1,4 +1,6 @@
 #include "poisson_solver2d.h"
+#include "io/csv_writer_2d.h"
+#include <string>
 
 PoissonSolver2D::PoissonSolver2D(int                in_nx,
                                  int                in_ny,
@@ -114,10 +116,17 @@ PoissonSolver2D::~PoissonSolver2D()
     delete chasing_method_x;
 }
 
-void PoissonSolver2D::solve(field2& f)
+void PoissonSolver2D::solve(field2& f, bool is_debugmode)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
+
+    if (env_config && env_config->debugMode && is_debugmode)
+    {
+        std::string fname_rhs =
+            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
+        IO::field_to_csv(f, fname_rhs);
+    }
 
     boundary_assembly(f);
 
@@ -133,6 +142,15 @@ void PoissonSolver2D::solve(field2& f)
     poisson_fft_y->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
+
+    if (env_config && env_config->debugMode && is_debugmode)
+    {
+        std::string fname_sol =
+            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
+        IO::field_to_csv(f, fname_sol);
+    }
+
+    solve_call_count++;
     if (env_config && env_config->showCurrentStep)
     {
         double s_f = f.sum();

@@ -1,9 +1,11 @@
 #include "concat_solver2d.h"
+#include "io/csv_writer_2d.h"
+#include <string>
 
 void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
-    m = in_m;
-    tol = in_tol;
+    m       = in_m;
+    tol     = in_tol;
     maxIter = in_maxIter;
 }
 
@@ -11,7 +13,7 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable* in_variable, EnvironmentC
     : variable(in_variable)
     , env_config(in_env_config)
 {
-    //config load
+    // config load
     if (in_env_config)
     {
         showGmresRes = in_env_config->showGmresRes;
@@ -25,16 +27,16 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable* in_variable, EnvironmentC
     if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
         variable->geometry->solve_prepare();
 
-    tree_root = variable->geometry->tree_root;
-    tree_map  = variable->geometry->tree_map;
-    parent_map= variable->geometry->parent_map;
-    field_map = variable->field_map;
+    tree_root  = variable->geometry->tree_root;
+    tree_map   = variable->geometry->tree_map;
+    parent_map = variable->geometry->parent_map;
+    field_map  = variable->field_map;
 
     specify_solve_order();
     construct_solver_map();
-    
-    //Construct the temp field for each domain
-    for (auto &[domain, field] : field_map)
+
+    // Construct the temp field for each domain
+    for (auto& [domain, field] : field_map)
     {
         if (domain != tree_root)
             temp_fields[domain] = new field2(field->get_nx(), field->get_ny(), field->get_name() + "_temp");
@@ -43,9 +45,9 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable* in_variable, EnvironmentC
 
 ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 {
-    for (auto &[domain, temp_field] : temp_fields)
+    for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto &domain : solve_order)
+    for (auto& domain : solve_order)
         delete solver_map[domain];
 }
 
@@ -54,7 +56,7 @@ void ConcatPoissonSolver2D::specify_solve_order()
     // Solve order arrangement
     std::queue<Domain2DUniform*> q;
     q.push(tree_root);
-    while(!q.empty())
+    while (!q.empty())
     {
         Domain2DUniform* current = q.front();
         q.pop();
@@ -62,7 +64,7 @@ void ConcatPoissonSolver2D::specify_solve_order()
             solve_order.insert(solve_order.begin(), current);
         if (tree_map.count(current))
         {
-            for (auto &kv : tree_map[current])
+            for (auto& kv : tree_map[current])
                 q.push(kv.second);
         }
     }
@@ -70,39 +72,41 @@ void ConcatPoissonSolver2D::specify_solve_order()
 
 void ConcatPoissonSolver2D::construct_solver_map()
 {
-    //Construct solvers (for non-root domains)
-    for (auto &domain : solve_order)
+    // Construct solvers (for non-root domains)
+    for (auto& domain : solve_order)
     {
         if (tree_map[domain].size() > 0)
         {
             solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
-            static_cast<GMRESSolver2D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map); //Here use RTTI
-        }    
+            static_cast<GMRESSolver2D*>(solver_map[domain])
+                ->schur_mat_construct(tree_map[domain], solver_map); // Here use RTTI
+        }
         else
         {
             solver_map[domain] = new PoissonSolver2D(domain, variable, env_config);
-        } 
+        }
     }
 
-    //Construct solver for root domain
+    // Construct solver for root domain
     if (tree_map[tree_root].size() > 0)
     {
         solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
-        static_cast<GMRESSolver2D*>(solver_map[tree_root])->schur_mat_construct(tree_map[tree_root], solver_map); //Here use RTTI
-    }    
+        static_cast<GMRESSolver2D*>(solver_map[tree_root])
+            ->schur_mat_construct(tree_map[tree_root], solver_map); // Here use RTTI
+    }
     else
     {
         solver_map[tree_root] = new PoissonSolver2D(tree_root, variable, env_config);
-    } 
+    }
 }
 
 void ConcatPoissonSolver2D::solve()
 {
-    //Righthand construction
-    for (auto &domain : solve_order)
+    // Righthand construction
+    for (auto& domain : solve_order)
     {
         (*temp_fields[domain]) = (*field_map[domain]);
-        for (auto &[location, child_domain] : tree_map[domain])
+        for (auto& [location, child_domain] : tree_map[domain])
         {
             temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
             field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
@@ -113,29 +117,36 @@ void ConcatPoissonSolver2D::solve()
             std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
         }
         solver_map[domain]->solve(*temp_fields[domain]);
+        if (env_config && env_config->debugMode)
+        {
+            std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
+            IO::field_to_csv(*temp_fields[domain], fname_Ainv);
+        }
         if (env_config && env_config->showCurrentStep)
         {
             double s_post = temp_fields[domain]->sum();
             std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
         }
     }
-    
-    //Root equation
-    for (auto &[location, child_domain] : tree_map[tree_root])
+
+    // Root equation
+    for (auto& [location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_pre = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre << std::endl;
+        std::cout << "[Concat] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre
+                  << std::endl;
     }
     solver_map[tree_root]->solve(*field_map[tree_root]);
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_post = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum after solve=" << s_root_post << std::endl;
+        std::cout << "[Concat] Root domain " << tree_root->name << " field sum after solve=" << s_root_post
+                  << std::endl;
     }
 
-    //Branch equations
+    // Branch equations
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
         Domain2DUniform* d = *it;

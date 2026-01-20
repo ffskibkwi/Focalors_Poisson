@@ -1,8 +1,8 @@
 #include "mpi_gmres_solver2d.h"
-#include <cmath>
-#include <vector>
 #include <climits>
+#include <cmath>
 #include <iostream>
+#include <vector>
 
 MPIGMRESSolver2D::MPIGMRESSolver2D(Domain2DUniform*   in_domain,
                                    Variable*          in_variable,
@@ -23,13 +23,13 @@ MPIGMRESSolver2D::MPIGMRESSolver2D(Domain2DUniform*   in_domain,
     MPI_Comm_size(comm, &comm_size);
 
     // 内部 Poisson 的配置：关闭 step 打印，GMRES 残差信息由外层控制
-    inner_env_config = EnvironmentConfig{};
+    inner_env_config = EnvironmentConfig {};
     if (env_config)
         inner_env_config.showGmresRes = env_config->showGmresRes;
     inner_env_config.showCurrentStep = false;
 
     // 内部 Poisson（MPI）遵循“仅 comm rank0 持有 b”的约定
-    pe_solver = new MPIPoissonSolver2D(domain, variable, comm_size, /*start_rank*/0, &inner_env_config, comm);
+    pe_solver = new MPIPoissonSolver2D(domain, variable, comm_size, /*start_rank*/ 0, &inner_env_config, comm);
 
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
@@ -53,45 +53,42 @@ MPIGMRESSolver2D::MPIGMRESSolver2D(Domain2DUniform*   in_domain,
     resVec.clear();
 }
 
-MPIGMRESSolver2D::~MPIGMRESSolver2D()
-{
-    delete pe_solver;
-}
+MPIGMRESSolver2D::~MPIGMRESSolver2D() { delete pe_solver; }
 
-void MPIGMRESSolver2D::solve_collective_root_owned(field2& f)
+void MPIGMRESSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
 {
     if (comm_rank == 0)
-        solve(f);
+        solve(f, is_debugmode);
     else
     {
         field2 dummy;
         dummy.init(domain->nx, domain->ny);
-        solve(dummy);
+        solve(dummy, is_debugmode);
     }
 }
 
-void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>& adjacency_key,
+void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                            const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] Schur construct: start" << std::endl;
-    for (auto &[location, neighbour_domain] : adjacency_key)
+    for (auto& [location, neighbour_domain] : adjacency_key)
     {
         Schur_mat* current = nullptr;
         switch (location)
         {
             case LocationType::Left:
                 current = new Schur_mat_left(*domain, *neighbour_domain);
-            break;
+                break;
             case LocationType::Right:
                 current = new Schur_mat_right(*domain, *neighbour_domain);
-            break;
+                break;
             case LocationType::Up:
                 current = new Schur_mat_up(*domain, *neighbour_domain);
-            break;
+                break;
             case LocationType::Down:
                 current = new Schur_mat_down(*domain, *neighbour_domain);
-            break;
+                break;
             default:
                 throw std::invalid_argument("Invalid location type");
         }
@@ -100,10 +97,11 @@ void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType
         // 然后由“同时是子通信器 root 的父通信器进程”打包并在父通信器内广播。
         bool has_child_solver = false;
         {
-            auto it = solver_map.find(neighbour_domain);
+            auto it          = solver_map.find(neighbour_domain);
             has_child_solver = (it != solver_map.end() && it->second != nullptr);
         }
-        int root_candidate = (has_child_solver && solver_map.at(neighbour_domain)->is_comm_root()) ? comm_rank : INT_MAX;
+        int root_candidate =
+            (has_child_solver && solver_map.at(neighbour_domain)->is_comm_root()) ? comm_rank : INT_MAX;
         int root_rank = INT_MAX;
         MPI_Allreduce(&root_candidate, &root_rank, 1, MPI_INT, MPI_MIN, comm);
         if (root_rank == INT_MAX)
@@ -115,7 +113,7 @@ void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType
             throw std::runtime_error("MPIGMRES Schur construct failed: no child solver present in parent communicator");
         }
 
-        int cosize = current->get_size();
+        int                 cosize = current->get_size();
         std::vector<double> matbuf(static_cast<size_t>(cosize) * static_cast<size_t>(cosize), 0.0);
 
         if (has_child_solver)
@@ -150,7 +148,7 @@ field2& MPIGMRESSolver2D::Afun(field2& x)
         mul_buf = (*s) * x;
         ft_buf.add_affine_transform(1.0, mul_buf, 0.0);
     }
-    pe_solver->solve(ft_buf);
+    pe_solver->solve(ft_buf, false);
 
     afun_buf = x;
     afun_buf.add_affine_transform(-1.0, ft_buf, 0.0);
@@ -165,13 +163,14 @@ void MPIGMRESSolver2D::maybe_print_res() const
         for (size_t i = 0; i < resVec.size(); ++i)
         {
             std::cout << resVec[i];
-            if (i + 1 < resVec.size()) std::cout << ", ";
+            if (i + 1 < resVec.size())
+                std::cout << ", ";
         }
         std::cout << "]" << std::endl;
     }
 }
 
-void MPIGMRESSolver2D::solve(field2& b)
+void MPIGMRESSolver2D::solve(field2& b, bool is_debugmode)
 {
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] solve: start" << std::endl;
@@ -179,7 +178,7 @@ void MPIGMRESSolver2D::solve(field2& b)
     // 实际上求解 (I - A^{-1}S) x = A^{-1} b
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] initial Poisson: start" << std::endl;
-    pe_solver->solve(b);
+    pe_solver->solve(b, is_debugmode);
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] initial Poisson: done" << std::endl;
 
@@ -201,13 +200,13 @@ void MPIGMRESSolver2D::solve(field2& b)
         // r = b - Afun(x)
         {
             field2& Ax = Afun(x_buf);
-            r_buf = b;
+            r_buf      = b;
             r_buf.add_affine_transform(-1.0, Ax, 0.0);
-                beta = r_buf.norm();
-                // 各进程一致化 beta（取最大或平均均可，这里取最大更稳定）
-                double beta_global = 0.0;
-                MPI_Allreduce(&beta, &beta_global, 1, MPI_DOUBLE, MPI_MAX, comm);
-                beta = beta_global;
+            beta = r_buf.norm();
+            // 各进程一致化 beta（取最大或平均均可，这里取最大更稳定）
+            double beta_global = 0.0;
+            MPI_Allreduce(&beta, &beta_global, 1, MPI_DOUBLE, MPI_MAX, comm);
+            beta = beta_global;
             resVec.push_back(beta);
             if (beta < tol)
             {
@@ -245,12 +244,12 @@ void MPIGMRESSolver2D::solve(field2& b)
                     w_buf.add_affine_transform(-H[i * m + j], V[i], 0.0);
                 }
 
-                    double h_j1j = w_buf.norm();
-                    // 各进程一致化 h_j1j
-                    double h_global = 0.0;
-                    MPI_Allreduce(&h_j1j, &h_global, 1, MPI_DOUBLE, MPI_MAX, comm);
-                    h_j1j = h_global;
-                    if (h_j1j < 1e-12)
+                double h_j1j = w_buf.norm();
+                // 各进程一致化 h_j1j
+                double h_global = 0.0;
+                MPI_Allreduce(&h_j1j, &h_global, 1, MPI_DOUBLE, MPI_MAX, comm);
+                h_j1j = h_global;
+                if (h_j1j < 1e-12)
                     break;
 
                 H[(j + 1) * m + j] = h_j1j;
@@ -280,10 +279,10 @@ void MPIGMRESSolver2D::solve(field2& b)
             g[j + 1]          = -sn[j] * g[j];
             g[j]              = temp;
 
-                double gj1_abs = std::abs(g[j + 1]);
-                double gj1_abs_global = 0.0;
-                MPI_Allreduce(&gj1_abs, &gj1_abs_global, 1, MPI_DOUBLE, MPI_MAX, comm);
-                if (gj1_abs_global < tol)
+            double gj1_abs        = std::abs(g[j + 1]);
+            double gj1_abs_global = 0.0;
+            MPI_Allreduce(&gj1_abs, &gj1_abs_global, 1, MPI_DOUBLE, MPI_MAX, comm);
+            if (gj1_abs_global < tol)
             {
                 j++;
                 break;
@@ -309,5 +308,3 @@ void MPIGMRESSolver2D::solve(field2& b)
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] solve: done" << std::endl;
 }
-
-

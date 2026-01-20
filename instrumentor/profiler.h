@@ -1,6 +1,6 @@
 #pragma once
 
-#include "poisson_base/base/parallel/mpi/mpi_misc.h"
+#include "base/parallel/mpi/mpi_misc.h"
 
 #include <algorithm>
 #include <chrono>

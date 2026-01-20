@@ -23,20 +23,20 @@ inline LocationType opposite(LocationType location)
 {
     switch (location)
     {
-    case LocationType::Left:
-        return LocationType::Right;
-    case LocationType::Right:
-        return LocationType::Left;
-    case LocationType::Down:
-        return LocationType::Up;
-    case LocationType::Up:
-        return LocationType::Down;
-    case LocationType::Front:
-        return LocationType::Back;
-    case LocationType::Back:
-        return LocationType::Front;
-    default:
-        throw std::invalid_argument("Invalid location type");
+        case LocationType::Left:
+            return LocationType::Right;
+        case LocationType::Right:
+            return LocationType::Left;
+        case LocationType::Down:
+            return LocationType::Up;
+        case LocationType::Up:
+            return LocationType::Down;
+        case LocationType::Front:
+            return LocationType::Back;
+        case LocationType::Back:
+            return LocationType::Front;
+        default:
+            throw std::invalid_argument("Invalid location type");
     }
 }
 
@@ -46,16 +46,16 @@ enum class PDEBoundaryType : std::uint8_t
     Neumann,
     Periodic,
     Adjacented,
-    Null        //Default boundary type
+    Null // Default boundary type
 };
 
 enum class FluidBoundaryType : std::uint8_t
 {
-    Wall,       //Wall boundary; velocity -> Dirichlet; pressure -> Neumann
-    Far,        //Far-field boundary; velocity -> Neumann; pressure -> Neumann
-    Periodic,   //Periodic boundary; velocity -> Periodic; pressure -> Periodic
-    Convective, //Convective boundary; velocity -> Dirichlet; pressure -> Neumann (Not sure)
-    Null        //Default boundary type
+    Wall,       // Wall boundary; velocity -> Dirichlet; pressure -> Neumann
+    Far,        // Far-field boundary; velocity -> Neumann; pressure -> Neumann
+    Periodic,   // Periodic boundary; velocity -> Periodic; pressure -> Periodic
+    Convective, // Convective boundary; velocity -> Dirichlet; pressure -> Neumann (Not sure)
+    Null        // Default boundary type
 };
 
 enum class ParticleBoundaryType : std::uint8_t
@@ -68,20 +68,21 @@ enum class ParticleBoundaryType : std::uint8_t
 enum class VariablePositionType : std::uint8_t
 {
     Center,
-    XEdge,
-    YEdge,
+    XFaceCenter,
+    YFaceCenter,
+    ZFaceCenter,
     Corner,
     Null
 };
 
 namespace std
 {
-template <>
-struct hash<LocationType>
-{
-    std::size_t operator()(const LocationType& k) const
+    template<>
+    struct hash<LocationType>
     {
-        return std::hash<std::uint8_t>()(static_cast<std::uint8_t>(k));
-    }
-};
+        std::size_t operator()(const LocationType& k) const
+        {
+            return std::hash<std::uint8_t>()(static_cast<std::uint8_t>(k));
+        }
+    };
 } // namespace std

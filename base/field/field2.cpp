@@ -318,7 +318,7 @@ void field2::clear(double clear_value)
     {
         for (int j = 0; j < ny; j++)
         {
-            value[i * ny + j] = 0.0;
+            value[i * ny + j] = clear_value;
         }
     }
 }

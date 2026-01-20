@@ -1,0 +1,276 @@
+#include "csv_writer_3d.h"
+#include "common.h"
+
+#include <fstream>
+
+namespace IO
+{
+    bool field_to_csv(field3& field, const std::string& filename)
+    {
+        fs::path path(filename);
+        fs::path dir = path.parent_path();
+        IO::create_directory(dir);
+
+        std::ofstream outfile(filename + ".csv");
+
+        if (!outfile.is_open())
+        {
+            std::cerr << "Failed to open file: " << filename + ".csv" << std::endl;
+            return false;
+        }
+
+        for (int i = 0; i < field.get_nx(); i++)
+        {
+            for (int j = 0; j < field.get_ny(); j++)
+            {
+                for (int k = 0; k < field.get_nz(); k++)
+                {
+                    if (k == (field.get_nz() - 1))
+                    {
+                        outfile << field(i, j, k) << std::endl;
+                    }
+                    else
+                    {
+                        outfile << field(i, j, k) << ",";
+                    }
+                }
+            }
+        }
+        outfile.close();
+
+        if (outfile.fail())
+        {
+            std::cout << "Writing to file failed: " << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    bool csv_to_field(field3& field, const std::string& filename)
+    {
+        std::ifstream infile(filename + ".csv");
+
+        if (!infile.is_open())
+        {
+            std::cerr << "Failed to open file: " << filename + ".csv" << std::endl;
+            return false;
+        }
+
+        std::string line;
+        int         i = 0, j = 0;
+
+        while (std::getline(infile, line))
+        {
+            std::stringstream ss(line);
+            std::string       value;
+            int               k = 0;
+
+            while (std::getline(ss, value, ','))
+            {
+                try
+                {
+                    double numeric_value = std::stod(value);
+                    field(i, j, k)       = numeric_value;
+                    k++;
+                }
+                catch (const std::invalid_argument&)
+                {
+                    std::cerr << "Invalid number at i = " << i << ", j = " << j << ", k = " << k << ": " << value
+                              << std::endl;
+                }
+            }
+            j++;
+            if (j >= field.get_ny())
+            {
+                j = 0;
+                i++;
+            }
+        }
+
+        infile.close();
+        return true;
+    }
+
+    bool
+    field_and_buffer_to_csv(field3& field, field2& buffer, const std::string& filename, VariablePositionType pos_type)
+    {
+        fs::path path(filename);
+        fs::path dir = path.parent_path();
+        IO::create_directory(dir);
+
+        std::ofstream outfile(filename + ".csv");
+
+        if (!outfile.is_open())
+        {
+            std::cerr << "Failed to open file: " << filename + ".csv" << std::endl;
+            return false;
+        }
+
+        int nx = field.get_nx();
+        int ny = field.get_ny();
+        int nz = field.get_nz();
+
+        if (pos_type == VariablePositionType::XFaceCenter)
+        {
+            for (int i = 0; i < nx + 1; i++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int k = 0; k < nz; k++)
+                    {
+                        double val = 0;
+                        if (i == nx)
+                        {
+                            val = buffer(j, k);
+                        }
+                        else
+                        {
+                            val = field(i, j, k);
+                        }
+
+                        if (k == nz - 1)
+                        {
+                            outfile << val << std::endl;
+                        }
+                        else
+                        {
+                            outfile << val << ",";
+                        }
+                    }
+                }
+            }
+        }
+        else if (pos_type == VariablePositionType::YFaceCenter)
+        {
+            for (int i = 0; i < nx; i++)
+            {
+                for (int j = 0; j < ny + 1; j++)
+                {
+                    for (int k = 0; k < nz; k++)
+                    {
+                        double val = 0;
+                        if (j == ny)
+                        {
+                            val = buffer(i, k);
+                        }
+                        else
+                        {
+                            val = field(i, j, k);
+                        }
+
+                        if (k == nz - 1)
+                        {
+                            outfile << val << std::endl;
+                        }
+                        else
+                        {
+                            outfile << val << ",";
+                        }
+                    }
+                }
+            }
+        }
+        else if (pos_type == VariablePositionType::ZFaceCenter)
+        {
+            for (int i = 0; i < nx; i++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int k = 0; k < nz + 1; k++)
+                    {
+                        double val = 0;
+                        if (k == nz)
+                        {
+                            val = buffer(i, j);
+                        }
+                        else
+                        {
+                            val = field(i, j, k);
+                        }
+
+                        if (k == nz)
+                        {
+                            outfile << val << std::endl;
+                        }
+                        else
+                        {
+                            outfile << val << ",";
+                        }
+                    }
+                }
+            }
+        }
+        outfile.close();
+
+        if (outfile.fail())
+        {
+            std::cout << "Writing to file failed: " << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    bool var_to_csv(const Variable3D& var, const std::string& filename)
+    {
+        auto& domains        = var.geometry->domains;
+        auto& field_map      = var.field_map;
+        auto& buffer_map     = var.buffer_map;
+        auto& boundary_types = var.boundary_type_map;
+
+        for (auto& domain : domains)
+        {
+            try
+            {
+                auto& field         = field_map.at(domain);
+                auto& buffers       = buffer_map.at(domain);
+                auto& boundary_type = boundary_types.at(domain);
+
+                int nx = field->get_nx();
+                int ny = field->get_ny();
+                int nz = field->get_nz();
+                if (var.position_type == VariablePositionType::XFaceCenter)
+                {
+                    if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
+                        field_to_csv(*field, filename + "_" + domain->name);
+                    else
+                        field_and_buffer_to_csv(*field,
+                                                *buffers.at(LocationType::Right),
+                                                filename + "_" + domain->name,
+                                                VariablePositionType::XFaceCenter);
+                }
+                else if (var.position_type == VariablePositionType::YFaceCenter)
+                {
+                    if (boundary_type.at(LocationType::Back) == PDEBoundaryType::Adjacented)
+                        field_to_csv(*field, filename + "_" + domain->name);
+                    else
+                        field_and_buffer_to_csv(*field,
+                                                *buffers.at(LocationType::Back),
+                                                filename + "_" + domain->name,
+                                                VariablePositionType::YFaceCenter);
+                }
+                else if (var.position_type == VariablePositionType::ZFaceCenter)
+                {
+                    if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
+                        field_to_csv(*field, filename + "_" + domain->name);
+                    else
+                        field_and_buffer_to_csv(*field,
+                                                *buffers.at(LocationType::Up),
+                                                filename + "_" + domain->name,
+                                                VariablePositionType::ZFaceCenter);
+                }
+                else
+                {
+                    field_to_csv(*field, filename + "_" + domain->name);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "[var_to_csv] Error: " << e.what() << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+} // namespace IO

@@ -89,7 +89,7 @@ void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down]  = new double[s->nx];
     buffer_map[s][LocationType::Up]    = new double[s->nx];
 
-    position_type = VariablePositionType::XEdge;
+    position_type = VariablePositionType::XFaceCenter;
 }
 
 void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
@@ -108,7 +108,7 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
     buffer_map[s][LocationType::Down]  = new double[s->nx];
     buffer_map[s][LocationType::Up]    = new double[s->nx];
 
-    position_type = VariablePositionType::YEdge;
+    position_type = VariablePositionType::YFaceCenter;
 }
 
 void Variable::set_corner_field(Domain2DUniform* s, field2& f)

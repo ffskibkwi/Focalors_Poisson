@@ -10,6 +10,16 @@ public:
 
     field3() {}
     /**
+     * @brief Constructor with dimensions only.
+     *
+     * Creates a field3 object and initializes it with the specified dimensions.
+     *
+     * @param in_nx     Number of grid points in the x-direction.
+     * @param in_ny     Number of grid points in the y-direction.
+     * @param in_nz     Number of grid points in the z-direction.
+     */
+    field3(int in_nx, int in_ny, int in_nz);
+    /**
      * @brief Constructor with initialization parameters.
      *
      * Creates a field3 object and initializes it with the specified dimensions and name.
@@ -20,6 +30,15 @@ public:
      * @param in_name   Name identifier for the field.
      */
     field3(int in_nx, int in_ny, int in_nz, const std::string& in_name);
+    /**
+     * @brief Constructor with name only.
+     *
+     * Creates a field3 object with only a name, without initializing memory.
+     * Memory will be allocated when init() is called.
+     *
+     * @param in_name   Name identifier for the field.
+     */
+    field3(const std::string& in_name);
     /**
      * @brief Destructor.
      *
@@ -224,5 +243,5 @@ public:
 protected:
     int         nx, ny, nz;
     int         size_n;
-    std::string name;
+    std::string name = "Default";
 };

@@ -15,4 +15,6 @@ namespace IO
     bool var_to_csv(const Variable& var, const std::string& filename);
 
     bool var_to_csv_full(const Variable& var, const std::string& filename);
+
+    bool matlab_read_var(const Variable& var, const std::string& filename);
 } // namespace IO

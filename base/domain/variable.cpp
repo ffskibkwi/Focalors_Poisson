@@ -1,15 +1,17 @@
 #include "variable.h"
+#include "base/parallel/omp/enable_openmp.h"
+
 #include <algorithm>
 #include <array>
 
 namespace
 {
-constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
-    LocationType::Left,
-    LocationType::Right,
-    LocationType::Down,
-    LocationType::Up,
-};
+    constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
+        LocationType::Left,
+        LocationType::Right,
+        LocationType::Down,
+        LocationType::Up,
+    };
 }
 
 Variable::Variable(const std::string& in_name)
@@ -348,8 +350,7 @@ void Variable::set_value_from_func_global(std::function<double(double, double)> 
         Domain2DUniform* s = pair.first;
         field2*          f = pair.second;
 
-// Iterate over the field
-#pragma omp parallel for collapse(2)
+        OPENMP_PARALLEL_FOR()
         for (int i = 0; i < f->get_nx(); ++i)
         {
             for (int j = 0; j < f->get_ny(); ++j)

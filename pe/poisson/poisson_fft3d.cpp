@@ -51,7 +51,7 @@ void PoissonFFT3D_DD::transform(const field3& f, field3& f_hat)
             for (int k = 0; k < nz; k++)
                 ex_vec[i][k + 1] = f(i, j, k);
             fftw_execute_dft_r2c(plan, ex_vec[i], fft_result[i]);
-            for (int k = 0; j < nz; k++)
+            for (int k = 0; k < nz; k++)
                 f_hat(i, j, k) = -sqr_2_N1 * fft_result[i][k + 1][1];
         }
     }

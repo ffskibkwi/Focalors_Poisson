@@ -27,7 +27,7 @@ public:
 
     void solve(field3& f) override;
 
-    void SchurMat2D_construct(const std::unordered_map<LocationType, Domain3DUniform*>& adjacency_key, 
+    void schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>& adjacency_key, 
                              const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map);
 
     // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b

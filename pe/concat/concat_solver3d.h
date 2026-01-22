@@ -2,7 +2,7 @@
 
 #include "base/pch.h"
 
-#include "Schur_mat3d.h"
+#include "schur_mat3d.h"
 #include "base/domain/domain3d.h"
 #include "base/domain/geometry3d.h"
 #include "base/domain/geometry_tree.hpp"

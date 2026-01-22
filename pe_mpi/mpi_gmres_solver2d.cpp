@@ -67,7 +67,7 @@ MPIGMRESSolver2D::~MPIGMRESSolver2D() { delete pe_solver; }
 //     }
 // }
 
-void MPIGMRESSolver2D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                            const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep && comm_rank == 0)

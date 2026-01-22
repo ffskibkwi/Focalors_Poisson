@@ -49,7 +49,7 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
 
 GMRESSolver2D::~GMRESSolver2D() { delete pe_solver; }
 
-void GMRESSolver2D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)

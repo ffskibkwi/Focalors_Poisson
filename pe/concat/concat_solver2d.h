@@ -2,7 +2,6 @@
 
 #include "base/pch.h"
 
-#include "Schur_mat.h"
 #include "base/domain/domain2d.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"

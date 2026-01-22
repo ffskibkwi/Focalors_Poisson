@@ -55,7 +55,7 @@ GMRESSolver3D::~GMRESSolver3D()
         delete s;
 }
 
-void GMRESSolver3D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
+void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)

@@ -38,7 +38,7 @@ public:
     double get_hx() const override { return domain->hx; }
     double get_hy() const override { return domain->hy; }
 
-    void SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+    void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);
 
     void set_initial_guess(field2* x0) { x0_override = x0; }

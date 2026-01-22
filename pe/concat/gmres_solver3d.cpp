@@ -30,6 +30,19 @@ const char* safe_domain_name(const Domain3DUniform* domain)
 {
     return domain ? domain->name.c_str() : "unknown";
 }
+
+void print_gmres_done(const EnvironmentConfig* env, const Domain3DUniform* domain, const std::vector<double>& res_vec)
+{
+    if (!env || !env->showCurrentStep)
+        return;
+
+    std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")";
+    if (!res_vec.empty())
+        std::cout << " iter=" << res_vec.size() << " final_res=" << res_vec.back();
+    else
+        std::cout << " iter=0 final_res=n/a";
+    std::cout << std::endl;
+}
 } // namespace
 
 GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
@@ -223,8 +236,7 @@ void GMRESSolver3D::solve(field3& b)
             {
                 b = x_buf; // 直接覆盖 b
                 maybe_print_res();
-                if (env_config && env_config->showCurrentStep)
-                    std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")" << std::endl;
+                print_gmres_done(env_config, domain, resVec);
                 return;
             }
         }
@@ -325,6 +337,5 @@ void GMRESSolver3D::solve(field3& b)
     // 达到最大迭代，返回当前近似解
     b = x_buf;
     maybe_print_res();
-    if (env_config && env_config->showCurrentStep)
-        std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")" << std::endl;
+    print_gmres_done(env_config, domain, resVec);
 }

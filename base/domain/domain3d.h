@@ -44,6 +44,7 @@ public:
 
     Domain3DUniform();
     Domain3DUniform(const std::string& in_name);
+    Domain3DUniform(int in_nx, int in_ny, int in_nz, const std::string& in_name);
     Domain3DUniform(int                in_nx,
                     int                in_ny,
                     int                in_nz,

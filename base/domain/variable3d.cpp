@@ -313,22 +313,22 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
         case VariablePositionType::XFace:
             shift_x = 0.0;
             shift_y = 0.5;
-            shift_y = 0.5;
+            shift_z = 0.5;
             break;
         case VariablePositionType::YFace:
             shift_x = 0.5;
             shift_y = 0.0;
-            shift_y = 0.5;
+            shift_z = 0.5;
             break;
         case VariablePositionType::ZFace:
             shift_x = 0.5;
             shift_y = 0.5;
-            shift_y = 0.0;
+            shift_z = 0.0;
             break;
         case VariablePositionType::Corner:
             shift_x = 0.0;
             shift_y = 0.0;
-            shift_y = 0.0;
+            shift_z = 0.0;
             break;
         default:
             break;
@@ -504,7 +504,7 @@ void Variable3D::set_value_from_func_global(std::function<double(double, double,
                 {
                     double gx     = s->get_offset_x() + (shift_x + i) * s->get_hx();
                     double gy     = s->get_offset_y() + (shift_y + j) * s->get_hy();
-                    double gz     = s->get_offset_z() + (shift_z + k) * s->get_hy();
+                    double gz     = s->get_offset_z() + (shift_z + k) * s->get_hz();
                     (*f)(i, j, k) = func(gx, gy, gz);
                 }
             }

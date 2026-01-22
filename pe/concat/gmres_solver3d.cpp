@@ -3,6 +3,35 @@
 #include <iostream>
 #include <vector>
 
+namespace
+{
+const char* location_to_string(LocationType location)
+{
+    switch (location)
+    {
+        case LocationType::Left:
+            return "Left";
+        case LocationType::Right:
+            return "Right";
+        case LocationType::Front:
+            return "Front";
+        case LocationType::Back:
+            return "Back";
+        case LocationType::Down:
+            return "Down";
+        case LocationType::Up:
+            return "Up";
+        default:
+            return "Unknown";
+    }
+}
+
+const char* safe_domain_name(const Domain3DUniform* domain)
+{
+    return domain ? domain->name.c_str() : "unknown";
+}
+} // namespace
+
 GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
                              Variable3D*        in_variable,
                              int                in_m,
@@ -59,9 +88,16 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
                                         const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[GMRES3D] Schur construct: start" << std::endl;
+        std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain)
+                  << " neighbors=" << adjacency_key.size() << std::endl;
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
+        if (env_config && env_config->showCurrentStep)
+        {
+            std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
+                      << safe_domain_name(neighbour_domain) << " at " << location_to_string(location) << " start"
+                      << std::endl;
+        }
         // Construct the Schur matrix for each neighbour domain of main domain
         SchurMat3D* current = nullptr;
         switch (location)
@@ -105,9 +141,15 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
             default:
                 throw std::invalid_argument("Invalid location type");
         }
+        if (env_config && env_config->showCurrentStep)
+        {
+            std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
+                      << safe_domain_name(neighbour_domain) << " at " << location_to_string(location) << " done"
+                      << std::endl;
+        }
     }
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[GMRES3D] Schur construct: done" << std::endl;
+        std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain) << " done" << std::endl;
 }
 
 field3& GMRESSolver3D::Afun(field3& x)
@@ -144,7 +186,7 @@ void GMRESSolver3D::maybe_print_res() const
 void GMRESSolver3D::solve(field3& b)
 {
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[GMRES3D] solve: start" << std::endl;
+        std::cout << "[GMRES3D] solve: start (domain " << safe_domain_name(domain) << ")" << std::endl;
 
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);
@@ -181,6 +223,8 @@ void GMRESSolver3D::solve(field3& b)
             {
                 b = x_buf; // 直接覆盖 b
                 maybe_print_res();
+                if (env_config && env_config->showCurrentStep)
+                    std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")" << std::endl;
                 return;
             }
         }
@@ -282,5 +326,5 @@ void GMRESSolver3D::solve(field3& b)
     b = x_buf;
     maybe_print_res();
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[GMRES3D] solve: done" << std::endl;
+        std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")" << std::endl;
 }

@@ -207,52 +207,44 @@ void ConcatPoissonSolver2D::boundary_assembly()
         if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
         {
             double* boundary_value = var_value_map[LocationType::Left];
-            for (int j = 0; j < ny; j++)
-                f(0, j) -= boundary_value[j] / hx / hx;
+            f.left_bond_add(-1.0 / hx / hx, boundary_value);
         }
         if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
         {
             double* boundary_value = var_value_map[LocationType::Right];
-            for (int j = 0; j < ny; j++)
-                f(nx - 1, j) -= boundary_value[j] / hx / hx;
+            f.right_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
         if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
         {
             double* boundary_value = var_value_map[LocationType::Down];
-            for (int i = 0; i < nx; i++)
-                f(i, 0) -= boundary_value[i] / hy / hy;
+            f.down_bond_add(-1.0 / hy / hy, boundary_value);
         }
         if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
         {
             double* boundary_value = var_value_map[LocationType::Up];
-            for (int i = 0; i < nx; i++)
-                f(i, ny - 1) -= boundary_value[i] / hy / hy;
+            f.up_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
         if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
         {
             double* boundary_value = var_value_map[LocationType::Left];
-            for (int j = 0; j < ny; j++)
-                f(0, j) += boundary_value[j] / hx;
+            f.left_bond_add(1.0 / hx, boundary_value);
         }
         if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
         {
             double* boundary_value = var_value_map[LocationType::Right];
-            for (int j = 0; j < ny; j++)
-                f(nx - 1, j) -= boundary_value[j] / hx;
+            f.right_bond_add(-1.0 / hx, boundary_value);
         }
         if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
         {
             double* boundary_value = var_value_map[LocationType::Down];
-            for (int i = 0; i < nx; i++)
-                f(i, 0) += boundary_value[i] / hy;
+            f.down_bond_add(1.0 / hy, boundary_value);
         }
         if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
         {
             double* boundary_value = var_value_map[LocationType::Up];
-            for (int i = 0; i < nx; i++)
-                f(i, ny - 1) -= boundary_value[i] / hy;
+            f.up_bond_add(-1.0 / hy, boundary_value);
         }
     }
 }

@@ -30,25 +30,31 @@ public:
     void deinit();
 
     // Basic calculation
-    field2 operator+(const field2& rhs);
-    field2 operator-(const field2& rhs);
-    field2 operator*(const double k);
-    field2 operator*(const field2& rhs);
-    void   add(const double t);
-    void   add_affine_transform(const double a, const field2& x, const double b);
-    double dot(const field2& A);
-    double norm();
-    double sum();
-    double squared_sum();
-    double mean_at_x_axis(int i);
-    double mean_at_y_axis(int j);
+    field2  operator+(const field2& rhs);
+    field2  operator-(const field2& rhs);
+    field2  operator*(const double a);
+    field2  operator*(const field2& rhs);
+    field2& operator*=(const double a);
+    void    add_affine_transform(const double a, const field2& x, const double b);
+    double  dot(const field2& A);
+    double  norm();
+    double  sum();
+    double  squared_sum();
+    double  mean_at_x_axis(int i);
+    double  mean_at_y_axis(int j);
 
     // Boundary operation
-    void left_bond_add(const double k, const field2& left_field2);
-    void right_bond_add(const double k, const field2& right_field2);
-    void up_bond_add(const double k, const field2& up_field2);
-    void down_bond_add(const double k, const field2& down_field2);
-    void bond_add(LocationType location, const double k, const field2& neighbour_field2);
+    void left_bond_add(const double a, double* bound);
+    void right_bond_add(const double a, double* bound);
+    void down_bond_add(const double a, double* bound);
+    void up_bond_add(const double a, double* bound);
+    void bond_add(LocationType location, const double a, double* bound);
+
+    void left_bond_add(const double a, const field2& neighbour);
+    void right_bond_add(const double a, const field2& neighbour);
+    void down_bond_add(const double a, const field2& neighbour);
+    void up_bond_add(const double a, const field2& neighbour);
+    void bond_add(LocationType location, const double a, const field2& neighbour);
 
     double& operator()(int i, int j);
     double  operator()(int i, int j) const;

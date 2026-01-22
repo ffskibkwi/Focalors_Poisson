@@ -103,58 +103,6 @@ void ConcatPoissonSolver3D::construct_solver_map()
     }
 }
 
-void ConcatPoissonSolver3D::bond_add_3d(field3& target, LocationType location, double k, const field3& source)
-{
-    int target_nx = target.get_nx();
-    int target_ny = target.get_ny();
-    int target_nz = target.get_nz();
-    int source_nx = source.get_nx();
-    int source_ny = source.get_ny();
-    int source_nz = source.get_nz();
-
-    switch (location)
-    {
-        case LocationType::Left:
-            // Left face: x=0 plane
-            for (int j = 0; j < target_ny; j++)
-                for (int k = 0; k < target_nz; k++)
-                    target(0, j, k) += k * source(source_nx - 1, j, k);
-            break;
-        case LocationType::Right:
-            // Right face: x=nx-1 plane
-            for (int j = 0; j < target_ny; j++)
-                for (int k = 0; k < target_nz; k++)
-                    target(target_nx - 1, j, k) += k * source(0, j, k);
-            break;
-        case LocationType::Front:
-            // Front face: y=0 plane
-            for (int i = 0; i < target_nx; i++)
-                for (int k = 0; k < target_nz; k++)
-                    target(i, 0, k) += k * source(i, source_ny - 1, k);
-            break;
-        case LocationType::Back:
-            // Back face: y=ny-1 plane
-            for (int i = 0; i < target_nx; i++)
-                for (int k = 0; k < target_nz; k++)
-                    target(i, target_ny - 1, k) += k * source(i, 0, k);
-            break;
-        case LocationType::Down:
-            // Down face: z=0 plane
-            for (int i = 0; i < target_nx; i++)
-                for (int j = 0; j < target_ny; j++)
-                    target(i, j, 0) += k * source(i, j, source_nz - 1);
-            break;
-        case LocationType::Up:
-            // Up face: z=nz-1 plane
-            for (int i = 0; i < target_nx; i++)
-                for (int j = 0; j < target_ny; j++)
-                    target(i, j, target_nz - 1) += k * source(i, j, 0);
-            break;
-        default:
-            throw std::invalid_argument("Invalid location type for 3D bond_add");
-    }
-}
-
 void ConcatPoissonSolver3D::solve()
 {
     // Boundary
@@ -163,7 +111,7 @@ void ConcatPoissonSolver3D::solve()
     // *hx*hx for each field
     for (auto& domain : variable->geometry->domains)
     {
-        field2& f = *field_map[domain];
+        field3& f = *field_map[domain];
         f         = f * (domain->hx * domain->hx);
     }
 
@@ -174,8 +122,8 @@ void ConcatPoissonSolver3D::solve()
         (*temp_fields[domain])  = (*field_map[domain]);
         for (auto& [location, child_domain] : tree_map[domain])
         {
-            bond_add_3d(*temp_fields[domain], location, -1., *temp_fields[child_domain]);
-            bond_add_3d(*field_map[domain], location, -1., *temp_fields[child_domain]);
+            temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
+            field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
         }
         if (env_config && env_config->showCurrentStep)
         {
@@ -192,7 +140,7 @@ void ConcatPoissonSolver3D::solve()
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
-        bond_add_3d(*field_map[tree_root], location, -1., *temp_fields[child_domain]);
+        field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_pre = field_map[tree_root]->sum();
@@ -211,7 +159,7 @@ void ConcatPoissonSolver3D::solve()
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
         Domain3DUniform* d = static_cast<Domain3DUniform*>((*it).domain);
-        bond_add_3d(*field_map[d], parent_map[d].first, -1., *field_map[parent_map[d].second]);
+        field_map[d]->bond_add(parent_map[d].first, -1., *field_map[parent_map[d].second]);
         if (env_config && env_config->showCurrentStep)
         {
             double s_pre = field_map[d]->sum();
@@ -222,6 +170,100 @@ void ConcatPoissonSolver3D::solve()
         {
             double s_post = field_map[d]->sum();
             std::cout << "[Concat3D] Branch domain " << d->name << " field sum after solve=" << s_post << std::endl;
+        }
+    }
+}
+
+void ConcatPoissonSolver3D::boundary_assembly()
+{
+    // Apply boundary conditions to all domains in the geometry
+    for (auto& domain : variable->geometry->domains)
+    {
+        if (variable->has_boundary_value_map.find(domain) == variable->has_boundary_value_map.end())
+            continue;
+
+        auto& var_has_map   = variable->has_boundary_value_map[domain];
+        auto& var_value_map = variable->boundary_value_map[domain];
+        auto& var_type_map  = variable->boundary_type_map[domain];
+
+        field3& f = *field_map[domain];
+
+        int    nx = domain->get_nx();
+        int    ny = domain->get_ny();
+        int    nz = domain->get_nz();
+        double hx = domain->get_hx();
+        double hy = domain->get_hy();
+        double hz = domain->get_hz();
+
+        PDEBoundaryType boundary_type_left  = var_type_map[LocationType::Left];
+        PDEBoundaryType boundary_type_right = var_type_map[LocationType::Right];
+        PDEBoundaryType boundary_type_front = var_type_map[LocationType::Front];
+        PDEBoundaryType boundary_type_back  = var_type_map[LocationType::Back];
+        PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
+        PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
+
+        if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Left];
+            f.left_bond_add(-1.0 / hx / hx, boundary_value);
+        }
+        if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Right];
+            f.right_bond_add(-1.0 / hx / hx, boundary_value);
+        }
+
+        if (boundary_type_front == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Front])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Front];
+            f.front_bond_add(-1.0 / hy / hy, boundary_value);
+        }
+        if (boundary_type_back == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Back])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Back];
+            f.back_bond_add(-1.0 / hy / hy, boundary_value);
+        }
+
+        if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Down];
+            f.down_bond_add(-1.0 / hz / hz, boundary_value);
+        }
+        if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Up];
+            f.up_bond_add(-1.0 / hz / hz, boundary_value);
+        }
+
+        if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Left];
+            f.left_bond_add(1.0 / hx, boundary_value);
+        }
+        if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Right];
+            f.right_bond_add(-1.0 / hx, boundary_value);
+        }
+        if (boundary_type_front == PDEBoundaryType::Neumann && var_has_map[LocationType::Front])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Front];
+            f.front_bond_add(1.0 / hy, boundary_value);
+        }
+        if (boundary_type_back == PDEBoundaryType::Neumann && var_has_map[LocationType::Back])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Back];
+            f.back_bond_add(-1.0 / hy, boundary_value);
+        }
+        if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Down];
+            f.down_bond_add(1.0 / hz, boundary_value);
+        }
+        if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
+        {
+            field2& boundary_value = *var_value_map[LocationType::Up];
+            f.up_bond_add(-1.0 / hz, boundary_value);
         }
     }
 }

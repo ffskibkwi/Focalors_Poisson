@@ -52,8 +52,5 @@ private:
     EnvironmentConfig* env_config;
     bool               showGmresRes = false;
 
-    void set_boundary();
-
-    // 辅助函数：实现 field3 的 bond_add 功能
-    void bond_add_3d(field3& target, LocationType location, double k, const field3& source);
+    void boundary_assembly();
 };

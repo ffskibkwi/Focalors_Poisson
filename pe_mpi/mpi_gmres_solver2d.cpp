@@ -55,39 +55,39 @@ MPIGMRESSolver2D::MPIGMRESSolver2D(Domain2DUniform*   in_domain,
 
 MPIGMRESSolver2D::~MPIGMRESSolver2D() { delete pe_solver; }
 
-void MPIGMRESSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
-{
-    if (comm_rank == 0)
-        solve(f, is_debugmode);
-    else
-    {
-        field2 dummy;
-        dummy.init(domain->nx, domain->ny);
-        solve(dummy, is_debugmode);
-    }
-}
+// void MPIGMRESSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
+// {
+//     if (comm_rank == 0)
+//         solve(f, is_debugmode);
+//     else
+//     {
+//         field2 dummy;
+//         dummy.init(domain->nx, domain->ny);
+//         solve(dummy, is_debugmode);
+//     }
+// }
 
-void MPIGMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+void MPIGMRESSolver2D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                            const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep && comm_rank == 0)
         std::cout << "[MPIGMRES] Schur construct: start" << std::endl;
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
-        Schur_mat* current = nullptr;
+        SchurMat2D* current = nullptr;
         switch (location)
         {
             case LocationType::Left:
-                current = new Schur_mat_left(*domain, *neighbour_domain);
+                current = new SchurMat2D_left(*domain, *neighbour_domain);
                 break;
             case LocationType::Right:
-                current = new Schur_mat_right(*domain, *neighbour_domain);
+                current = new SchurMat2D_right(*domain, *neighbour_domain);
                 break;
             case LocationType::Up:
-                current = new Schur_mat_up(*domain, *neighbour_domain);
+                current = new SchurMat2D_up(*domain, *neighbour_domain);
                 break;
             case LocationType::Down:
-                current = new Schur_mat_down(*domain, *neighbour_domain);
+                current = new SchurMat2D_down(*domain, *neighbour_domain);
                 break;
             default:
                 throw std::invalid_argument("Invalid location type");

@@ -1,6 +1,6 @@
-#include "Schur_mat3d.h"
+#include "schur_mat3d.h"
 
-void Schur_mat3d_left::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -25,7 +25,7 @@ void Schur_mat3d_left::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_left::operator*(const field3& root)
+field3 SchurMat3D_left::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 
@@ -50,7 +50,7 @@ field3 Schur_mat3d_left::operator*(const field3& root)
     return R;
 }
 
-void Schur_mat3d_right::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -75,7 +75,7 @@ void Schur_mat3d_right::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_right::operator*(const field3& root)
+field3 SchurMat3D_right::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 
@@ -100,7 +100,7 @@ field3 Schur_mat3d_right::operator*(const field3& root)
     return R;
 }
 
-void Schur_mat3d_front::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -125,7 +125,7 @@ void Schur_mat3d_front::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_front::operator*(const field3& root)
+field3 SchurMat3D_front::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 
@@ -150,7 +150,7 @@ field3 Schur_mat3d_front::operator*(const field3& root)
     return R;
 }
 
-void Schur_mat3d_back::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -175,7 +175,7 @@ void Schur_mat3d_back::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_back::operator*(const field3& root)
+field3 SchurMat3D_back::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 
@@ -200,7 +200,7 @@ field3 Schur_mat3d_back::operator*(const field3& root)
     return R;
 }
 
-void Schur_mat3d_down::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -225,7 +225,7 @@ void Schur_mat3d_down::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_down::operator*(const field3& root)
+field3 SchurMat3D_down::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 
@@ -250,7 +250,7 @@ field3 Schur_mat3d_down::operator*(const field3& root)
     return R;
 }
 
-void Schur_mat3d_up::construct(DomainSolver3D* branch_solver)
+void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(branch_nx, branch_ny, branch_nz, "temp");
     int idx = 0;
@@ -275,7 +275,7 @@ void Schur_mat3d_up::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 Schur_mat3d_up::operator*(const field3& root)
+field3 SchurMat3D_up::operator*(const field3& root)
 {
     field3 R(root_nx, root_ny, root_nz, "result");
 

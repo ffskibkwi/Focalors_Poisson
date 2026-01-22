@@ -6,7 +6,7 @@
 #include "base/location_boundary.h"
 #include "io/config.h"
 #include "mpi_poisson_solver2d.h"
-#include "pe/concat/Schur_mat.h"
+#include "pe/concat/schur_mat2d.h"
 #include "pe/concat/domain_solver.h"
 #include "pe/concat/gmres.h"
 
@@ -32,13 +32,13 @@ public:
     ~MPIGMRESSolver2D();
 
     void solve(field2& f, bool is_debugmode = true) override;
-    void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
+    // void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
     bool is_comm_root() const override { return comm_rank == 0; }
 
     double get_hx() const override { return domain->hx; }
     double get_hy() const override { return domain->hy; }
 
-    void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+    void SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);
 
     void set_initial_guess(field2* x0) { x0_override = x0; }
@@ -60,7 +60,7 @@ private:
     int      comm_rank = -1, comm_size = 0;
 
     // Schur 矩阵参数
-    std::vector<Schur_mat*> S_params;
+    std::vector<SchurMat2D*> S_params;
 
     // 内部 Poisson（MPI）
     MPIPoissonSolver2D* pe_solver = nullptr;

@@ -2,7 +2,7 @@
 
 #include "base/pch.h"
 
-#include "Schur_mat.h"
+#include "schur_mat2d.h"
 // #include "pe/poisson/poisson_solver2d.h"
 #include "domain_solver.h"
 
@@ -10,7 +10,7 @@
 
 field2 gmres(field2&                   b,
              field2&                   x0,
-             std::vector<Schur_mat*>&  S_params,
+             std::vector<SchurMat2D*>&  S_params,
              DomainSolver2D&           solver_root,
              int                       m,
              double                    tol,

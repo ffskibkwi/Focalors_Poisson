@@ -78,7 +78,7 @@ void ConcatPoissonSolver3D::construct_solver_map()
         if (tree_map[domain].size() > 0)
         {
             solver_map[domain] = new GMRESSolver3D(domain, variable, m, tol, maxIter, env_config);
-            static_cast<GMRESSolver3D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map);
+            static_cast<GMRESSolver3D*>(solver_map[domain])->SchurMat2D_construct(tree_map[domain], solver_map);
         }    
         else
         {
@@ -90,7 +90,7 @@ void ConcatPoissonSolver3D::construct_solver_map()
     if (tree_map[tree_root].size() > 0)
     {
         solver_map[tree_root] = new GMRESSolver3D(tree_root, variable, m, tol, maxIter, env_config);
-        static_cast<GMRESSolver3D*>(solver_map[tree_root])->schur_mat_construct(tree_map[tree_root], solver_map);
+        static_cast<GMRESSolver3D*>(solver_map[tree_root])->SchurMat2D_construct(tree_map[tree_root], solver_map);
     }    
     else
     {

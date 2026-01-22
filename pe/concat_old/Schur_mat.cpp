@@ -1,6 +1,6 @@
-#include "Schur_mat.h"
+#include "schur_mat2d.h"
 
-Schur_mat::Schur_mat(const field2& root, const field2& branch, LocationType dir)
+SchurMat2D::SchurMat2D(const field2& root, const field2& branch, LocationType dir)
     : direction(dir)
 {
     switch (dir)
@@ -14,7 +14,7 @@ Schur_mat::Schur_mat(const field2& root, const field2& branch, LocationType dir)
         cosize_n = root.get_nx();
         break;
     default:
-        throw std::invalid_argument("Schur_mat only supports 2D directions");
+        throw std::invalid_argument("SchurMat2D only supports 2D directions");
     }
 
     root_nx   = root.get_nx();
@@ -27,14 +27,14 @@ Schur_mat::Schur_mat(const field2& root, const field2& branch, LocationType dir)
         value[i] = new double[cosize_n];
 }
 
-Schur_mat::~Schur_mat()
+SchurMat2D::~SchurMat2D()
 {
     for (int i = 0; i < cosize_n; i++)
         delete[] value[i];
     delete[] value;
 }
 
-void Schur_mat::print()
+void SchurMat2D::print()
 {
     for (int i = 0; i < cosize_n; i++)
     {
@@ -43,7 +43,7 @@ void Schur_mat::print()
     }
 }
 
-void Schur_mat::construct(PoissonSolver2DInterface& branch_solver)
+void SchurMat2D::construct(PoissonSolver2DInterface& branch_solver)
 {
     field2 t_a(branch_nx, branch_ny);
 
@@ -90,11 +90,11 @@ void Schur_mat::construct(PoissonSolver2DInterface& branch_solver)
         }
         break;
     default:
-        throw std::invalid_argument("Schur_mat only supports 2D directions");
+        throw std::invalid_argument("SchurMat2D only supports 2D directions");
     }
 }
 
-field2 Schur_mat::operator*(const field2& root)
+field2 SchurMat2D::operator*(const field2& root)
 {
     field2 R(root_nx, root_ny);
 
@@ -137,7 +137,7 @@ field2 Schur_mat::operator*(const field2& root)
         }
         break;
     default:
-        throw std::invalid_argument("Schur_mat only supports 2D directions");
+        throw std::invalid_argument("SchurMat2D only supports 2D directions");
     }
 
     return R;

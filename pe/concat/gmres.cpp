@@ -35,7 +35,7 @@ void back_substitution(const std::vector<double>& H, const std::vector<double>& 
 // Output:
 // x: solution vector
 // resVec: history of residuals
-field2 Afun(std::vector<Schur_mat*>& S_params, DomainSolver2D& solver_root, field2& x)
+field2 Afun(std::vector<SchurMat2D*>& S_params, DomainSolver2D& solver_root, field2& x)
 {
     field2 ft(x);
     ft.clear(0.);
@@ -47,7 +47,7 @@ field2 Afun(std::vector<Schur_mat*>& S_params, DomainSolver2D& solver_root, fiel
 
 field2 gmres(field2&                   b,
              field2&                   x0,
-             std::vector<Schur_mat*>&  S_params,
+             std::vector<SchurMat2D*>&  S_params,
              DomainSolver2D& solver_root,
              int                       m,
              double                    tol,

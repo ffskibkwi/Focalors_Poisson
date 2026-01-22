@@ -11,7 +11,7 @@
 #include "gmres_solver2d.h"
 #include "pe/poisson/poisson_solver2d.h"
 
-#include "Schur_mat.h"
+#include "schur_mat2d.h"
 #include <unordered_map>
 #include <vector>
 

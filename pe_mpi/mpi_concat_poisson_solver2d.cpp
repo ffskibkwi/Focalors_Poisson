@@ -183,7 +183,7 @@ void MPIConcatPoissonSolver2D::construct_solver_map()
             {
                 auto* gmres = static_cast<MPIGMRESSolver2D*>(solver_map[domain]);
                 if (gmres)
-                    gmres->schur_mat_construct(tree_map[domain], solver_map);
+                    gmres->SchurMat2D_construct(tree_map[domain], solver_map);
             }
         }
     }

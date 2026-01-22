@@ -2,7 +2,7 @@
 
 #include "base/pch.h"
 
-#include "Schur_mat.h"
+#include "schur_mat2d.h"
 #include "base/domain/domain2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
@@ -28,7 +28,7 @@ public:
     double get_hx() const override { return domain->hx; }
     double get_hy() const override { return domain->hy; }
 
-    void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+    void SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);
 
     // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b
@@ -40,7 +40,7 @@ private:
     // 成员参数（原 gmres 的未指定入参）：
     Domain2DUniform*        domain;
     Variable*               variable = nullptr;
-    std::vector<Schur_mat*> S_params;
+    std::vector<SchurMat2D*> S_params;
     int                     m       = 0;
     double                  tol     = 0.0;
     int                     maxIter = 0;
@@ -80,7 +80,7 @@ private:
 
     // field2 gmres(field2&                   b,
     //     field2&                   x,
-    //     std::vector<Schur_mat*>&   S_params,
+    //     std::vector<SchurMat2D*>&   S_params,
     //     PoissonSolver2DInterface& pe_solver,
     //     int                       m,
     //     double                    tol,

@@ -79,7 +79,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
         {
             solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
             static_cast<GMRESSolver2D*>(solver_map[domain])
-                ->schur_mat_construct(tree_map[domain], solver_map); // Here use RTTI
+                ->SchurMat2D_construct(tree_map[domain], solver_map); // Here use RTTI
         }
         else
         {
@@ -92,7 +92,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
     {
         solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
         static_cast<GMRESSolver2D*>(solver_map[tree_root])
-            ->schur_mat_construct(tree_map[tree_root], solver_map); // Here use RTTI
+            ->SchurMat2D_construct(tree_map[tree_root], solver_map); // Here use RTTI
     }
     else
     {

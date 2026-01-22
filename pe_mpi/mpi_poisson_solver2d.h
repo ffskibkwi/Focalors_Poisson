@@ -42,7 +42,7 @@ public:
     ~MPIPoissonSolver2D();
 
     void solve(field2& f, bool is_debugmode = true) override;
-    void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
+    // void solve_collective_root_owned(field2& f, bool is_debugmode = true) override;
     bool is_comm_root() const override { return is_active && active_rank == 0; }
 
     double get_hx() const override { return hx; }

@@ -12,7 +12,7 @@
 #include "pe/poisson/poisson_solver3d.h"
 #include "gmres_solver3d.h"
 
-#include "Schur_mat3d.h"
+#include "schur_mat3d.h"
 #include <vector>
 #include <unordered_map>
 

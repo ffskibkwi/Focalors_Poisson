@@ -49,7 +49,7 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
 
 GMRESSolver2D::~GMRESSolver2D() { delete pe_solver; }
 
-void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
+void GMRESSolver2D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)
@@ -57,7 +57,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
         // Construct the Schur matrix for each neibour domain of main domain
-        Schur_mat* current = nullptr;
+        SchurMat2D* current = nullptr;
 
         // Suppress debug output for branch solver during Schur matrix construction
         // because this process calls solve() many times
@@ -66,7 +66,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
         switch (location)
         {
             case LocationType::Left: {
-                current = new Schur_mat_left(*domain, *neighbour_domain);
+                current = new SchurMat2D_left(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -75,7 +75,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Right: {
-                current = new Schur_mat_right(*domain, *neighbour_domain);
+                current = new SchurMat2D_right(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -84,7 +84,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Up: {
-                current = new Schur_mat_up(*domain, *neighbour_domain);
+                current = new SchurMat2D_up(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -93,7 +93,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Down: {
-                current = new Schur_mat_down(*domain, *neighbour_domain);
+                current = new SchurMat2D_down(*domain, *neighbour_domain);
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)

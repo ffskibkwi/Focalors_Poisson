@@ -4,7 +4,7 @@
 #include "base/location_boundary.h"
 #include "pe/poisson_old/poisson_solver_interface.h"
 
-class Schur_mat
+class SchurMat2D
 {
 protected:
     int      cosize_n;
@@ -14,8 +14,8 @@ protected:
 public:
     LocationType direction;
 
-    Schur_mat(const field2& root, const field2& branch, LocationType dir);
-    ~Schur_mat();
+    SchurMat2D(const field2& root, const field2& branch, LocationType dir);
+    ~SchurMat2D();
 
     void construct(PoissonSolver2DInterface& branch_solver);
     field2 operator*(const field2& root);

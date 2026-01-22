@@ -9,7 +9,7 @@
 #include "pe/poisson/chasing_method3d.h"
 #include "domain_solver.h"
 #include "gmres.h"
-#include "Schur_mat3d.h"
+#include "schur_mat3d.h"
 #include "pe/poisson/poisson_solver3d.h"
 #include <unordered_map>
 #include "io/config.h"
@@ -27,7 +27,7 @@ public:
 
     void solve(field3& f) override;
 
-    void schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>& adjacency_key, 
+    void SchurMat2D_construct(const std::unordered_map<LocationType, Domain3DUniform*>& adjacency_key, 
                              const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map);
 
     // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b
@@ -37,7 +37,7 @@ private:
     // 成员参数
     Domain3DUniform*              domain;
     Variable3D*                     variable = nullptr;
-    std::vector<Schur_mat3d*>     S_params;
+    std::vector<SchurMat3D*>     S_params;
     int                           m = 0;
     double                        tol = 0.0;
     int                           maxIter = 0;

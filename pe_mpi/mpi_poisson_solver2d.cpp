@@ -692,22 +692,22 @@ void MPIPoissonSolver2D::solve(field2& f, bool is_debugmode)
     }
 }
 
-void MPIPoissonSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
-{
-    if (!is_active)
-        return;
-    if (active_rank == 0)
-    {
-        solve(f, is_debugmode);
-    }
-    else
-    {
-        // 非 root：提供占位缓冲参与通信
-        field2 dummy;
-        dummy.init(nx, ny);
-        solve(dummy, is_debugmode);
-    }
-}
+// void MPIPoissonSolver2D::solve_collective_root_owned(field2& f, bool is_debugmode)
+// {
+//     if (!is_active)
+//         return;
+//     if (active_rank == 0)
+//     {
+//         solve(f, is_debugmode);
+//     }
+//     else
+//     {
+//         // 非 root：提供占位缓冲参与通信
+//         field2 dummy;
+//         dummy.init(nx, ny);
+//         solve(dummy, is_debugmode);
+//     }
+// }
 
 /**
  * @brief 将长度为 n 的一维区间均匀切分给 p 个进程，生成 counts 与 displs。

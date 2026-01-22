@@ -55,7 +55,7 @@ GMRESSolver3D::~GMRESSolver3D()
         delete s;
 }
 
-void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
+void GMRESSolver3D::SchurMat2D_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map)
 {
     if (env_config && env_config->showCurrentStep)
@@ -63,41 +63,41 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
         // Construct the Schur matrix for each neighbour domain of main domain
-        Schur_mat3d* current = nullptr;
+        SchurMat3D* current = nullptr;
         switch (location)
         {
             case LocationType::Left: {
-                current = new Schur_mat3d_left(*domain, *neighbour_domain);
+                current = new SchurMat3D_left(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Right: {
-                current = new Schur_mat3d_right(*domain, *neighbour_domain);
+                current = new SchurMat3D_right(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Front: {
-                current = new Schur_mat3d_front(*domain, *neighbour_domain);
+                current = new SchurMat3D_front(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Back: {
-                current = new Schur_mat3d_back(*domain, *neighbour_domain);
+                current = new SchurMat3D_back(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Down: {
-                current = new Schur_mat3d_down(*domain, *neighbour_domain);
+                current = new SchurMat3D_down(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Up: {
-                current = new Schur_mat3d_up(*domain, *neighbour_domain);
+                current = new SchurMat3D_up(*domain, *neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }

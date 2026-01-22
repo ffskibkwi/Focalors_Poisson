@@ -157,6 +157,16 @@ void ConcatPoissonSolver3D::bond_add_3d(field3& target, LocationType location, d
 
 void ConcatPoissonSolver3D::solve()
 {
+    // Boundary
+    boundary_assembly();
+
+    // *hx*hx for each field
+    for (auto& domain : variable->geometry->domains)
+    {
+        field2& f = *field_map[domain];
+        f         = f * (domain->hx * domain->hx);
+    }
+
     // Righthand construction (bottom-up pass)
     for (auto info : solve_order)
     {

@@ -47,25 +47,28 @@ ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 {
     for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto& domain : solve_order)
+    for (auto info : solve_order)
+    {
+        Domain2DUniform* domain = static_cast<Domain2DUniform*>(info.domain);
         delete solver_map[domain];
+    }
 }
 
 void ConcatPoissonSolver2D::specify_solve_order()
 {
-    // Solve order arrangement
-    std::queue<Domain2DUniform*> q;
-    q.push(tree_root);
+    std::queue<PESolveOrderInfo> q;
+    q.push({tree_root, 0});
     while (!q.empty())
     {
-        Domain2DUniform* current = q.front();
+        PESolveOrderInfo info   = q.front();
+        Domain2DUniform* domain = static_cast<Domain2DUniform*>(info.domain);
         q.pop();
-        if (current != tree_root)
-            solve_order.insert(solve_order.begin(), current);
-        if (tree_map.count(current))
+        if (domain != tree_root)
+            solve_order.insert(solve_order.begin(), info);
+        if (tree_map.count(domain))
         {
-            for (auto& kv : tree_map[current])
-                q.push(kv.second);
+            for (auto& kv : tree_map[domain])
+                q.push({kv.second, info.layer + 1});
         }
     }
 }
@@ -73,8 +76,9 @@ void ConcatPoissonSolver2D::specify_solve_order()
 void ConcatPoissonSolver2D::construct_solver_map()
 {
     // Construct solvers (for non-root domains)
-    for (auto& domain : solve_order)
+    for (auto info : solve_order)
     {
+        Domain2DUniform* domain = static_cast<Domain2DUniform*>(info.domain);
         if (tree_map[domain].size() > 0)
         {
             solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
@@ -109,13 +113,14 @@ void ConcatPoissonSolver2D::solve()
     for (auto& domain : variable->geometry->domains)
     {
         field2& f = *field_map[domain];
-        f = f * (domain->hx * domain->hx);
+        f         = f * (domain->hx * domain->hx);
     }
 
     // Righthand construction
-    for (auto& domain : solve_order)
+    for (auto info : solve_order)
     {
-        (*temp_fields[domain]) = (*field_map[domain]);
+        Domain2DUniform* domain = static_cast<Domain2DUniform*>(info.domain);
+        (*temp_fields[domain])  = (*field_map[domain]);
         for (auto& [location, child_domain] : tree_map[domain])
         {
             temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
@@ -159,7 +164,7 @@ void ConcatPoissonSolver2D::solve()
     // Branch equations
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
-        Domain2DUniform* d = *it;
+        Domain2DUniform* d = static_cast<Domain2DUniform*>((*it).domain);
         field_map[d]->bond_add(parent_map[d].first, -1., *field_map[parent_map[d].second]);
         if (env_config && env_config->showCurrentStep)
         {

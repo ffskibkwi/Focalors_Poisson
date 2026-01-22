@@ -1,17 +1,18 @@
 #pragma once
 
+#include "base/pch.h"
+
+#include "Schur_mat.h"
 #include "base/domain/domain2d.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"
 #include "base/domain/variable.h"
 #include "base/location_boundary.h"
-#include "base/pch.h"
-
+#include "concat_solver_shared.h"
 #include "domain_solver.h"
 #include "gmres_solver2d.h"
 #include "pe/poisson/poisson_solver2d.h"
 
-#include "Schur_mat.h"
 #include <unordered_map>
 #include <vector>
 
@@ -32,7 +33,7 @@ private:
     std::unordered_map<Domain2DUniform*, field2*> temp_fields;
 
     std::unordered_map<Domain2DUniform*, DomainSolver2D*> solver_map;
-    std::vector<Domain2DUniform*>                         solve_order;
+    std::vector<PESolveOrderInfo>                         solve_order;
 
     std::vector<double> resVec;
 

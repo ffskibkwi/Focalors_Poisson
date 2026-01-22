@@ -164,11 +164,10 @@ bool Geometry2D::is_single_connected() const
 
 void Geometry2D::build_tree()
 {
-    // for geometry_tree_old.hpp
-    // TreeBuilder2D builder;
-    // tree_root = builder.buildOptimalTree(adjacency);
-
-    tree_root  = TreeUtils::findOptimalRoot(adjacency);
+    if (domains.size() == 1)
+        tree_root = domains[0];
+    else
+        tree_root = TreeUtils::findOptimalRoot(adjacency);
     tree_map   = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
     parent_map = TreeUtils::buildParentMapFromTree(tree_map);
 

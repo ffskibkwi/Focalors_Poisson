@@ -165,7 +165,7 @@ void PoissonSolver3D::solve(field3& f)
     f.set_size(ny, nz, nx);
     buffer.transpose(f, {0, 2, 1});
 
-    buffer.set_size(ny, nz, nx);
+    buffer.set_size(nz, ny, nx);
     chasing_method_x->chasing(f, buffer); // Solve for x
 
     f.set_size(nz, nx, ny);

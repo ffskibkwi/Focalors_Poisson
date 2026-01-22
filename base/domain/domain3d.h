@@ -26,6 +26,11 @@ public:
     // Basic position (the position of the left-down corner)
     double pos_x, pos_y, pos_z;
 
+    // Global offset
+    double offset_x = 0.0;
+    double offset_y = 0.0;
+    double offset_z = 0.0;
+
     std::string name;
     Geometry3D* parent = nullptr;
 
@@ -55,8 +60,16 @@ public:
     void set_lx(double in_lx);
     void set_ly(double in_ly);
     void set_lz(double in_lz);
+    void set_spatial_step(double hx, double hy, double hz);
     void set_size(double in_lx, double in_ly, double in_lz);
     void set_position(double in_pos_x, double in_pos_y, double in_pos_z);
+
+    void   set_offset_x(double in_offset_x);
+    void   set_offset_y(double in_offset_y);
+    void   set_offset_z(double in_offset_z);
+    double get_offset_x() const;
+    double get_offset_y() const;
+    double get_offset_z() const;
 
     double get_pos_x() const;
     double get_pos_y() const;

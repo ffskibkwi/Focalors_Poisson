@@ -36,9 +36,16 @@ public:
     void set_z_face_center_field(Domain3DUniform* s, field3& f);
 
     void set_boundary_type(Domain3DUniform* s, LocationType loc, PDEBoundaryType type);
+    void set_boundary_type(Domain3DUniform* s, std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
+    void fill_boundary_type(PDEBoundaryType type);
 
     void set_boundary_value(Domain3DUniform* s, LocationType loc, double in_value);
-    void set_boundary_value(Domain3DUniform* s, LocationType loc, std::function<double(double, double, double)> f);
+    void set_boundary_value_from_func_global(Domain3DUniform*                              s,
+                                             LocationType                                  loc,
+                                             std::function<double(double, double, double)> f);
+    void fill_boundary_value_from_func_global(std::function<double(double, double, double)> f);
+
+    void set_value_from_func_global(std::function<double(double, double, double)> func);
 
 private:
     void cleanup_buffers();

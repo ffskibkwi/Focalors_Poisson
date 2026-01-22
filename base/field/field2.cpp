@@ -86,12 +86,8 @@ field2 field2::operator+(const field2& rhs)
 
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
-    {
         for (int j = 0; j < ny; j++)
-        {
             R(i, j) = this->operator()(i, j) + rhs.operator()(i, j);
-        }
-    }
     return R;
 }
 
@@ -101,27 +97,19 @@ field2 field2::operator-(const field2& rhs)
 
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
-    {
         for (int j = 0; j < ny; j++)
-        {
             R(i, j) = this->operator()(i, j) - rhs.operator()(i, j);
-        }
-    }
     return R;
 }
 
-field2 field2::operator*(const double k)
+field2 field2::operator*(const double a)
 {
     field2 R(nx, ny);
 
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
-    {
         for (int j = 0; j < ny; j++)
-        {
-            R(i, j) = this->operator()(i, j) * k;
-        }
-    }
+            R(i, j) = this->operator()(i, j) * a;
     return R;
 }
 
@@ -148,16 +136,13 @@ field2 field2::operator*(const field2& rhs)
     return R;
 }
 
-void field2::add(const double t)
+field2& field2::operator*=(const double a)
 {
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
-    {
         for (int j = 0; j < ny; j++)
-        {
-            this->operator()(i, j) = this->operator()(i, j) + t;
-        }
-    }
+            this->operator()(i, j) *= a;
+    return *this;
 }
 
 void field2::add_affine_transform(const double a, const field2& x, const double b)
@@ -224,49 +209,92 @@ double field2::mean_at_y_axis(int j)
     return sum / nx;
 }
 
-void field2::left_bond_add(const double k, const field2& left_field2)
+void field2::left_bond_add(const double a, double* bound)
 {
-    int left_field2_nx = left_field2.get_nx();
     for (int j = 0; j < ny; j++)
-        value[j] += k * left_field2(left_field2_nx - 1, j);
+        this->operator()(0, j) += a * bound[j];
 }
 
-void field2::right_bond_add(const double k, const field2& right_field2)
+void field2::right_bond_add(const double a, double* bound)
 {
-    // int right_field2_nx = right_field2.get_nx();
     for (int j = 0; j < ny; j++)
-        value[(nx - 1) * ny + j] += k * right_field2(0, j);
+        this->operator()(nx - 1, j) += a * bound[j];
 }
 
-void field2::up_bond_add(const double k, const field2& up_field2)
+void field2::down_bond_add(const double a, double* bound)
 {
-    // int up_field2_ny = up_field2.get_ny();
     for (int i = 0; i < nx; i++)
-        value[i * ny + ny - 1] += k * up_field2(i, 0);
+        this->operator()(i, 0) += a * bound[i];
 }
 
-void field2::down_bond_add(const double k, const field2& down_field2)
+void field2::up_bond_add(const double a, double* bound)
 {
-    int down_field2_ny = down_field2.get_ny();
     for (int i = 0; i < nx; i++)
-        value[i * ny] += k * down_field2(i, down_field2_ny - 1);
+        this->operator()(i, ny - 1) += a * bound[i];
 }
 
-void field2::bond_add(LocationType location, const double k, const field2& neighbour_field2)
+void field2::bond_add(LocationType location, const double a, double* bound)
 {
     switch (location)
     {
         case LocationType::Left:
-            left_bond_add(k, neighbour_field2);
+            left_bond_add(a, bound);
             break;
         case LocationType::Right:
-            right_bond_add(k, neighbour_field2);
-            break;
-        case LocationType::Up:
-            up_bond_add(k, neighbour_field2);
+            right_bond_add(a, bound);
             break;
         case LocationType::Down:
-            down_bond_add(k, neighbour_field2);
+            down_bond_add(a, bound);
+            break;
+        case LocationType::Up:
+            up_bond_add(a, bound);
+            break;
+        default:
+            throw std::invalid_argument("Invalid location type");
+    }
+}
+
+void field2::left_bond_add(const double a, const field2& neighbour)
+{
+    int neighbour_nx = neighbour.get_nx();
+    for (int j = 0; j < ny; j++)
+        this->operator()(0, j) += a * neighbour(neighbour_nx - 1, j);
+}
+
+void field2::right_bond_add(const double a, const field2& neighbour)
+{
+    for (int j = 0; j < ny; j++)
+        this->operator()(nx - 1, j) += a * neighbour(0, j);
+}
+
+void field2::down_bond_add(const double a, const field2& neighbour)
+{
+    int neighbour_ny = neighbour.get_ny();
+    for (int i = 0; i < nx; i++)
+        this->operator()(i, 0) += a * neighbour(i, neighbour_ny - 1);
+}
+
+void field2::up_bond_add(const double a, const field2& neighbour)
+{
+    for (int i = 0; i < nx; i++)
+        this->operator()(i, ny - 1) += a * neighbour(i, 0);
+}
+
+void field2::bond_add(LocationType location, const double a, const field2& neighbour)
+{
+    switch (location)
+    {
+        case LocationType::Left:
+            left_bond_add(a, neighbour);
+            break;
+        case LocationType::Right:
+            right_bond_add(a, neighbour);
+            break;
+        case LocationType::Down:
+            down_bond_add(a, neighbour);
+            break;
+        case LocationType::Up:
+            up_bond_add(a, neighbour);
             break;
         default:
             throw std::invalid_argument("Invalid location type");
@@ -334,13 +362,6 @@ void swap(field2& lhs, field2& rhs)
     swap(lhs.name, rhs.name);
 }
 
-/**
- * @brief Transposes the field.
- *
- * Rearranges the data.
- *
- * @param dst           The destination field for the transposed data.
- */
 void field2::transpose(field2& dst)
 {
     int nx = this->get_nx();

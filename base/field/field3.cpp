@@ -3,54 +3,14 @@
 #include "base/pch.h"
 #include "field_macro.h"
 
-/**
- * @brief Constructor with dimensions only.
- *
- * Creates a field3 object and initializes it with the specified dimensions.
- *
- * @param in_nx     Number of grid points in the x-direction.
- * @param in_ny     Number of grid points in the y-direction.
- * @param in_nz     Number of grid points in the z-direction.
- */
 field3::field3(int in_nx, int in_ny, int in_nz) { init(in_nx, in_ny, in_nz); }
 
-/**
- * @brief Constructor with initialization parameters.
- *
- * Creates a field3 object and initializes it with the specified dimensions and name.
- *
- * @param in_nx     Number of grid points in the x-direction.
- * @param in_ny     Number of grid points in the y-direction.
- * @param in_nz     Number of grid points in the z-direction.
- * @param in_name   Name identifier for the field.
- */
 field3::field3(int in_nx, int in_ny, int in_nz, const std::string& in_name) { init(in_nx, in_ny, in_nz, in_name); }
 
-/**
- * @brief Constructor with name only.
- *
- * Creates a field3 object with only a name, without initializing memory.
- * Memory will be allocated when init() is called.
- *
- * @param in_name   Name identifier for the field.
- */
 field3::field3(const std::string& in_name) { name = in_name; }
 
-/**
- * @brief Destructor.
- *
- * Releases all allocated memory and resources.
- */
 field3::~field3() { deinit(); }
 
-/**
- * @brief Assignment operator.
- *
- * Copies the values from another field3 object to this one.
- *
- * @param rhs       The field3 object to copy from.
- * @return          A reference to this object.
- */
 field3& field3::operator=(const field3& rhs)
 {
     if (this != &rhs)
@@ -70,16 +30,6 @@ field3& field3::operator=(const field3& rhs)
     return *this;
 }
 
-/**
- * @brief Initializes the field3 object.
- *
- * Allocates memory for the field data and sets the dimensions and name.
- *
- * @param in_nx     Number of grid points in the x-direction.
- * @param in_ny     Number of grid points in the y-direction.
- * @param in_nz     Number of grid points in the z-direction.
- * @param in_name   Name identifier for the field (optional).
- */
 void field3::init(int in_nx, int in_ny, int in_nz, const std::string& in_name)
 {
     ASSERT_FIELD3_POSITIVE(in_nx, in_ny, in_nz, name);
@@ -99,11 +49,6 @@ void field3::init(int in_nx, int in_ny, int in_nz, const std::string& in_name)
     clear(0.0);
 }
 
-/**
- * @brief Deinitializes the field3 object.
- *
- * Releases allocated memory and resets internal variables.
- */
 void field3::deinit()
 {
     if (value != nullptr)
@@ -113,34 +58,6 @@ void field3::deinit()
     }
 }
 
-/**
- * @brief Adds a constant value to all elements in the field.
- *
- * @param t         The constant value to add.
- */
-void field3::add(const double t)
-{
-    OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < nx; i++)
-    {
-        for (int j = 0; j < ny; j++)
-        {
-            for (int k = 0; k < nz; k++)
-            {
-                this->operator()(i, j, k) = this->operator()(i, j, k) + t;
-            }
-        }
-    }
-}
-
-/**
- * @brief Transposes the field according to specified dimension permutation.
- *
- * Rearranges the data according to the permutation of dimensions.
- *
- * @param dst           The destination field for the transposed data.
- * @param permutation   Array specifying the new order of dimensions.
- */
 void field3::transpose(field3& dst, const std::array<int, 3>& permutation)
 {
     int nx = this->get_nx();
@@ -169,15 +86,52 @@ void field3::transpose(field3& dst, const std::array<int, 3>& permutation)
     }
 }
 
-/**
- * @brief Applies an affine transformation to the field.
- *
- * Performs the operation: this = this + a*x + b for each element.
- *
- * @param a         The scaling factor for field x.
- * @param x         The field to scale and add.
- * @param b         The constant value to add.
- */
+field3 field3::operator+(const field3& rhs)
+{
+    field3 R(nx, ny, nz);
+
+    OPENMP_PARALLEL_FOR()
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                R(i, j, k) = this->operator()(i, j, k) + rhs.operator()(i, j, k);
+    return R;
+}
+
+field3 field3::operator-(const field3& rhs)
+{
+    field3 R(nx, ny, nz);
+
+    OPENMP_PARALLEL_FOR()
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                R(i, j, k) = this->operator()(i, j, k) - rhs.operator()(i, j, k);
+    return R;
+}
+
+field3 field3::operator*(const double a)
+{
+    field3 R(nx, ny, nz);
+
+    OPENMP_PARALLEL_FOR()
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                R(i, j, k) = this->operator()(i, j, k) * a;
+    return R;
+}
+
+field3& field3::operator*=(const double a)
+{
+    OPENMP_PARALLEL_FOR()
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                this->operator()(i, j, k) *= a;
+    return *this;
+}
+
 void field3::add_affine_transform(const double a, const field3& x, const double b)
 {
     OPENMP_PARALLEL_FOR()
@@ -201,11 +155,6 @@ double field3::norm()
     return std::sqrt(sum);
 }
 
-/**
- * @brief Computes the sum of all elements in the field.
- *
- * @return          The sum of all elements.
- */
 double field3::sum()
 {
     double sum = 0.;
@@ -214,12 +163,6 @@ double field3::sum()
     return sum;
 }
 
-/**
- * @brief Computes the sum of elements in an xy-plane at a given z-index.
- *
- * @param k         The z-index of the plane.
- * @return          The sum of elements in the xy-plane.
- */
 double field3::sum_at_xy_plane(int k)
 {
     double sum = 0.;
@@ -235,12 +178,6 @@ double field3::sum_at_xy_plane(int k)
     return sum;
 }
 
-/**
- * @brief Computes the sum of elements in an xz-plane at a given y-index.
- *
- * @param j         The y-index of the plane.
- * @return          The sum of elements in the xz-plane.
- */
 double field3::sum_at_xz_plane(int j)
 {
     double sum = 0.;
@@ -256,12 +193,6 @@ double field3::sum_at_xz_plane(int j)
     return sum;
 }
 
-/**
- * @brief Computes the sum of elements in a yz-plane at a given x-index.
- *
- * @param i         The x-index of the plane.
- * @return          The sum of elements in the yz-plane.
- */
 double field3::sum_at_yz_plane(int i)
 {
     double sum = 0.;
@@ -277,36 +208,154 @@ double field3::sum_at_yz_plane(int i)
     return sum;
 }
 
-/**
- * @brief Computes the mean value of all elements in the field.
- *
- * @return          The mean value of all elements.
- */
 double field3::mean() { return sum() / (nx * ny * nz); }
 
-/**
- * @brief Computes the mean value of elements in an xy-plane at a given z-index.
- *
- * @param k         The z-index of the plane.
- * @return          The mean value of elements in the xy-plane.
- */
 double field3::mean_at_xy_plane(int k) { return sum_at_xy_plane(k) / (nx * ny); }
 
-/**
- * @brief Computes the mean value of elements in an xz-plane at a given y-index.
- *
- * @param j         The y-index of the plane.
- * @return          The mean value of elements in the xz-plane.
- */
 double field3::mean_at_xz_plane(int j) { return sum_at_xz_plane(j) / (nx * nz); }
 
-/**
- * @brief Computes the mean value of elements in a yz-plane at a given x-index.
- *
- * @param i         The x-index of the plane.
- * @return          The mean value of elements in the yz-plane.
- */
 double field3::mean_at_yz_plane(int i) { return sum_at_yz_plane(i) / (ny * nz); }
+
+void field3::left_bond_add(const double a, const field2& bound)
+{
+    for (int j = 0; j < ny; j++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(0, j, k) += a * bound(j, k);
+}
+
+void field3::right_bond_add(const double a, const field2& bound)
+{
+    for (int j = 0; j < ny; j++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(nx - 1, j, k) += a * bound(j, k);
+}
+
+void field3::front_bond_add(const double a, const field2& bound)
+{
+    for (int i = 0; i < nx; i++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(i, 0, k) += a * bound(i, k);
+}
+
+void field3::back_bond_add(const double a, const field2& bound)
+{
+    for (int i = 0; i < nx; i++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(i, ny - 1, k) += a * bound(i, k);
+}
+
+void field3::down_bond_add(const double a, const field2& bound)
+{
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            this->operator()(i, j, 0) += a * bound(i, j);
+}
+
+void field3::up_bond_add(const double a, const field2& bound)
+{
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            this->operator()(i, j, nz - 1) += a * bound(i, j);
+}
+
+void field3::bond_add(LocationType location, const double a, const field2& bound)
+{
+    switch (location)
+    {
+        case LocationType::Left:
+            left_bond_add(a, bound);
+            break;
+        case LocationType::Right:
+            right_bond_add(a, bound);
+            break;
+        case LocationType::Front:
+            front_bond_add(a, bound);
+            break;
+        case LocationType::Back:
+            back_bond_add(a, bound);
+            break;
+        case LocationType::Down:
+            down_bond_add(a, bound);
+            break;
+        case LocationType::Up:
+            up_bond_add(a, bound);
+            break;
+        default:
+            throw std::invalid_argument("Invalid location type");
+    }
+}
+
+void field3::left_bond_add(const double a, const field3& neighbour)
+{
+    int neighbour_nx = neighbour.get_nx();
+    for (int j = 0; j < ny; j++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(0, j, k) += a * neighbour(neighbour_nx - 1, j, k);
+}
+
+void field3::right_bond_add(const double a, const field3& neighbour)
+{
+    for (int j = 0; j < ny; j++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(nx - 1, j, k) += a * neighbour(0, j, k);
+}
+
+void field3::front_bond_add(const double a, const field3& neighbour)
+{
+    int neighbour_ny = neighbour.get_ny();
+    for (int i = 0; i < nx; i++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(i, 0, k) += a * neighbour(i, neighbour_ny - 1, k);
+}
+
+void field3::back_bond_add(const double a, const field3& neighbour)
+{
+    for (int i = 0; i < nx; i++)
+        for (int k = 0; k < nz; k++)
+            this->operator()(i, ny - 1, k) += a * neighbour(i, 0, k);
+}
+
+void field3::down_bond_add(const double a, const field3& neighbour)
+{
+    int neighbour_nz = neighbour.get_nz();
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            this->operator()(i, j, 0) += a * neighbour(i, j, neighbour_nz - 1);
+}
+
+void field3::up_bond_add(const double a, const field3& neighbour)
+{
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            this->operator()(i, j, nz - 1) += a * neighbour(i, j, 0);
+}
+
+void field3::bond_add(LocationType location, const double a, const field3& neighbour)
+{
+    switch (location)
+    {
+        case LocationType::Left:
+            left_bond_add(a, neighbour);
+            break;
+        case LocationType::Right:
+            right_bond_add(a, neighbour);
+            break;
+        case LocationType::Front:
+            front_bond_add(a, neighbour);
+            break;
+        case LocationType::Back:
+            back_bond_add(a, neighbour);
+            break;
+        case LocationType::Down:
+            down_bond_add(a, neighbour);
+            break;
+        case LocationType::Up:
+            up_bond_add(a, neighbour);
+            break;
+        default:
+            throw std::invalid_argument("Invalid location type");
+    }
+}
 
 double& field3::operator()(int i, int j, int k)
 {
@@ -326,17 +375,6 @@ double* field3::get_ptr(int i, int j, int k) const
     return value + ny * nz * i + nz * j + k;
 }
 
-/**
- * @brief Sets the size of the field without reallocating memory.
- *
- * Changes the dimensions of the field if the total number of elements
- * does not exceed the current allocation.
- *
- * @param in_nx     New number of grid points in the x-direction.
- * @param in_ny     New number of grid points in the y-direction.
- * @param in_nz     New number of grid points in the z-direction.
- * @return          True if successful, false if reallocation would be needed.
- */
 bool field3::set_size(int in_nx, int in_ny, int in_nz)
 {
     if (in_nx * in_ny * in_nz <= size_n)
@@ -352,13 +390,6 @@ bool field3::set_size(int in_nx, int in_ny, int in_nz)
     }
 }
 
-/**
- * @brief Copies a slice of xz-plane data to a destination array.
- *
- * @param dest      Destination array for the copied data.
- * @param start     Starting y-index of the slice.
- * @param length    Number of y-planes to copy.
- */
 void field3::copy_xz_slice_to(double* dest, int start, int length)
 {
     for (int j = start; j < start + length; j++)
@@ -374,13 +405,6 @@ void field3::copy_xz_slice_to(double* dest, int start, int length)
     }
 }
 
-/**
- * @brief Copies data from a source array to a slice of xz-planes.
- *
- * @param src       Source array containing the data to copy.
- * @param start     Starting y-index of the slice.
- * @param length    Number of y-planes to copy.
- */
 void field3::copy_xz_slice_from(double* src, int start, int length)
 {
     for (int j = start; j < start + length; j++)
@@ -396,15 +420,6 @@ void field3::copy_xz_slice_from(double* src, int start, int length)
     }
 }
 
-/**
- * @brief Copies a block of xy-plane data to a destination array.
- *
- * @param dest      Destination array for the copied data.
- * @param start_x   Starting x-index of the block.
- * @param start_y   Starting y-index of the block.
- * @param length_x  Number of x-planes to copy.
- * @param length_y  Number of y-planes to copy.
- */
 void field3::copy_xy_block_to(double* dest, int start_x, int start_y, int length_x, int length_y)
 {
     for (int i = start_x; i < start_x + length_x; i++)
@@ -419,15 +434,6 @@ void field3::copy_xy_block_to(double* dest, int start_x, int start_y, int length
     }
 }
 
-/**
- * @brief Copies data from a source array to a block of xy-planes.
- *
- * @param src       Source array containing the data to copy.
- * @param start_x   Starting x-index of the block.
- * @param start_y   Starting y-index of the block.
- * @param length_x  Number of x-planes to copy.
- * @param length_y  Number of y-planes to copy.
- */
 void field3::copy_xy_block_from(double* src, int start_x, int start_y, int length_x, int length_y)
 {
     for (int i = start_x; i < start_x + length_x; i++)
@@ -442,11 +448,6 @@ void field3::copy_xy_block_from(double* src, int start_x, int start_y, int lengt
     }
 }
 
-/**
- * @brief Sets all elements of the field to a specified value.
- *
- * @param clear_value The value to set for all elements (default is 0.0).
- */
 void field3::clear(double clear_value)
 {
     OPENMP_PARALLEL_FOR()
@@ -462,12 +463,6 @@ void field3::clear(double clear_value)
     }
 }
 
-/**
- * @brief Swaps the contents of two field3 objects.
- *
- * @param lhs       The first field3 object.
- * @param rhs       The second field3 object.
- */
 void swap(field3& lhs, field3& rhs)
 {
     using std::swap;

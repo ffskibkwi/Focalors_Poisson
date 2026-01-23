@@ -2,20 +2,18 @@
 
 #include "base/pch.h"
 
-#include "schur_mat3d.h"
 #include "base/domain/domain3d.h"
 #include "base/domain/geometry3d.h"
 #include "base/domain/geometry_tree.hpp"
 #include "base/domain/variable.h"
 #include "base/domain/variable3d.h"
 #include "base/location_boundary.h"
-#include "concat_solver_shared.h"
 #include "domain_solver.h"
 #include "gmres_solver3d.h"
 #include "pe/poisson/poisson_solver3d.h"
+#include "schur_mat3d.h"
 
 #include "schur_mat3d.h"
-#include <vector>
 #include <unordered_map>
 #include <vector>
 
@@ -35,7 +33,7 @@ private:
     std::unordered_map<Domain3DUniform*, field3*> temp_fields;
 
     std::unordered_map<Domain3DUniform*, DomainSolver3D*> solver_map;
-    std::vector<PESolveOrderInfo>                         solve_order;
+    std::vector<std::vector<Domain3DUniform*>>            solve_order;
 
     std::vector<double> resVec;
 
@@ -43,7 +41,6 @@ private:
     double tol     = 1e-8;
     int    maxIter = 100;
 
-    void specify_solve_order();
     void construct_solver_map();
 
     Domain3DUniform*                                                                         tree_root = nullptr;

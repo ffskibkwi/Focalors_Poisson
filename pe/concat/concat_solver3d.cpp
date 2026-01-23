@@ -1,4 +1,5 @@
 #include "concat_solver3d.h"
+#include "base/domain/geometry_tree.hpp"
 
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
@@ -30,7 +31,8 @@ ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable, Environmen
     parent_map = variable->geometry->parent_map;
     field_map  = variable->field_map;
 
-    specify_solve_order();
+    solve_order = TreeUtils::buildLevelsFromTree(tree_root, tree_map);
+    solve_order.erase(solve_order.begin()); // erase tree_root
     construct_solver_map();
 
     // Construct the temp field for each domain
@@ -46,48 +48,30 @@ ConcatPoissonSolver3D::~ConcatPoissonSolver3D()
 {
     for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto info : solve_order)
-    {
-        Domain3DUniform* domain = static_cast<Domain3DUniform*>(info.domain);
-        delete solver_map[domain];
-    }
+    for (auto level : solve_order)
+        for (Domain3DUniform* domain : level)
+            delete solver_map[domain];
     if (tree_root)
         delete solver_map[tree_root];
-}
-
-void ConcatPoissonSolver3D::specify_solve_order()
-{
-    std::queue<PESolveOrderInfo> q;
-    q.push({tree_root, 0});
-    while (!q.empty())
-    {
-        PESolveOrderInfo info   = q.front();
-        Domain3DUniform* domain = static_cast<Domain3DUniform*>(info.domain);
-        q.pop();
-        if (domain != tree_root)
-            solve_order.insert(solve_order.begin(), info);
-        if (tree_map.count(domain))
-        {
-            for (auto& kv : tree_map[domain])
-                q.push({kv.second, info.layer + 1});
-        }
-    }
 }
 
 void ConcatPoissonSolver3D::construct_solver_map()
 {
     // Construct solvers (for non-root domains)
-    for (auto info : solve_order)
+    for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
-        Domain3DUniform* domain = static_cast<Domain3DUniform*>(info.domain);
-        if (tree_map[domain].size() > 0)
+        auto level = *it;
+        for (Domain3DUniform* domain : level)
         {
-            solver_map[domain] = new GMRESSolver3D(domain, variable, m, tol, maxIter, env_config);
-            static_cast<GMRESSolver3D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map);
-        }
-        else
-        {
-            solver_map[domain] = new PoissonSolver3D(domain, variable, env_config);
+            if (tree_map[domain].size() > 0)
+            {
+                solver_map[domain] = new GMRESSolver3D(domain, variable, m, tol, maxIter, env_config);
+                static_cast<GMRESSolver3D*>(solver_map[domain])->schur_mat_construct(tree_map[domain], solver_map);
+            }
+            else
+            {
+                solver_map[domain] = new PoissonSolver3D(domain, variable, env_config);
+            }
         }
     }
 
@@ -116,38 +100,47 @@ void ConcatPoissonSolver3D::solve()
     }
 
     // Righthand construction (bottom-up pass)
-    for (auto info : solve_order)
+    for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
-        Domain3DUniform* domain = static_cast<Domain3DUniform*>(info.domain);
-        (*temp_fields[domain])  = (*field_map[domain]);
-        for (auto& [location, child_domain] : tree_map[domain])
+        auto level = *it;
+        for (Domain3DUniform* domain : level)
         {
-            temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-            field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-        }
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_pre = temp_fields[domain]->sum();
-            std::cout << "[Concat3D] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
-        }
-        solver_map[domain]->solve(*temp_fields[domain]);
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_post = temp_fields[domain]->sum();
-            std::cout << "[Concat3D] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+            (*temp_fields[domain]) = (*field_map[domain]);
+            for (auto& [location, child_domain] : tree_map[domain])
+            {
+                temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
+                field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
+            }
+
+            if (env_config && env_config->showCurrentStep)
+            {
+                double s_pre = temp_fields[domain]->sum();
+                std::cout << "[Concat3D] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+            }
+
+            solver_map[domain]->solve(*temp_fields[domain]);
+
+            if (env_config && env_config->showCurrentStep)
+            {
+                double s_post = temp_fields[domain]->sum();
+                std::cout << "[Concat3D] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+            }
         }
     }
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
+
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_pre = field_map[tree_root]->sum();
         std::cout << "[Concat3D] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre
                   << std::endl;
     }
+
     solver_map[tree_root]->solve(*field_map[tree_root]);
+
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_post = field_map[tree_root]->sum();
@@ -156,20 +149,27 @@ void ConcatPoissonSolver3D::solve()
     }
 
     // Branch equations (top-down pass)
-    for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
+    for (auto level : solve_order)
     {
-        Domain3DUniform* d = static_cast<Domain3DUniform*>((*it).domain);
-        field_map[d]->bond_add(parent_map[d].first, -1., *field_map[parent_map[d].second]);
-        if (env_config && env_config->showCurrentStep)
+        for (Domain3DUniform* domain : level)
         {
-            double s_pre = field_map[d]->sum();
-            std::cout << "[Concat3D] Branch domain " << d->name << " field sum before solve=" << s_pre << std::endl;
-        }
-        solver_map[d]->solve(*field_map[d]);
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_post = field_map[d]->sum();
-            std::cout << "[Concat3D] Branch domain " << d->name << " field sum after solve=" << s_post << std::endl;
+            field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
+
+            if (env_config && env_config->showCurrentStep)
+            {
+                double s_pre = field_map[domain]->sum();
+                std::cout << "[Concat3D] Branch domain " << domain->name << " field sum before solve=" << s_pre
+                          << std::endl;
+            }
+
+            solver_map[domain]->solve(*field_map[domain]);
+
+            if (env_config && env_config->showCurrentStep)
+            {
+                double s_post = field_map[domain]->sum();
+                std::cout << "[Concat3D] Branch domain " << domain->name << " field sum after solve=" << s_post
+                          << std::endl;
+            }
         }
     }
 }

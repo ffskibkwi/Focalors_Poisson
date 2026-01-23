@@ -94,45 +94,45 @@ namespace TreeUtils
         return rootDomain;
     }
 
-    /**
-     * @brief 基于已构建的树结构，按层生成节点列表（BFS，root 层为 0）。
-     * @tparam DomainT 节点类型
-     * @param root     根节点
-     * @param tree_map 树结构映射（父->(方向->子)）
-     * @return levels[v] = 第 v 层的节点列表
-     */
     template<typename DomainT>
-    std::vector<std::vector<DomainT*>> buildLevelsFromTree(
-        DomainT* root,
-        const std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map)
+    std::vector<std::vector<DomainT*>>
+    buildLevelsFromTree(DomainT*                                                                        root,
+                        const std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map)
     {
         std::vector<std::vector<DomainT*>> levels;
-        if (!root) return levels;
-        std::unordered_map<DomainT*, int> level_of;
+        if (!root)
+            return levels;
+
         std::queue<DomainT*> q;
         q.push(root);
-        level_of[root] = 0;
-        int maxL = 0;
+
         while (!q.empty())
         {
-            DomainT* cur = q.front(); q.pop();
-            int lc = level_of[cur];
-            if (tree_map.count(cur))
+            size_t levelSize = q.size();
+            levels.emplace_back();
+            auto& currentLevel = levels.back();
+
+            for (size_t i = 0; i < levelSize; ++i)
             {
-                for (const auto& kv : tree_map.at(cur))
+                DomainT* cur = q.front();
+                q.pop();
+                currentLevel.push_back(cur);
+
+                // For next level
+                if (tree_map.count(cur))
                 {
-                    DomainT* child = kv.second;
-                    level_of[child] = lc + 1;
-                    maxL = std::max(maxL, lc + 1);
-                    q.push(child);
+                    for (const auto& kv : tree_map.at(cur))
+                    {
+                        DomainT* child = kv.second;
+                        q.push(child);
+                    }
                 }
             }
         }
-        levels.assign(maxL + 1, {});
-        for (const auto& kv : level_of)
-            levels[kv.second].push_back(kv.first);
+
         return levels;
     }
+
     // 内部递归辅助函数
     template<typename DomainT>
     void buildTreeMapRecursive(DomainT*                                                                  current,

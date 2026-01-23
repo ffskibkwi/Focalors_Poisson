@@ -7,7 +7,6 @@
 #include "base/domain/geometry_tree.hpp"
 #include "base/domain/variable.h"
 #include "base/location_boundary.h"
-#include "concat_solver_shared.h"
 #include "domain_solver.h"
 #include "gmres_solver2d.h"
 #include "pe/poisson/poisson_solver2d.h"
@@ -29,11 +28,11 @@ public:
     void set_parameter(int in_m, double in_tol, int in_maxIter);
     void solve();
 
-private:
+protected:
     std::unordered_map<Domain2DUniform*, field2*> temp_fields;
 
     std::unordered_map<Domain2DUniform*, DomainSolver2D*> solver_map;
-    std::vector<PESolveOrderInfo>                         solve_order;
+    std::vector<std::vector<Domain2DUniform*>>            solve_order;
 
     std::vector<double> resVec;
 
@@ -41,7 +40,6 @@ private:
     double tol     = 1e-8;
     int    maxIter = 100;
 
-    void specify_solve_order();
     void construct_solver_map();
 
     Domain2DUniform*                                                                         tree_root = nullptr;

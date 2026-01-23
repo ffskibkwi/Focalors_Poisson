@@ -1,5 +1,13 @@
 #include "poisson_solver3d.h"
 
+namespace
+{
+const char* safe_domain_name(const Domain3DUniform* domain)
+{
+    return domain ? domain->name.c_str() : "unknown";
+}
+} // namespace
+
 PoissonSolver3D::PoissonSolver3D(int                in_nx,
                                  int                in_ny,
                                  int                in_nz,
@@ -41,22 +49,6 @@ PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_vari
     , hz(in_domain->hz)
 {
     env_config = in_env_config;
-    // 新逻辑：必须从 Variable 的 boundary_type_map 读取边界；禁止回退到 Domain
-    // if (in_variable == nullptr)
-    //     throw std::runtime_error("PoissonSolver3D requires Variable with boundary_type_map; do not use Domain
-    //     boundary");
-
-    // auto domIt = in_variable->boundary_type_map.find(in_domain);
-    // if (domIt == in_variable->boundary_type_map.end())
-    //     throw std::runtime_error("Variable has no boundary map for domain " + in_domain->name);
-
-    // const auto &mp = domIt->second;
-    // auto get_required = [&](LocationType loc){
-    //     auto it = mp.find(loc);
-    //     if (it == mp.end() || it->second == PDEBoundaryType::Null)
-    //         throw std::runtime_error("Boundary type missing for domain " + in_domain->name);
-    //     return it->second;
-    // };
 
     boundary_type_left  = var->boundary_type_map[domain][LocationType::Left];
     boundary_type_right = var->boundary_type_map[domain][LocationType::Right];
@@ -149,7 +141,7 @@ PoissonSolver3D::~PoissonSolver3D()
 void PoissonSolver3D::solve(field3& f)
 {
     if (env_config && env_config->showCurrentStep)
-        std::cout << "[Poisson] solve: start" << std::endl;
+        std::cout << "[Poisson] solve: start (domain " << safe_domain_name(domain) << ")" << std::endl;
 
     boundary_assembly(f);
 
@@ -181,6 +173,8 @@ void PoissonSolver3D::solve(field3& f)
     poisson_fft_z->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Poisson] solve: done (domain " << safe_domain_name(domain) << ")" << std::endl;
 }
 
 void PoissonSolver3D::cal_lambda(double*         lambda,

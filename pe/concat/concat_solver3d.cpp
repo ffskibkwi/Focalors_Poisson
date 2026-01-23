@@ -1,6 +1,30 @@
 #include "concat_solver3d.h"
 #include "base/domain/geometry_tree.hpp"
 
+namespace
+{
+    const char* location_to_string(LocationType location)
+    {
+        switch (location)
+        {
+            case LocationType::Left:
+                return "Left";
+            case LocationType::Right:
+                return "Right";
+            case LocationType::Front:
+                return "Front";
+            case LocationType::Back:
+                return "Back";
+            case LocationType::Down:
+                return "Down";
+            case LocationType::Up:
+                return "Up";
+            default:
+                return "Unknown";
+        }
+    }
+} // namespace
+
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
     m       = in_m;
@@ -97,11 +121,15 @@ void ConcatPoissonSolver3D::solve()
     }
 
     // Righthand construction (bottom-up pass)
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Concat3D] Bottom-up pass: start" << std::endl;
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
         auto level = *it;
         for (Domain3DUniform* domain : level)
         {
+            if (env_config && env_config->showCurrentStep)
+                std::cout << "[Concat3D] Bottom-up pass: solve domain " << domain->name << std::endl;
             (*temp_fields[domain]) = (*field_map[domain]);
             for (auto& [location, child_domain] : tree_map[domain])
             {
@@ -112,7 +140,8 @@ void ConcatPoissonSolver3D::solve()
             if (env_config && env_config->showCurrentStep)
             {
                 double s_pre = temp_fields[domain]->sum();
-                std::cout << "[Concat3D] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+                std::cout << "[Concat3D] Bottom-up pass: domain " << domain->name << " temp sum before solve=" << s_pre
+                          << std::endl;
             }
 
             solver_map[domain]->solve(*temp_fields[domain]);
@@ -120,10 +149,13 @@ void ConcatPoissonSolver3D::solve()
             if (env_config && env_config->showCurrentStep)
             {
                 double s_post = temp_fields[domain]->sum();
-                std::cout << "[Concat3D] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+                std::cout << "[Concat3D] Bottom-up pass: domain " << domain->name << " temp sum after solve=" << s_post
+                          << std::endl;
             }
         }
     }
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Concat3D] Bottom-up pass: done" << std::endl;
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
@@ -132,7 +164,7 @@ void ConcatPoissonSolver3D::solve()
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_pre = field_map[tree_root]->sum();
-        std::cout << "[Concat3D] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre
+        std::cout << "[Concat3D] Root solve: domain " << tree_root->name << " field sum before solve=" << s_root_pre
                   << std::endl;
     }
 
@@ -141,21 +173,30 @@ void ConcatPoissonSolver3D::solve()
     if (env_config && env_config->showCurrentStep)
     {
         double s_root_post = field_map[tree_root]->sum();
-        std::cout << "[Concat3D] Root domain " << tree_root->name << " field sum after solve=" << s_root_post
+        std::cout << "[Concat3D] Root solve: domain " << tree_root->name << " field sum after solve=" << s_root_post
                   << std::endl;
     }
 
     // Branch equations (top-down pass)
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Concat3D] Top-down pass: start" << std::endl;
     for (auto level : solve_order)
     {
         for (Domain3DUniform* domain : level)
         {
+            if (env_config && env_config->showCurrentStep)
+            {
+                auto parent = parent_map[d];
+                std::cout << "[Concat3D] Top-down pass: solve domain " << d->name << " (parent " << parent.second->name
+                          << " at " << location_to_string(parent.first) << ")" << std::endl;
+            }
+
             field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
 
             if (env_config && env_config->showCurrentStep)
             {
                 double s_pre = field_map[domain]->sum();
-                std::cout << "[Concat3D] Branch domain " << domain->name << " field sum before solve=" << s_pre
+                std::cout << "[Concat3D] Top-down pass: domain " << d->name << " field sum before solve=" << s_pre
                           << std::endl;
             }
 
@@ -164,11 +205,13 @@ void ConcatPoissonSolver3D::solve()
             if (env_config && env_config->showCurrentStep)
             {
                 double s_post = field_map[domain]->sum();
-                std::cout << "[Concat3D] Branch domain " << domain->name << " field sum after solve=" << s_post
+                std::cout << "[Concat3D] Top-down pass: domain " << d->name << " field sum after solve=" << s_post
                           << std::endl;
             }
         }
     }
+    if (env_config && env_config->showCurrentStep)
+        std::cout << "[Concat3D] Top-down pass: done" << std::endl;
 }
 
 void ConcatPoissonSolver3D::boundary_assembly()

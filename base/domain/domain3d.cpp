@@ -6,6 +6,13 @@ Domain3DUniform::Domain3DUniform(const std::string& in_name)
     : name(in_name)
 {}
 
+Domain3DUniform::Domain3DUniform(int in_nx, int in_ny, int in_nz, const std::string& in_name)
+    : nx(in_nx)
+    , ny(in_ny)
+    , nz(in_nz)
+    , name(in_name)
+{}
+
 Domain3DUniform::Domain3DUniform(int                in_nx,
                                  int                in_ny,
                                  int                in_nz,
@@ -92,7 +99,7 @@ void Domain3DUniform::set_spatial_step(double in_hx, double in_hy, double in_hz)
 {
     hx = in_hx;
     hy = in_hy;
-    hy = in_hz;
+    hz = in_hz;
     lx = nx * hx;
     ly = ny * hy;
     lz = nz * hz;

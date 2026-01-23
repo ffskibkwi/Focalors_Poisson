@@ -49,9 +49,8 @@ ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 {
     for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto level : solve_order)
-        for (Domain2DUniform* domain : level)
-            delete solver_map[domain];
+    for (auto kv : solver_map)
+        delete kv.second;
 }
 
 void ConcatPoissonSolver2D::construct_solver_map()

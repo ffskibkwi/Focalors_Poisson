@@ -5,22 +5,22 @@
 // Left: 处理来自左侧邻域的贡献（作用于自身的 x=0 界面）
 void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
 {
-    int    interface_size = branch_ny * branch_nz;
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int j = 0; j < branch_ny; j++)
+    int    interface_size = bny * bnz;
+    field3 t_a(bnx, bny, bnz);
+    for (int j = 0; j < bny; j++)
     {
-        for (int k = 0; k < branch_nz; k++)
+        for (int k = 0; k < bnz; k++)
         {
-            int col_idx = j * branch_nz + k;
+            int col_idx = j * bnz + k;
             t_a.clear();
-            t_a(branch_nx - 1, j, k) = 1.0;
+            t_a(bnx - 1, j, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int jj = 0; jj < branch_ny; jj++)
+            for (int jj = 0; jj < bny; jj++)
             {
-                for (int kk = 0; kk < branch_nz; kk++)
+                for (int kk = 0; kk < bnz; kk++)
                 {
-                    int row_idx             = jj * branch_nz + kk;
-                    value[row_idx][col_idx] = t_a(branch_nx - 1, jj, kk);
+                    int row_idx             = jj * bnz + kk;
+                    value[row_idx][col_idx] = t_a(bnx - 1, jj, kk);
                 }
             }
         }
@@ -53,20 +53,20 @@ field3 SchurMat3D_left::operator*(const field3& root)
 // Right: 处理来自右侧邻域的贡献（作用于自身的 x=nx-1 界面）
 void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
 {
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int j = 0; j < branch_ny; j++)
+    field3 t_a(bnx, bny, bnz);
+    for (int j = 0; j < bny; j++)
     {
-        for (int k = 0; k < branch_nz; k++)
+        for (int k = 0; k < bnz; k++)
         {
-            int col_idx = j * branch_nz + k;
+            int col_idx = j * bnz + k;
             t_a.clear();
             t_a(0, j, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int jj = 0; jj < branch_ny; jj++)
+            for (int jj = 0; jj < bny; jj++)
             {
-                for (int kk = 0; kk < branch_nz; kk++)
+                for (int kk = 0; kk < bnz; kk++)
                 {
-                    int row_idx             = jj * branch_nz + kk;
+                    int row_idx             = jj * bnz + kk;
                     value[row_idx][col_idx] = t_a(0, jj, kk);
                 }
             }
@@ -100,21 +100,21 @@ field3 SchurMat3D_right::operator*(const field3& root)
 // Front (y 负方向): 作用于自身的 y=0 界面
 void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
 {
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++)
+    field3 t_a(bnx, bny, bnz);
+    for (int i = 0; i < bnx; i++)
     {
-        for (int k = 0; k < branch_nz; k++)
+        for (int k = 0; k < bnz; k++)
         {
-            int col_idx = i * branch_nz + k;
+            int col_idx = i * bnz + k;
             t_a.clear();
-            t_a(i, branch_ny - 1, k) = 1.0;
+            t_a(i, bny - 1, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++)
+            for (int ii = 0; ii < bnx; ii++)
             {
-                for (int kk = 0; kk < branch_nz; kk++)
+                for (int kk = 0; kk < bnz; kk++)
                 {
-                    int row_idx             = ii * branch_nz + kk;
-                    value[row_idx][col_idx] = t_a(ii, branch_ny - 1, kk);
+                    int row_idx             = ii * bnz + kk;
+                    value[row_idx][col_idx] = t_a(ii, bny - 1, kk);
                 }
             }
         }
@@ -147,20 +147,20 @@ field3 SchurMat3D_front::operator*(const field3& root)
 // Back (y 正方向): 作用于自身的 y=ny-1 界面
 void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
 {
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++)
+    field3 t_a(bnx, bny, bnz);
+    for (int i = 0; i < bnx; i++)
     {
-        for (int k = 0; k < branch_nz; k++)
+        for (int k = 0; k < bnz; k++)
         {
-            int col_idx = i * branch_nz + k;
+            int col_idx = i * bnz + k;
             t_a.clear();
             t_a(i, 0, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++)
+            for (int ii = 0; ii < bnx; ii++)
             {
-                for (int kk = 0; kk < branch_nz; kk++)
+                for (int kk = 0; kk < bnz; kk++)
                 {
-                    int row_idx             = ii * branch_nz + kk;
+                    int row_idx             = ii * bnz + kk;
                     value[row_idx][col_idx] = t_a(ii, 0, kk);
                 }
             }
@@ -194,21 +194,21 @@ field3 SchurMat3D_back::operator*(const field3& root)
 // Down (z 负方向): 作用于自身的 z=0 界面
 void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
 {
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++)
+    field3 t_a(bnx, bny, bnz);
+    for (int i = 0; i < bnx; i++)
     {
-        for (int j = 0; j < branch_ny; j++)
+        for (int j = 0; j < bny; j++)
         {
-            int col_idx = i * branch_ny + j;
+            int col_idx = i * bny + j;
             t_a.clear();
-            t_a(i, j, branch_nz - 1) = 1.0;
+            t_a(i, j, bnz - 1) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++)
+            for (int ii = 0; ii < bnx; ii++)
             {
-                for (int jj = 0; jj < branch_ny; jj++)
+                for (int jj = 0; jj < bny; jj++)
                 {
-                    int row_idx             = ii * branch_ny + jj;
-                    value[row_idx][col_idx] = t_a(ii, jj, branch_nz - 1);
+                    int row_idx             = ii * bny + jj;
+                    value[row_idx][col_idx] = t_a(ii, jj, bnz - 1);
                 }
             }
         }
@@ -241,20 +241,20 @@ field3 SchurMat3D_down::operator*(const field3& root)
 // Up (z 正方向): 作用于自身的 z=nz-1 界面
 void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
 {
-    field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++)
+    field3 t_a(bnx, bny, bnz);
+    for (int i = 0; i < bnx; i++)
     {
-        for (int j = 0; j < branch_ny; j++)
+        for (int j = 0; j < bny; j++)
         {
-            int col_idx = i * branch_ny + j;
+            int col_idx = i * bny + j;
             t_a.clear();
             t_a(i, j, 0) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++)
+            for (int ii = 0; ii < bnx; ii++)
             {
-                for (int jj = 0; jj < branch_ny; jj++)
+                for (int jj = 0; jj < bny; jj++)
                 {
-                    int row_idx             = ii * branch_ny + jj;
+                    int row_idx             = ii * bny + jj;
                     value[row_idx][col_idx] = t_a(ii, jj, 0);
                 }
             }

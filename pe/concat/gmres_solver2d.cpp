@@ -66,8 +66,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
         switch (location)
         {
             case LocationType::Left: {
-                current = new SchurMat2D_left(
-                    domain->get_nx(), domain->get_ny(), neighbour_domain->get_nx(), neighbour_domain->get_ny());
+                current = new SchurMat2D_left(neighbour_domain->get_nx(), neighbour_domain->get_ny());
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -76,8 +75,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Right: {
-                current = new SchurMat2D_right(
-                    domain->get_nx(), domain->get_ny(), neighbour_domain->get_nx(), neighbour_domain->get_ny());
+                current = new SchurMat2D_right(neighbour_domain->get_nx(), neighbour_domain->get_ny());
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -86,8 +84,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Up: {
-                current = new SchurMat2D_up(
-                    domain->get_nx(), domain->get_ny(), neighbour_domain->get_nx(), neighbour_domain->get_ny());
+                current = new SchurMat2D_up(neighbour_domain->get_nx(), neighbour_domain->get_ny());
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)
@@ -96,8 +93,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
             }
             break;
             case LocationType::Down: {
-                current = new SchurMat2D_down(
-                    domain->get_nx(), domain->get_ny(), neighbour_domain->get_nx(), neighbour_domain->get_ny());
+                current = new SchurMat2D_down(neighbour_domain->get_nx(), neighbour_domain->get_ny());
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debugMode)

@@ -1,7 +1,5 @@
 #include "schur_mat3d.h"
 
-#include "base/pch.h"
-
 #include "domain_solver.h"
 
 // Left: 处理来自左侧邻域的贡献（作用于自身的 x=0 界面）
@@ -31,6 +29,10 @@ void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_left::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < root_ny * root_nz; i++)
@@ -74,6 +76,10 @@ void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_right::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < root_ny * root_nz; i++)
@@ -117,6 +123,10 @@ void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_front::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int idx = 0; idx < root_nx * root_nz; idx++)
@@ -160,6 +170,10 @@ void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_back::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int idx = 0; idx < root_nx * root_nz; idx++)
@@ -203,6 +217,10 @@ void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_down::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int idx = 0; idx < root_nx * root_ny; idx++)
@@ -246,6 +264,10 @@ void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
 
 field3 SchurMat3D_up::operator*(const field3& root)
 {
+    int root_nx = root.get_nx();
+    int root_ny = root.get_ny();
+    int root_nz = root.get_nz();
+
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
     for (int idx = 0; idx < root_nx * root_ny; idx++)

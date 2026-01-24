@@ -1,18 +1,27 @@
 #include "schur_mat3d.h"
 
+#include "base/pch.h"
+
+#include "domain_solver.h"
+
 // Left: 处理来自左侧邻域的贡献（作用于自身的 x=0 界面）
-void SchurMat3D_left::construct(DomainSolver3D* branch_solver) {
-    int interface_size = branch_ny * branch_nz;
+void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
+{
+    int    interface_size = branch_ny * branch_nz;
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int j = 0; j < branch_ny; j++) {
-        for (int k = 0; k < branch_nz; k++) {
+    for (int j = 0; j < branch_ny; j++)
+    {
+        for (int k = 0; k < branch_nz; k++)
+        {
             int col_idx = j * branch_nz + k;
             t_a.clear();
             t_a(branch_nx - 1, j, k) = 1.0;
-            branch_solver->solve(t_a); 
-            for (int jj = 0; jj < branch_ny; jj++) {
-                for (int kk = 0; kk < branch_nz; kk++) {
-                    int row_idx = jj * branch_nz + kk;
+            branch_solver->solve(t_a);
+            for (int jj = 0; jj < branch_ny; jj++)
+            {
+                for (int kk = 0; kk < branch_nz; kk++)
+                {
+                    int row_idx             = jj * branch_nz + kk;
                     value[row_idx][col_idx] = t_a(branch_nx - 1, jj, kk);
                 }
             }
@@ -20,14 +29,19 @@ void SchurMat3D_left::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_left::operator*(const field3& root) {
+field3 SchurMat3D_left::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < root_ny * root_nz; i++) {
-        int iy = i / root_nz; int iz = i % root_nz;
+    for (int i = 0; i < root_ny * root_nz; i++)
+    {
+        int iy       = i / root_nz;
+        int iz       = i % root_nz;
         R(0, iy, iz) = 0.;
-        for (int j = 0; j < root_ny * root_nz; j++) {
-            int jy = j / root_nz; int jz = j % root_nz;
+        for (int j = 0; j < root_ny * root_nz; j++)
+        {
+            int jy = j / root_nz;
+            int jz = j % root_nz;
             R(0, iy, iz) += root(0, jy, jz) * value[i][j];
         }
     }
@@ -35,17 +49,22 @@ field3 SchurMat3D_left::operator*(const field3& root) {
 }
 
 // Right: 处理来自右侧邻域的贡献（作用于自身的 x=nx-1 界面）
-void SchurMat3D_right::construct(DomainSolver3D* branch_solver) {
+void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
+{
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int j = 0; j < branch_ny; j++) {
-        for (int k = 0; k < branch_nz; k++) {
+    for (int j = 0; j < branch_ny; j++)
+    {
+        for (int k = 0; k < branch_nz; k++)
+        {
             int col_idx = j * branch_nz + k;
             t_a.clear();
             t_a(0, j, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int jj = 0; jj < branch_ny; jj++) {
-                for (int kk = 0; kk < branch_nz; kk++) {
-                    int row_idx = jj * branch_nz + kk;
+            for (int jj = 0; jj < branch_ny; jj++)
+            {
+                for (int kk = 0; kk < branch_nz; kk++)
+                {
+                    int row_idx             = jj * branch_nz + kk;
                     value[row_idx][col_idx] = t_a(0, jj, kk);
                 }
             }
@@ -53,14 +72,19 @@ void SchurMat3D_right::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_right::operator*(const field3& root) {
+field3 SchurMat3D_right::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < root_ny * root_nz; i++) {
-        int iy = i / root_nz; int iz = i % root_nz;
+    for (int i = 0; i < root_ny * root_nz; i++)
+    {
+        int iy                 = i / root_nz;
+        int iz                 = i % root_nz;
         R(root_nx - 1, iy, iz) = 0.;
-        for (int j = 0; j < root_ny * root_nz; j++) {
-            int jy = j / root_nz; int jz = j % root_nz;
+        for (int j = 0; j < root_ny * root_nz; j++)
+        {
+            int jy = j / root_nz;
+            int jz = j % root_nz;
             R(root_nx - 1, iy, iz) += root(root_nx - 1, jy, jz) * value[i][j];
         }
     }
@@ -68,17 +92,22 @@ field3 SchurMat3D_right::operator*(const field3& root) {
 }
 
 // Front (y 负方向): 作用于自身的 y=0 界面
-void SchurMat3D_front::construct(DomainSolver3D* branch_solver) {
+void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
+{
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++) {
-        for (int k = 0; k < branch_nz; k++) {
+    for (int i = 0; i < branch_nx; i++)
+    {
+        for (int k = 0; k < branch_nz; k++)
+        {
             int col_idx = i * branch_nz + k;
             t_a.clear();
             t_a(i, branch_ny - 1, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++) {
-                for (int kk = 0; kk < branch_nz; kk++) {
-                    int row_idx = ii * branch_nz + kk;
+            for (int ii = 0; ii < branch_nx; ii++)
+            {
+                for (int kk = 0; kk < branch_nz; kk++)
+                {
+                    int row_idx             = ii * branch_nz + kk;
                     value[row_idx][col_idx] = t_a(ii, branch_ny - 1, kk);
                 }
             }
@@ -86,14 +115,19 @@ void SchurMat3D_front::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_front::operator*(const field3& root) {
+field3 SchurMat3D_front::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int idx = 0; idx < root_nx * root_nz; idx++) {
-        int ix = idx / root_nz; int iz = idx % root_nz;
+    for (int idx = 0; idx < root_nx * root_nz; idx++)
+    {
+        int ix       = idx / root_nz;
+        int iz       = idx % root_nz;
         R(ix, 0, iz) = 0.;
-        for (int jdx = 0; jdx < root_nx * root_nz; jdx++) {
-            int jx = jdx / root_nz; int jz = jdx % root_nz;
+        for (int jdx = 0; jdx < root_nx * root_nz; jdx++)
+        {
+            int jx = jdx / root_nz;
+            int jz = jdx % root_nz;
             R(ix, 0, iz) += root(jx, 0, jz) * value[idx][jdx];
         }
     }
@@ -101,17 +135,22 @@ field3 SchurMat3D_front::operator*(const field3& root) {
 }
 
 // Back (y 正方向): 作用于自身的 y=ny-1 界面
-void SchurMat3D_back::construct(DomainSolver3D* branch_solver) {
+void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
+{
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++) {
-        for (int k = 0; k < branch_nz; k++) {
+    for (int i = 0; i < branch_nx; i++)
+    {
+        for (int k = 0; k < branch_nz; k++)
+        {
             int col_idx = i * branch_nz + k;
             t_a.clear();
             t_a(i, 0, k) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++) {
-                for (int kk = 0; kk < branch_nz; kk++) {
-                    int row_idx = ii * branch_nz + kk;
+            for (int ii = 0; ii < branch_nx; ii++)
+            {
+                for (int kk = 0; kk < branch_nz; kk++)
+                {
+                    int row_idx             = ii * branch_nz + kk;
                     value[row_idx][col_idx] = t_a(ii, 0, kk);
                 }
             }
@@ -119,14 +158,19 @@ void SchurMat3D_back::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_back::operator*(const field3& root) {
+field3 SchurMat3D_back::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int idx = 0; idx < root_nx * root_nz; idx++) {
-        int ix = idx / root_nz; int iz = idx % root_nz;
+    for (int idx = 0; idx < root_nx * root_nz; idx++)
+    {
+        int ix                 = idx / root_nz;
+        int iz                 = idx % root_nz;
         R(ix, root_ny - 1, iz) = 0.;
-        for (int jdx = 0; jdx < root_nx * root_nz; jdx++) {
-            int jx = jdx / root_nz; int jz = jdx % root_nz;
+        for (int jdx = 0; jdx < root_nx * root_nz; jdx++)
+        {
+            int jx = jdx / root_nz;
+            int jz = jdx % root_nz;
             R(ix, root_ny - 1, iz) += root(jx, root_ny - 1, jz) * value[idx][jdx];
         }
     }
@@ -134,17 +178,22 @@ field3 SchurMat3D_back::operator*(const field3& root) {
 }
 
 // Down (z 负方向): 作用于自身的 z=0 界面
-void SchurMat3D_down::construct(DomainSolver3D* branch_solver) {
+void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
+{
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++) {
-        for (int j = 0; j < branch_ny; j++) {
+    for (int i = 0; i < branch_nx; i++)
+    {
+        for (int j = 0; j < branch_ny; j++)
+        {
             int col_idx = i * branch_ny + j;
             t_a.clear();
             t_a(i, j, branch_nz - 1) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++) {
-                for (int jj = 0; jj < branch_ny; jj++) {
-                    int row_idx = ii * branch_ny + jj;
+            for (int ii = 0; ii < branch_nx; ii++)
+            {
+                for (int jj = 0; jj < branch_ny; jj++)
+                {
+                    int row_idx             = ii * branch_ny + jj;
                     value[row_idx][col_idx] = t_a(ii, jj, branch_nz - 1);
                 }
             }
@@ -152,14 +201,19 @@ void SchurMat3D_down::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_down::operator*(const field3& root) {
+field3 SchurMat3D_down::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int idx = 0; idx < root_nx * root_ny; idx++) {
-        int ix = idx / root_ny; int iy = idx % root_ny;
+    for (int idx = 0; idx < root_nx * root_ny; idx++)
+    {
+        int ix       = idx / root_ny;
+        int iy       = idx % root_ny;
         R(ix, iy, 0) = 0.;
-        for (int jdx = 0; jdx < root_nx * root_ny; jdx++) {
-            int jx = jdx / root_ny; int jy = jdx % root_ny;
+        for (int jdx = 0; jdx < root_nx * root_ny; jdx++)
+        {
+            int jx = jdx / root_ny;
+            int jy = jdx % root_ny;
             R(ix, iy, 0) += root(jx, jy, 0) * value[idx][jdx];
         }
     }
@@ -167,17 +221,22 @@ field3 SchurMat3D_down::operator*(const field3& root) {
 }
 
 // Up (z 正方向): 作用于自身的 z=nz-1 界面
-void SchurMat3D_up::construct(DomainSolver3D* branch_solver) {
+void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
+{
     field3 t_a(branch_nx, branch_ny, branch_nz);
-    for (int i = 0; i < branch_nx; i++) {
-        for (int j = 0; j < branch_ny; j++) {
+    for (int i = 0; i < branch_nx; i++)
+    {
+        for (int j = 0; j < branch_ny; j++)
+        {
             int col_idx = i * branch_ny + j;
             t_a.clear();
             t_a(i, j, 0) = 1.0;
             branch_solver->solve(t_a);
-            for (int ii = 0; ii < branch_nx; ii++) {
-                for (int jj = 0; jj < branch_ny; jj++) {
-                    int row_idx = ii * branch_ny + jj;
+            for (int ii = 0; ii < branch_nx; ii++)
+            {
+                for (int jj = 0; jj < branch_ny; jj++)
+                {
+                    int row_idx             = ii * branch_ny + jj;
                     value[row_idx][col_idx] = t_a(ii, jj, 0);
                 }
             }
@@ -185,14 +244,19 @@ void SchurMat3D_up::construct(DomainSolver3D* branch_solver) {
     }
 }
 
-field3 SchurMat3D_up::operator*(const field3& root) {
+field3 SchurMat3D_up::operator*(const field3& root)
+{
     field3 R(root_nx, root_ny, root_nz);
     OPENMP_PARALLEL_FOR()
-    for (int idx = 0; idx < root_nx * root_ny; idx++) {
-        int ix = idx / root_ny; int iy = idx % root_ny;
+    for (int idx = 0; idx < root_nx * root_ny; idx++)
+    {
+        int ix                 = idx / root_ny;
+        int iy                 = idx % root_ny;
         R(ix, iy, root_nz - 1) = 0.;
-        for (int jdx = 0; jdx < root_nx * root_ny; jdx++) {
-            int jx = jdx / root_ny; int jy = jdx % root_ny;
+        for (int jdx = 0; jdx < root_nx * root_ny; jdx++)
+        {
+            int jx = jdx / root_ny;
+            int jy = jdx % root_ny;
             R(ix, iy, root_nz - 1) += root(jx, jy, root_nz - 1) * value[idx][jdx];
         }
     }

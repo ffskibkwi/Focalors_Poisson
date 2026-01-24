@@ -5,44 +5,42 @@
 
 namespace
 {
-const char* location_to_string(LocationType location)
-{
-    switch (location)
+    const char* location_to_string(LocationType location)
     {
-        case LocationType::Left:
-            return "Left";
-        case LocationType::Right:
-            return "Right";
-        case LocationType::Front:
-            return "Front";
-        case LocationType::Back:
-            return "Back";
-        case LocationType::Down:
-            return "Down";
-        case LocationType::Up:
-            return "Up";
-        default:
-            return "Unknown";
+        switch (location)
+        {
+            case LocationType::Left:
+                return "Left";
+            case LocationType::Right:
+                return "Right";
+            case LocationType::Front:
+                return "Front";
+            case LocationType::Back:
+                return "Back";
+            case LocationType::Down:
+                return "Down";
+            case LocationType::Up:
+                return "Up";
+            default:
+                return "Unknown";
+        }
     }
-}
 
-const char* safe_domain_name(const Domain3DUniform* domain)
-{
-    return domain ? domain->name.c_str() : "unknown";
-}
+    const char* safe_domain_name(const Domain3DUniform* domain) { return domain ? domain->name.c_str() : "unknown"; }
 
-void print_gmres_done(const EnvironmentConfig* env, const Domain3DUniform* domain, const std::vector<double>& res_vec)
-{
-    if (!env || !env->showCurrentStep)
-        return;
+    void
+    print_gmres_done(const EnvironmentConfig* env, const Domain3DUniform* domain, const std::vector<double>& res_vec)
+    {
+        if (!env || !env->showCurrentStep)
+            return;
 
-    std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")";
-    if (!res_vec.empty())
-        std::cout << " iter=" << res_vec.size() << " final_res=" << res_vec.back();
-    else
-        std::cout << " iter=0 final_res=n/a";
-    std::cout << std::endl;
-}
+        std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")";
+        if (!res_vec.empty())
+            std::cout << " iter=" << res_vec.size() << " final_res=" << res_vec.back();
+        else
+            std::cout << " iter=0 final_res=n/a";
+        std::cout << std::endl;
+    }
 } // namespace
 
 GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
@@ -116,37 +114,67 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         switch (location)
         {
             case LocationType::Left: {
-                current = new SchurMat3D_left(*domain, *neighbour_domain);
+                current = new SchurMat3D_left(domain->get_nx(),
+                                              domain->get_ny(),
+                                              domain->get_nz(),
+                                              neighbour_domain->get_nx(),
+                                              neighbour_domain->get_ny(),
+                                              neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Right: {
-                current = new SchurMat3D_right(*domain, *neighbour_domain);
+                current = new SchurMat3D_right(domain->get_nx(),
+                                               domain->get_ny(),
+                                               domain->get_nz(),
+                                               neighbour_domain->get_nx(),
+                                               neighbour_domain->get_ny(),
+                                               neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Front: {
-                current = new SchurMat3D_front(*domain, *neighbour_domain);
+                current = new SchurMat3D_front(domain->get_nx(),
+                                               domain->get_ny(),
+                                               domain->get_nz(),
+                                               neighbour_domain->get_nx(),
+                                               neighbour_domain->get_ny(),
+                                               neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Back: {
-                current = new SchurMat3D_back(*domain, *neighbour_domain);
+                current = new SchurMat3D_back(domain->get_nx(),
+                                              domain->get_ny(),
+                                              domain->get_nz(),
+                                              neighbour_domain->get_nx(),
+                                              neighbour_domain->get_ny(),
+                                              neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Down: {
-                current = new SchurMat3D_down(*domain, *neighbour_domain);
+                current = new SchurMat3D_down(domain->get_nx(),
+                                              domain->get_ny(),
+                                              domain->get_nz(),
+                                              neighbour_domain->get_nx(),
+                                              neighbour_domain->get_ny(),
+                                              neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Up: {
-                current = new SchurMat3D_up(*domain, *neighbour_domain);
+                current = new SchurMat3D_up(domain->get_nx(),
+                                            domain->get_ny(),
+                                            domain->get_nz(),
+                                            neighbour_domain->get_nx(),
+                                            neighbour_domain->get_ny(),
+                                            neighbour_domain->get_nz());
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }

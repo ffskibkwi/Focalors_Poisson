@@ -2,64 +2,39 @@
 
 #include "base/pch.h"
 
-#include "base/domain/domain2d.h"
-#include "domain_solver.h"
-
+class DomainSolver2D;
 
 class SchurMat2D
 {
 protected:
-    int      cosize_n;
     int      root_nx, root_ny, branch_nx, branch_ny;
+    int      concat_nx;
     double** value;
 
 public:
-    SchurMat2D(const field2& root, const field2& branch, const int _cosize_n)
-        : cosize_n(_cosize_n)
-        , root_nx(root.get_nx())
-        , root_ny(root.get_ny())
-        , branch_nx(branch.get_nx())
-        , branch_ny(branch.get_ny())
+    SchurMat2D(const int _root_nx, const int _root_ny, const int _branch_nx, const int _branch_ny, const int _concat_nx)
+        : root_nx(_root_nx)
+        , root_ny(_root_ny)
+        , branch_nx(_branch_nx)
+        , branch_ny(_branch_ny)
+        , concat_nx(_concat_nx)
     {
-        value = new double*[cosize_n];
-        for (int i = 0; i < cosize_n; i++)
-            value[i] = new double[cosize_n];
-    }
-    SchurMat2D(const Domain2DUniform& root, const Domain2DUniform& branch, const int _cosize_n)
-        : cosize_n(_cosize_n)
-        , root_nx(root.nx)
-        , root_ny(root.ny)
-        , branch_nx(branch.nx)
-        , branch_ny(branch.ny)
-    {
-        value = new double*[cosize_n];
-        for (int i = 0; i < cosize_n; i++)
-            value[i] = new double[cosize_n];
+        value = new double*[concat_nx];
+        for (int i = 0; i < concat_nx; i++)
+            value[i] = new double[concat_nx];
     }
     ~SchurMat2D()
     {
-        for (int i = 0; i < cosize_n; i++)
+        for (int i = 0; i < concat_nx; i++)
             delete[] value[i];
         delete[] value;
     }
-    int  get_size() const { return cosize_n; }
-    void store_rowmajor(double* buf) const
-    {
-        for (int i = 0; i < cosize_n; ++i)
-            for (int j = 0; j < cosize_n; ++j)
-                buf[i * cosize_n + j] = value[i][j];
-    }
-    void load_rowmajor(const double* buf)
-    {
-        for (int i = 0; i < cosize_n; ++i)
-            for (int j = 0; j < cosize_n; ++j)
-                value[i][j] = buf[i * cosize_n + j];
-    }
+    int  get_size() const { return concat_nx; }
     void print()
     {
-        for (int i = 0; i < cosize_n; i++)
+        for (int i = 0; i < concat_nx; i++)
         {
-            for (int j = 0; j < cosize_n; j++)
+            for (int j = 0; j < concat_nx; j++)
                 std::cout << value[i][j] << std::endl;
         }
     }
@@ -77,8 +52,8 @@ protected:
 class SchurMat2D_left : public SchurMat2D
 {
 public:
-    SchurMat2D_left(const Domain2DUniform& root, const Domain2DUniform& branch)
-        : SchurMat2D(root, branch, root.ny)
+    SchurMat2D_left(const int _root_nx, const int _root_ny, const int _branch_nx, const int _branch_ny)
+        : SchurMat2D(_root_nx, _root_ny, _branch_nx, _branch_ny, _root_ny)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -87,8 +62,8 @@ public:
 class SchurMat2D_right : public SchurMat2D
 {
 public:
-    SchurMat2D_right(const Domain2DUniform& root, const Domain2DUniform& branch)
-        : SchurMat2D(root, branch, root.ny)
+    SchurMat2D_right(const int _root_nx, const int _root_ny, const int _branch_nx, const int _branch_ny)
+        : SchurMat2D(_root_nx, _root_ny, _branch_nx, _branch_ny, _root_ny)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -97,8 +72,8 @@ public:
 class SchurMat2D_up : public SchurMat2D
 {
 public:
-    SchurMat2D_up(const Domain2DUniform& root, const Domain2DUniform& branch)
-        : SchurMat2D(root, branch, root.nx)
+    SchurMat2D_up(const int _root_nx, const int _root_ny, const int _branch_nx, const int _branch_ny)
+        : SchurMat2D(_root_nx, _root_ny, _branch_nx, _branch_ny, _root_nx)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
@@ -107,8 +82,8 @@ public:
 class SchurMat2D_down : public SchurMat2D
 {
 public:
-    SchurMat2D_down(const Domain2DUniform& root, const Domain2DUniform& branch)
-        : SchurMat2D(root, branch, root.nx)
+    SchurMat2D_down(const int _root_nx, const int _root_ny, const int _branch_nx, const int _branch_ny)
+        : SchurMat2D(_root_nx, _root_ny, _branch_nx, _branch_ny, _root_nx)
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;

@@ -7,6 +7,7 @@ class EnvironmentConfig
 public:
     bool showCurrentStep = false; // Print current step
     bool showGmresRes    = false; // Print residual history of GMRES
+    bool timetrack       = false; // Print timing stats
 
     // Debug Output Control
     bool        debugMode      = false;

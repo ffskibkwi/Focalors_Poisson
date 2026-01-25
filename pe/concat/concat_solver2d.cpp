@@ -2,6 +2,7 @@
 #include "base/domain/geometry_tree.hpp"
 #include "io/csv_writer_2d.h"
 
+#include <chrono>
 #include <string>
 
 void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
@@ -55,6 +56,9 @@ ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 
 void ConcatPoissonSolver2D::construct_solver_map()
 {
+    const bool track_time = env_config && env_config->timetrack;
+    std::chrono::duration<double, std::milli> schur_total(0.0);
+
     // Construct solvers (for non-root domains)
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
     {
@@ -64,8 +68,18 @@ void ConcatPoissonSolver2D::construct_solver_map()
             if (tree_map[domain].size() > 0)
             {
                 solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
-                static_cast<GMRESSolver2D*>(solver_map[domain])
-                    ->schur_mat_construct(tree_map[domain], solver_map); // Here use RTTI
+                auto* gmres = static_cast<GMRESSolver2D*>(solver_map[domain]);
+                if (track_time)
+                {
+                    auto t0 = std::chrono::steady_clock::now();
+                    gmres->schur_mat_construct(tree_map[domain], solver_map); // Here use RTTI
+                    auto t1 = std::chrono::steady_clock::now();
+                    schur_total += t1 - t0;
+                }
+                else
+                {
+                    gmres->schur_mat_construct(tree_map[domain], solver_map); // Here use RTTI
+                }
             }
             else
             {
@@ -78,17 +92,34 @@ void ConcatPoissonSolver2D::construct_solver_map()
     if (tree_map[tree_root].size() > 0)
     {
         solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
-        static_cast<GMRESSolver2D*>(solver_map[tree_root])
-            ->schur_mat_construct(tree_map[tree_root], solver_map); // Here use RTTI
+        auto* gmres = static_cast<GMRESSolver2D*>(solver_map[tree_root]);
+        if (track_time)
+        {
+            auto t0 = std::chrono::steady_clock::now();
+            gmres->schur_mat_construct(tree_map[tree_root], solver_map); // Here use RTTI
+            auto t1 = std::chrono::steady_clock::now();
+            schur_total += t1 - t0;
+        }
+        else
+        {
+            gmres->schur_mat_construct(tree_map[tree_root], solver_map); // Here use RTTI
+        }
     }
     else
     {
         solver_map[tree_root] = new PoissonSolver2D(tree_root, variable, env_config);
     }
+
+    if (track_time)
+    {
+        std::cout << "[Concat] Schur complement build total=" << schur_total.count() << " ms" << std::endl;
+    }
 }
 
 void ConcatPoissonSolver2D::solve()
 {
+    const bool track_time = env_config && env_config->timetrack;
+
     // Boundary
     boundary_assembly();
 
@@ -98,6 +129,10 @@ void ConcatPoissonSolver2D::solve()
         field2& f = *field_map[domain];
         f         = f * (domain->hx * domain->hx);
     }
+
+    auto solve_start = std::chrono::steady_clock::time_point();
+    if (track_time)
+        solve_start = std::chrono::steady_clock::now();
 
     // Righthand construction
     for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
@@ -118,7 +153,18 @@ void ConcatPoissonSolver2D::solve()
                 std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
             }
 
-            solver_map[domain]->solve(*temp_fields[domain]);
+            if (track_time)
+            {
+                auto t0 = std::chrono::steady_clock::now();
+                solver_map[domain]->solve(*temp_fields[domain]);
+                auto t1 = std::chrono::steady_clock::now();
+                std::cout << "[Concat] Domain " << domain->name << " solve time="
+                          << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+            }
+            else
+            {
+                solver_map[domain]->solve(*temp_fields[domain]);
+            }
 
             if (env_config && env_config->debugMode)
             {
@@ -144,7 +190,18 @@ void ConcatPoissonSolver2D::solve()
                   << std::endl;
     }
 
-    solver_map[tree_root]->solve(*field_map[tree_root]);
+    if (track_time)
+    {
+        auto t0 = std::chrono::steady_clock::now();
+        solver_map[tree_root]->solve(*field_map[tree_root]);
+        auto t1 = std::chrono::steady_clock::now();
+        std::cout << "[Concat] Root domain " << tree_root->name << " solve time="
+                  << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+    }
+    else
+    {
+        solver_map[tree_root]->solve(*field_map[tree_root]);
+    }
 
     if (env_config && env_config->showCurrentStep)
     {
@@ -167,7 +224,18 @@ void ConcatPoissonSolver2D::solve()
                           << std::endl;
             }
 
-            solver_map[domain]->solve(*field_map[domain]);
+            if (track_time)
+            {
+                auto t0 = std::chrono::steady_clock::now();
+                solver_map[domain]->solve(*field_map[domain]);
+                auto t1 = std::chrono::steady_clock::now();
+                std::cout << "[Concat] Branch domain " << domain->name << " solve time="
+                          << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+            }
+            else
+            {
+                solver_map[domain]->solve(*field_map[domain]);
+            }
 
             if (env_config && env_config->showCurrentStep)
             {
@@ -176,6 +244,13 @@ void ConcatPoissonSolver2D::solve()
                           << std::endl;
             }
         }
+    }
+
+    if (track_time)
+    {
+        auto solve_end = std::chrono::steady_clock::now();
+        std::cout << "[Concat] Solve total (exclude boundary/scale)="
+                  << std::chrono::duration<double, std::milli>(solve_end - solve_start).count() << " ms" << std::endl;
     }
 }
 

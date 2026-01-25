@@ -5,9 +5,11 @@
 class EnvironmentConfig
 {
 public:
-    bool showCurrentStep = false; // Print current step
-    bool showGmresRes    = false; // Print residual history of GMRES
-    bool timetrack       = false; // Print timing stats
+    bool showCurrentStep            = false; // Print current step
+    bool showGmresRes               = false; // Print residual history of GMRES
+    bool track_pe_construct_time    = false;
+    bool track_pe_solve_detail_time = false;
+    bool track_pe_solve_total_time  = false;
 
     // Debug Output Control
     bool        debugMode      = false;

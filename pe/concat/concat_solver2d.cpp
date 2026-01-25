@@ -56,7 +56,7 @@ ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 
 void ConcatPoissonSolver2D::construct_solver_map()
 {
-    const bool track_time = env_config && env_config->timetrack;
+    const bool                                track_time = env_config && env_config->track_pe_construct_time;
     std::chrono::duration<double, std::milli> schur_total(0.0);
 
     // Construct solvers (for non-root domains)
@@ -68,7 +68,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
             if (tree_map[domain].size() > 0)
             {
                 solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
-                auto* gmres = static_cast<GMRESSolver2D*>(solver_map[domain]);
+                auto* gmres        = static_cast<GMRESSolver2D*>(solver_map[domain]);
                 if (track_time)
                 {
                     auto t0 = std::chrono::steady_clock::now();
@@ -92,7 +92,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
     if (tree_map[tree_root].size() > 0)
     {
         solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
-        auto* gmres = static_cast<GMRESSolver2D*>(solver_map[tree_root]);
+        auto* gmres           = static_cast<GMRESSolver2D*>(solver_map[tree_root]);
         if (track_time)
         {
             auto t0 = std::chrono::steady_clock::now();
@@ -118,7 +118,8 @@ void ConcatPoissonSolver2D::construct_solver_map()
 
 void ConcatPoissonSolver2D::solve()
 {
-    const bool track_time = env_config && env_config->timetrack;
+    const bool track_detail_time = env_config && env_config->track_pe_solve_detail_time;
+    const bool track_total_time  = env_config && env_config->track_pe_solve_total_time;
 
     // Boundary
     boundary_assembly();
@@ -131,7 +132,7 @@ void ConcatPoissonSolver2D::solve()
     }
 
     auto solve_start = std::chrono::steady_clock::time_point();
-    if (track_time)
+    if (track_total_time)
         solve_start = std::chrono::steady_clock::now();
 
     // Righthand construction
@@ -153,13 +154,14 @@ void ConcatPoissonSolver2D::solve()
                 std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
             }
 
-            if (track_time)
+            if (track_detail_time)
             {
                 auto t0 = std::chrono::steady_clock::now();
                 solver_map[domain]->solve(*temp_fields[domain]);
                 auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Domain " << domain->name << " solve time="
-                          << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+                std::cout << "[Concat] Domain " << domain->name
+                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
+                          << std::endl;
             }
             else
             {
@@ -190,13 +192,13 @@ void ConcatPoissonSolver2D::solve()
                   << std::endl;
     }
 
-    if (track_time)
+    if (track_detail_time)
     {
         auto t0 = std::chrono::steady_clock::now();
         solver_map[tree_root]->solve(*field_map[tree_root]);
         auto t1 = std::chrono::steady_clock::now();
-        std::cout << "[Concat] Root domain " << tree_root->name << " solve time="
-                  << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+        std::cout << "[Concat] Root domain " << tree_root->name
+                  << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
     }
     else
     {
@@ -224,13 +226,14 @@ void ConcatPoissonSolver2D::solve()
                           << std::endl;
             }
 
-            if (track_time)
+            if (track_detail_time)
             {
                 auto t0 = std::chrono::steady_clock::now();
                 solver_map[domain]->solve(*field_map[domain]);
                 auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Branch domain " << domain->name << " solve time="
-                          << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
+                std::cout << "[Concat] Branch domain " << domain->name
+                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
+                          << std::endl;
             }
             else
             {
@@ -246,7 +249,7 @@ void ConcatPoissonSolver2D::solve()
         }
     }
 
-    if (track_time)
+    if (track_total_time)
     {
         auto solve_end = std::chrono::steady_clock::now();
         std::cout << "[Concat] Solve total (exclude boundary/scale)="

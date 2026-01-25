@@ -38,10 +38,10 @@ int main(int argc, char* argv[])
     T4.set_lz(1.0);
 
     // Construct geometry
-    geo_tee.add_domain(T1);
-    geo_tee.add_domain(T2);
-    geo_tee.add_domain(T3);
-    geo_tee.add_domain(T4);
+    geo_tee.add_domain(&T1);
+    geo_tee.add_domain(&T2);
+    geo_tee.add_domain(&T3);
+    geo_tee.add_domain(&T4);
 
     // 3D连接：T型结构
     // T2为中心，左边连接T1，右边连接T3，下边连接T4

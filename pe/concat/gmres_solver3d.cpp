@@ -114,43 +114,37 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         switch (location)
         {
             case LocationType::Left: {
-                current = new SchurMat3D_left(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_left(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Right: {
-                current = new SchurMat3D_right(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_right(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Front: {
-                current = new SchurMat3D_front(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_front(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Back: {
-                current = new SchurMat3D_back(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_back(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Down: {
-                current = new SchurMat3D_down(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_down(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
             case LocationType::Up: {
-                current = new SchurMat3D_up(
-                    neighbour_domain->get_nx(), neighbour_domain->get_ny(), neighbour_domain->get_nz());
+                current = new SchurMat3D_up(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }

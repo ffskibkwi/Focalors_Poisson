@@ -378,3 +378,22 @@ void field2::transpose(field2& dst)
         }
     }
 }
+
+void field2::print()
+{
+    for (int i = 0; i < nx; i++)
+    {
+        for (int j = 0; j < ny; j++)
+        {
+            std::cout << this->operator()(i, j);
+            if (j == ny - 1)
+            {
+                std::cout << '\n';
+            }
+            else
+            {
+                std::cout << ',';
+            }
+        }
+    }
+}

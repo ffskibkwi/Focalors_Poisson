@@ -20,7 +20,7 @@ void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
                 for (int kk = 0; kk < bnz; kk++)
                 {
                     int row_idx             = jj * bnz + kk;
-                    value[row_idx][col_idx] = t_a(bnx - 1, jj, kk);
+                    value(row_idx, col_idx) = t_a(bnx - 1, jj, kk);
                 }
             }
         }
@@ -44,7 +44,7 @@ field3 SchurMat3D_left::operator*(const field3& root)
         {
             int jy = j / root_nz;
             int jz = j % root_nz;
-            R(0, iy, iz) += root(0, jy, jz) * value[i][j];
+            R(0, iy, iz) += root(0, jy, jz) * value(i, j);
         }
     }
     return R;
@@ -67,7 +67,7 @@ void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
                 for (int kk = 0; kk < bnz; kk++)
                 {
                     int row_idx             = jj * bnz + kk;
-                    value[row_idx][col_idx] = t_a(0, jj, kk);
+                    value(row_idx, col_idx) = t_a(0, jj, kk);
                 }
             }
         }
@@ -91,7 +91,7 @@ field3 SchurMat3D_right::operator*(const field3& root)
         {
             int jy = j / root_nz;
             int jz = j % root_nz;
-            R(root_nx - 1, iy, iz) += root(root_nx - 1, jy, jz) * value[i][j];
+            R(root_nx - 1, iy, iz) += root(root_nx - 1, jy, jz) * value(i, j);
         }
     }
     return R;
@@ -114,7 +114,7 @@ void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
                 for (int kk = 0; kk < bnz; kk++)
                 {
                     int row_idx             = ii * bnz + kk;
-                    value[row_idx][col_idx] = t_a(ii, bny - 1, kk);
+                    value(row_idx, col_idx) = t_a(ii, bny - 1, kk);
                 }
             }
         }
@@ -138,7 +138,7 @@ field3 SchurMat3D_front::operator*(const field3& root)
         {
             int jx = jdx / root_nz;
             int jz = jdx % root_nz;
-            R(ix, 0, iz) += root(jx, 0, jz) * value[idx][jdx];
+            R(ix, 0, iz) += root(jx, 0, jz) * value(idx, jdx);
         }
     }
     return R;
@@ -161,7 +161,7 @@ void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
                 for (int kk = 0; kk < bnz; kk++)
                 {
                     int row_idx             = ii * bnz + kk;
-                    value[row_idx][col_idx] = t_a(ii, 0, kk);
+                    value(row_idx, col_idx) = t_a(ii, 0, kk);
                 }
             }
         }
@@ -185,7 +185,7 @@ field3 SchurMat3D_back::operator*(const field3& root)
         {
             int jx = jdx / root_nz;
             int jz = jdx % root_nz;
-            R(ix, root_ny - 1, iz) += root(jx, root_ny - 1, jz) * value[idx][jdx];
+            R(ix, root_ny - 1, iz) += root(jx, root_ny - 1, jz) * value(idx, jdx);
         }
     }
     return R;
@@ -208,7 +208,7 @@ void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
                 for (int jj = 0; jj < bny; jj++)
                 {
                     int row_idx             = ii * bny + jj;
-                    value[row_idx][col_idx] = t_a(ii, jj, bnz - 1);
+                    value(row_idx, col_idx) = t_a(ii, jj, bnz - 1);
                 }
             }
         }
@@ -232,7 +232,7 @@ field3 SchurMat3D_down::operator*(const field3& root)
         {
             int jx = jdx / root_ny;
             int jy = jdx % root_ny;
-            R(ix, iy, 0) += root(jx, jy, 0) * value[idx][jdx];
+            R(ix, iy, 0) += root(jx, jy, 0) * value(idx, jdx);
         }
     }
     return R;
@@ -255,7 +255,7 @@ void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
                 for (int jj = 0; jj < bny; jj++)
                 {
                     int row_idx             = ii * bny + jj;
-                    value[row_idx][col_idx] = t_a(ii, jj, 0);
+                    value(row_idx, col_idx) = t_a(ii, jj, 0);
                 }
             }
         }
@@ -279,7 +279,7 @@ field3 SchurMat3D_up::operator*(const field3& root)
         {
             int jx = jdx / root_ny;
             int jy = jdx % root_ny;
-            R(ix, iy, root_nz - 1) += root(jx, jy, root_nz - 1) * value[idx][jdx];
+            R(ix, iy, root_nz - 1) += root(jx, jy, root_nz - 1) * value(idx, jdx);
         }
     }
     return R;

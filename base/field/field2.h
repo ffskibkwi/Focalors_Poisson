@@ -66,11 +66,14 @@ public:
     double*           get_ptr(int i, int j) const;
     double*           get_ptr(int i) const;
     const std::string get_name() const { return name; }
+    void              set_name(const std::string& _name) { name = _name; }
 
     void clear(double clear_value = 0.0);
 
     friend void swap(field2& lhs, field2& rhs);
     void        transpose(field2& dst);
+
+    void print();
 
 protected:
     unsigned int nx, ny;

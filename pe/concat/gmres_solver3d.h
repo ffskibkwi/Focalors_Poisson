@@ -3,7 +3,6 @@
 #include "base/pch.h"
 
 #include "base/domain/domain3d.h"
-#include "base/domain/variable3d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "io/config.h"
@@ -14,7 +13,6 @@ class GMRESSolver3D : public DomainSolver3D
 {
 public:
     GMRESSolver3D(Domain3DUniform*   in_domain,
-                  Variable3D*        in_variable,
                   int                in_m,
                   double             in_tol,
                   int                in_maxIter,
@@ -33,7 +31,6 @@ public:
 private:
     // 成员参数
     Domain3DUniform*         domain;
-    Variable3D*              variable = nullptr;
     std::vector<SchurMat3D*> S_params;
     int                      m       = 0;
     double                   tol     = 0.0;

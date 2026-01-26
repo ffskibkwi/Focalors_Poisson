@@ -13,7 +13,6 @@ class GMRESSolver2D : public DomainSolver2D
 {
 public:
     GMRESSolver2D(Domain2DUniform*   in_domain,
-                  Variable*          in_variable,
                   int                in_m,
                   double             in_tol,
                   int                in_maxIter,
@@ -31,7 +30,6 @@ public:
 
 private:
     Domain2DUniform*         domain;
-    Variable*                variable = nullptr;
     std::vector<SchurMat2D*> S_params;
     int                      m       = 0;
     double                   tol     = 0.0;

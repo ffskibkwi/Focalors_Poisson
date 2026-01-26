@@ -2,13 +2,11 @@
 #include "io/csv_writer_2d.h"
 
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
-                             Variable*          in_variable,
                              int                in_m,
                              double             in_tol,
                              int                in_maxIter,
                              EnvironmentConfig* in_env_config)
     : domain(in_domain)
-    , variable(in_variable)
     , m(in_m)
     , tol(in_tol)
     , maxIter(in_maxIter)

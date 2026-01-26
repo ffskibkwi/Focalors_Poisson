@@ -6,15 +6,11 @@
 class DomainSolver2DTest : public DomainSolver2D
 {
 public:
-    int disp     = 0;
-    int mpi_rank = 0, mpi_size = 1;
+    int disp = 0;
 
     DomainSolver2DTest(int _disp)
         : disp(_disp)
-    {
-        MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-        MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-    }
+    {}
     ~DomainSolver2DTest() {}
     void solve(field2& f)
     {
@@ -26,10 +22,6 @@ public:
             }
         }
     }
-    bool is_comm_root() const { return true; }
-
-    double get_hx() const { return 1; };
-    double get_hy() const { return 1; };
 };
 
 template<typename SchurType>

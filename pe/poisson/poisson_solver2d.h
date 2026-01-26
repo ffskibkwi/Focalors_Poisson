@@ -31,9 +31,6 @@ public:
 
     void solve(field2& f) override;
 
-    double get_hx() const override { return hx; }
-    double get_hy() const override { return hy; }
-
 private:
     int    nx, ny;
     double hx, hy;

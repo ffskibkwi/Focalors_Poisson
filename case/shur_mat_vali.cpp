@@ -18,10 +18,6 @@ public:
             }
         }
     }
-    bool is_comm_root() const { return true; }
-
-    double get_hx() const { return 1; };
-    double get_hy() const { return 1; };
 };
 
 template<typename SchurType>

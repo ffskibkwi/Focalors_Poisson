@@ -5,6 +5,7 @@
 #include "base/domain/domain2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
+#include "gmres.h"
 #include "io/config.h"
 #include "pe/poisson/chasing_method2d.h"
 #include "pe/poisson/poisson_solver2d.h"

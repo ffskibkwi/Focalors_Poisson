@@ -41,7 +41,7 @@ private:
     double hx, hy, hz;
     field3 buffer;
 
-    Variable3D*        var    = nullptr;
+    Variable3D*      var    = nullptr;
     Domain3DUniform* domain = nullptr;
 
     EnvironmentConfig* env_config = nullptr;
@@ -59,6 +59,11 @@ private:
     PoissonFFT3D*    poisson_fft_y;
     ChasingMethod3D* chasing_method_x;
 
-    void cal_lambda(double* lambda, int global_length, int begin, int local_length, PDEBoundaryType BoundTypeNegative, PDEBoundaryType BoundTypePositive);
+    void cal_lambda(double*         lambda,
+                    int             global_length,
+                    int             begin,
+                    int             local_length,
+                    PDEBoundaryType BoundTypeNegative,
+                    PDEBoundaryType BoundTypePositive);
     void boundary_assembly(field3& f);
 };

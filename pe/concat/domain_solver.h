@@ -11,17 +11,7 @@ class DomainSolver2D
 public:
     DomainSolver2D() {};
 
-    virtual ~DomainSolver2D() = default;
-
-    // virtual void init() = 0;
-    // virtual void init() = 0;
     virtual void solve(field2& f) = 0;
-
-    // 是否为内部通信器 root（串行/无通信器默认 true）
-    virtual bool is_comm_root() const { return true; }
-
-    virtual double get_hx() const = 0;
-    virtual double get_hy() const = 0;
 };
 
 class DomainSolver3D
@@ -29,10 +19,5 @@ class DomainSolver3D
 public:
     DomainSolver3D() {};
 
-    virtual ~DomainSolver3D() = default;
-
     virtual void solve(field3& f) = 0;
-
-    // 是否为内部通信器 root（串行/无通信器默认 true）
-    virtual bool is_comm_root() const { return true; }
 };

@@ -26,7 +26,7 @@ public:
 };
 
 template<typename SchurType>
-void test_schur_direction(const std::string& label, Domain2DUniform& neighbor_domain, int nx, int ny)
+void test(const std::string& label, Domain2DUniform& neighbor_domain, int nx, int ny)
 {
     int mpi_rank = 0, mpi_size = 1;
 
@@ -98,20 +98,18 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    int    nx          = 4;
-    int    ny          = 3;
-    int    neighbor_nx = 6;
-    int    neighbor_ny = 3;
-    double lx          = 1.0;
-    double ly          = 1.0;
+    int nx          = 4;
+    int ny          = 3;
+    int neighbor_nx = 6;
+    int neighbor_ny = 3;
 
-    Domain2DUniform neighbor_domain_x(neighbor_nx, neighbor_ny, lx, ly, "TestDomain");
-    Domain2DUniform neighbor_domain_y(neighbor_ny, neighbor_nx, ly, lx, "TestDomain");
+    Domain2DUniform neighbor_domain_x(neighbor_nx, neighbor_ny, "neighbor_domain_x");
+    Domain2DUniform neighbor_domain_y(neighbor_ny, neighbor_nx, "neighbor_domain_y");
 
-    test_schur_direction<SchurMat2DSlabX_left>("LEFT", neighbor_domain_x, nx, ny);
-    test_schur_direction<SchurMat2DSlabX_right>("RIGHT", neighbor_domain_x, nx, ny);
-    test_schur_direction<SchurMat2DSlabX_up>("UP", neighbor_domain_y, ny, nx);
-    test_schur_direction<SchurMat2DSlabX_down>("DOWN", neighbor_domain_y, ny, nx);
+    test<SchurMat2DSlabX_left>("LEFT", neighbor_domain_x, nx, ny);
+    test<SchurMat2DSlabX_right>("RIGHT", neighbor_domain_x, nx, ny);
+    test<SchurMat2DSlabX_up>("UP", neighbor_domain_y, ny, nx);
+    test<SchurMat2DSlabX_down>("DOWN", neighbor_domain_y, ny, nx);
 
     MPI_Finalize();
 

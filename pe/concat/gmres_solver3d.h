@@ -7,7 +7,6 @@
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "io/config.h"
-#include "pe/poisson/poisson_solver3d.h"
 #include "schur_mat3d.h"
 #include <unordered_map>
 
@@ -22,6 +21,7 @@ public:
                   EnvironmentConfig* in_env_config = nullptr);
     ~GMRESSolver3D();
 
+    void set_solver(DomainSolver3D* _solver) { pe_solver = _solver; }
     void solve(field3& f) override;
 
     void schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
@@ -39,9 +39,8 @@ private:
     double                   tol     = 0.0;
     int                      maxIter = 0;
 
-    PoissonSolver3D* pe_solver;
+    DomainSolver3D* pe_solver;
 
-    // 预分配的临时缓冲（避免在 solve 中动态分配）
     std::vector<field3> V;      // 大小 m+1，每个与域尺寸一致
     std::vector<double> H;      // 大小 (m+1)*m
     std::vector<double> cs;     // 大小 m
@@ -50,7 +49,6 @@ private:
     std::vector<double> y;      // 最大大小 m（使用前 j 元素）
     std::vector<double> resVec; // 残差历史（每次 solve 前清空）
 
-    // 复用的 field3 缓冲，避免 solve 内部动态分配
     field3 x_buf;
     field3 r_buf;
     field3 w_buf;
@@ -58,14 +56,10 @@ private:
     field3 mul_buf;
     field3 afun_buf;
 
-    // 可选初值覆盖
     field3* x0_override = nullptr;
 
-    // 环境配置（只读使用）
     EnvironmentConfig* env_config = nullptr;
-    EnvironmentConfig  inner_env_config; // 用于内部 Poisson（关闭 showCurrentStep）
 
-    // 与原实现一致的 Afun
     field3& Afun(field3& x);
 
     void maybe_print_res() const;

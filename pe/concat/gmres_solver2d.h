@@ -6,7 +6,6 @@
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "io/config.h"
-#include "pe/poisson/poisson_solver2d.h"
 #include "schur_mat2d.h"
 #include <unordered_map>
 
@@ -21,6 +20,7 @@ public:
                   EnvironmentConfig* in_env_config = nullptr);
     ~GMRESSolver2D();
 
+    void set_solver(DomainSolver2D* _solver) { pe_solver = _solver; }
     void solve(field2& f) override;
 
     void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
@@ -37,7 +37,7 @@ private:
     double                   tol     = 0.0;
     int                      maxIter = 0;
 
-    PoissonSolver2D* pe_solver;
+    DomainSolver2D* pe_solver;
 
     std::vector<field2> V;      // 大小 m+1，每个与域尺寸一致
     std::vector<double> H;      // 大小 (m+1)*m
@@ -57,7 +57,6 @@ private:
     field2* x0_override = nullptr;
 
     EnvironmentConfig* env_config = nullptr;
-    EnvironmentConfig  inner_env_config; // 用于内部 Poisson（关闭 showCurrentStep）
 
     field2& Afun(field2& x);
 

@@ -53,18 +53,11 @@ GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
     , maxIter(in_maxIter)
 {
     env_config = in_env_config;
-    // 内部 Poisson 的配置：关闭 showCurrentStep，保持 showGmresRes 同步
-    inner_env_config = EnvironmentConfig {};
-    if (env_config)
-        inner_env_config.showGmresRes = env_config->showGmresRes;
-    inner_env_config.showCurrentStep = false;
 
     // 预分配 field3 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
     int nz = domain->nz;
-
-    pe_solver = new PoissonSolver3D(domain, variable, &inner_env_config);
 
     x_buf.init(nx, ny, nz, "x_buf");
     r_buf.init(nx, ny, nz, "r_buf");

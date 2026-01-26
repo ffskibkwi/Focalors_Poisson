@@ -14,15 +14,10 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
     , maxIter(in_maxIter)
 {
     env_config = in_env_config;
-    // 内部 Poisson 的配置：关闭 showCurrentStep，保持 showGmresRes 同步
-    inner_env_config = EnvironmentConfig {};
-    if (env_config)
-        inner_env_config.showGmresRes = env_config->showGmresRes;
+
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
-
-    pe_solver = new PoissonSolver2D(domain, variable, &inner_env_config);
 
     x_buf.init(nx, ny);
     r_buf.init(nx, ny);

@@ -69,6 +69,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
             {
                 solver_map[domain] = new GMRESSolver2D(domain, variable, m, tol, maxIter, env_config);
                 auto* gmres        = static_cast<GMRESSolver2D*>(solver_map[domain]);
+                gmres->set_solver(new PoissonSolver2D(domain, variable, env_config));
                 if (track_time)
                 {
                     auto t0 = std::chrono::steady_clock::now();
@@ -93,6 +94,7 @@ void ConcatPoissonSolver2D::construct_solver_map()
     {
         solver_map[tree_root] = new GMRESSolver2D(tree_root, variable, m, tol, maxIter, env_config);
         auto* gmres           = static_cast<GMRESSolver2D*>(solver_map[tree_root]);
+        gmres->set_solver(new PoissonSolver2D(tree_root, variable, env_config));
         if (track_time)
         {
             auto t0 = std::chrono::steady_clock::now();

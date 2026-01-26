@@ -6,11 +6,15 @@
 class DomainSolver2DTest : public DomainSolver2D
 {
 public:
-    int disp = 0;
+    int disp     = 0;
+    int mpi_rank = 0, mpi_size = 1;
 
     DomainSolver2DTest(int _disp)
         : disp(_disp)
-    {}
+    {
+        MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    }
     ~DomainSolver2DTest() {}
     void solve(field2& f, bool is_debugmode = true)
     {
@@ -28,33 +32,21 @@ public:
     double get_hy() const { return 1; };
 };
 
-int main(int argc, char* argv[])
+template<typename SchurType>
+void test_schur_direction(const std::string& label, Domain2DUniform& neighbor_domain, int nx, int ny)
 {
-    MPI_Init(&argc, &argv);
-
-    // // debug
-    // volatile int ii = 0;
-    // while (ii == 0)
-    //     sleep(1);
-
-    int    nx          = 4;
-    int    ny          = 3;
-    int    neighbor_nx = 6;
-    int    neighbor_ny = 3;
-    double lx          = 1.0;
-    double ly          = 1.0;
-
     int mpi_rank = 0, mpi_size = 1;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    int nx_slab = (mpi_rank == mpi_size - 1) ? (nx - nx / mpi_size * mpi_rank) : nx / mpi_size;
-    int nx_disp = nx / mpi_size * mpi_rank;
-    int neighbor_nx_slab =
-        (mpi_rank == mpi_size - 1) ? (neighbor_nx - neighbor_nx / mpi_size * mpi_rank) : neighbor_nx / mpi_size;
+    if (mpi_rank == 0)
+        std::cout << "\n========== Testing " << label << " ==========" << std::endl;
 
-    Domain2DUniform neighbor_domain(neighbor_nx, neighbor_ny, lx, ly, "Test");
+    int neighbor_nx      = neighbor_domain.get_nx();
+    int nx_slab          = (mpi_rank == mpi_size - 1) ? (nx - nx / mpi_size * mpi_rank) : nx / mpi_size;
+    int nx_disp          = nx / mpi_size * mpi_rank;
+    int neighbor_nx_disp = neighbor_nx / mpi_size * mpi_rank;
 
     field2 f(nx_slab, ny);
 
@@ -66,6 +58,8 @@ int main(int argc, char* argv[])
         }
     }
 
+    if (mpi_rank == 0)
+        std::cout << "Original Field:" << std::endl;
     for (int i = 0; i < mpi_size; i++)
     {
         if (i == mpi_rank)
@@ -76,15 +70,14 @@ int main(int argc, char* argv[])
         MPI_Barrier(MPI_COMM_WORLD);
     }
 
-    if (mpi_rank == 0)
-        std::cout << "---------------" << std::endl;
-
-    SchurMat2DSlabX_left shur(&neighbor_domain, MPI_COMM_WORLD);
-    DomainSolver2DTest   solver(neighbor_nx_slab);
+    SchurType          shur(&neighbor_domain, MPI_COMM_WORLD);
+    DomainSolver2DTest solver(neighbor_nx_disp);
     shur.construct(&solver);
 
     f = shur * f;
 
+    if (mpi_rank == 0)
+        std::cout << "Schur Matrix Structure:" << std::endl;
     for (int i = 0; i < mpi_size; i++)
     {
         if (i == mpi_rank)
@@ -96,8 +89,7 @@ int main(int argc, char* argv[])
     }
 
     if (mpi_rank == 0)
-        std::cout << "---------------" << std::endl;
-
+        std::cout << "Result Field (after Schur * f):" << std::endl;
     for (int i = 0; i < mpi_size; i++)
     {
         if (i == mpi_rank)
@@ -107,6 +99,26 @@ int main(int argc, char* argv[])
         }
         MPI_Barrier(MPI_COMM_WORLD);
     }
+}
+
+int main(int argc, char* argv[])
+{
+    MPI_Init(&argc, &argv);
+
+    int    nx          = 4;
+    int    ny          = 3;
+    int    neighbor_nx = 6;
+    int    neighbor_ny = 3;
+    double lx          = 1.0;
+    double ly          = 1.0;
+
+    Domain2DUniform neighbor_domain_x(neighbor_nx, neighbor_ny, lx, ly, "TestDomain");
+    Domain2DUniform neighbor_domain_y(neighbor_ny, neighbor_nx, ly, lx, "TestDomain");
+
+    test_schur_direction<SchurMat2DSlabX_left>("LEFT", neighbor_domain_x, nx, ny);
+    test_schur_direction<SchurMat2DSlabX_right>("RIGHT", neighbor_domain_x, nx, ny);
+    test_schur_direction<SchurMat2DSlabX_up>("UP", neighbor_domain_y, ny, nx);
+    test_schur_direction<SchurMat2DSlabX_down>("DOWN", neighbor_domain_y, ny, nx);
 
     MPI_Finalize();
 

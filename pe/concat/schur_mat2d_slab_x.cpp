@@ -53,90 +53,127 @@ field2 SchurMat2DSlabX_left::operator*(const field2& root)
 
 void SchurMat2DSlabX_right::construct(DomainSolver2D* branch_solver)
 {
-    field2 t_a(bnx, bny);
+    field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
     {
         t_a.clear();
-        t_a(0, i) = 1.;
+        if (mpi_rank == 0)
+            t_a(0, i) = 1.;
         branch_solver->solve(t_a, false);
-        for (int j = 0; j < cn; j++)
-            value(j, i) = t_a(0, j);
+        MPI_Scatterv(
+            t_a.get_ptr(0), cs_lengths, cs_displacements, MPI_DOUBLE, buf_csn, csn, MPI_DOUBLE, 0, communicator);
+        for (int j = 0; j < csn; j++)
+            value(j, i) = buf_csn[j];
     }
 }
 
 field2 SchurMat2DSlabX_right::operator*(const field2& root)
 {
-    int rnx = root.get_nx();
-    int rny = root.get_ny();
+    int rsnx = root.get_nx();
+    int rny  = root.get_ny();
 
-    field2 R(rnx, rny);
+    field2 R(rsnx, rny);
+
+    if (mpi_rank == mpi_size - 1)
+    {
+        for (int j = 0; j < cn; j++)
+            buf_cn[j] = root(rsnx - 1, j);
+    }
+    MPI_Bcast(buf_cn, cn, MPI_DOUBLE, mpi_size - 1, communicator);
 
     OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < cn; i++)
+    for (int i = 0; i < csn; i++)
     {
-        R(rnx - 1, i) = 0.;
+        buf_csn[i] = 0.;
         for (int j = 0; j < cn; j++)
-            R(rnx - 1, i) += root(rnx - 1, j) * value(i, j);
+            buf_csn[i] += buf_cn[j] * value(i, j);
     }
+    MPI_Gatherv(buf_csn,
+                csn,
+                MPI_DOUBLE,
+                R.get_ptr(rsnx - 1),
+                cs_lengths,
+                cs_displacements,
+                MPI_DOUBLE,
+                mpi_size - 1,
+                communicator);
     return R;
 }
 
 void SchurMat2DSlabX_up::construct(DomainSolver2D* branch_solver)
 {
-    field2 t_a(bnx, bny);
+    field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
     {
         t_a.clear();
-        t_a(i, 0) = 1.;
+        if (i >= cs_displacements[mpi_rank])
+        {
+            if (mpi_rank < mpi_size - 1 && i >= cs_displacements[mpi_rank + 1])
+                continue;
+            t_a(i - cs_displacements[mpi_rank], 0) = 1.;
+        }
         branch_solver->solve(t_a, false);
-        for (int j = 0; j < cn; j++)
+        for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, 0);
     }
 }
 
 field2 SchurMat2DSlabX_up::operator*(const field2& root)
 {
-    int rnx = root.get_nx();
-    int rny = root.get_ny();
+    int rsnx = root.get_nx();
+    int rny  = root.get_ny();
 
-    field2 R(rnx, rny);
+    field2 R(rsnx, rny);
+
+    for (int i = 0; i < csn; i++)
+        buf_csn[i] = root(i, rny - 1);
+    MPI_Allgatherv(buf_csn, csn, MPI_DOUBLE, buf_cn, cs_lengths, cs_displacements, MPI_DOUBLE, communicator);
 
     OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < cn; i++)
+    for (int i = 0; i < csn; i++)
     {
         R(i, rny - 1) = 0.;
         for (int j = 0; j < cn; j++)
-            R(i, rny - 1) += root(j, rny - 1) * value(i, j);
+            R(i, rny - 1) += buf_cn[j] * value(i, j);
     }
     return R;
 }
 
 void SchurMat2DSlabX_down::construct(DomainSolver2D* branch_solver)
 {
-    field2 t_a(bnx, bny);
+    field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
     {
         t_a.clear();
-        t_a(i, bny - 1) = 1.;
+        if (i >= cs_displacements[mpi_rank])
+        {
+            if (mpi_rank < mpi_size - 1 && i >= cs_displacements[mpi_rank + 1])
+                continue;
+            t_a(i - cs_displacements[mpi_rank], bny - 1) = 1.;
+        }
         branch_solver->solve(t_a, false);
-        for (int j = 0; j < cn; j++)
+        for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, bny - 1);
     }
 }
 
 field2 SchurMat2DSlabX_down::operator*(const field2& root)
 {
-    int rnx = root.get_nx();
-    int rny = root.get_ny();
+    int rsnx = root.get_nx();
+    int rny  = root.get_ny();
 
-    field2 R(rnx, rny);
+    field2 R(rsnx, rny);
+
+    for (int i = 0; i < csn; i++)
+        buf_csn[i] = root(i, 0);
+    MPI_Allgatherv(buf_csn, csn, MPI_DOUBLE, buf_cn, cs_lengths, cs_displacements, MPI_DOUBLE, communicator);
 
     OPENMP_PARALLEL_FOR()
-    for (int i = 0; i < cn; i++)
+    for (int i = 0; i < csn; i++)
     {
         R(i, 0) = 0.;
         for (int j = 0; j < cn; j++)
-            R(i, 0) += root(j, 0) * value(i, j);
+            R(i, 0) += buf_cn[j] * value(i, j);
     }
     return R;
 }

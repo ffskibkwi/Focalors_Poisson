@@ -32,10 +32,10 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    // debug
-    volatile int ii = 0;
-    while (ii == 0)
-        sleep(1);
+    // // debug
+    // volatile int ii = 0;
+    // while (ii == 0)
+    //     sleep(1);
 
     int    nx          = 4;
     int    ny          = 3;
@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
 
     int nx_slab = (mpi_rank == mpi_size - 1) ? (nx - nx / mpi_size * mpi_rank) : nx / mpi_size;
     int nx_disp = nx / mpi_size * mpi_rank;
+    int neighbor_nx_slab =
+        (mpi_rank == mpi_size - 1) ? (neighbor_nx - neighbor_nx / mpi_size * mpi_rank) : neighbor_nx / mpi_size;
 
     Domain2DUniform neighbor_domain(neighbor_nx, neighbor_ny, lx, ly, "Test");
 
@@ -64,46 +66,47 @@ int main(int argc, char* argv[])
         }
     }
 
-    // for (int i = 0; i < mpi_size; i++)
-    // {
-    //     if (i == mpi_rank)
-    //     {
-    //         std::cout << "rank " << mpi_rank << std::endl;
-    //         f.print();
-    //     }
-    //     MPI_Barrier(MPI_COMM_WORLD);
-    // }
+    for (int i = 0; i < mpi_size; i++)
+    {
+        if (i == mpi_rank)
+        {
+            std::cout << "rank " << mpi_rank << std::endl;
+            f.print();
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 
-    // if (mpi_rank == 0)
-    //     std::cout << "---------------" << std::endl;
+    if (mpi_rank == 0)
+        std::cout << "---------------" << std::endl;
 
     SchurMat2DSlabX_left shur(&neighbor_domain, MPI_COMM_WORLD);
-    DomainSolver2DTest   solver(nx_disp);
+    DomainSolver2DTest   solver(neighbor_nx_slab);
     shur.construct(&solver);
+
     f = shur * f;
 
-    // for (int i = 0; i < mpi_size; i++)
-    // {
-    //     if (i == mpi_rank)
-    //     {
-    //         std::cout << "rank " << mpi_rank << std::endl;
-    //         shur.print();
-    //     }
-    //     MPI_Barrier(MPI_COMM_WORLD);
-    // }
+    for (int i = 0; i < mpi_size; i++)
+    {
+        if (i == mpi_rank)
+        {
+            std::cout << "rank " << mpi_rank << std::endl;
+            shur.print();
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 
-    // if (mpi_rank == 0)
-    //     std::cout << "---------------" << std::endl;
+    if (mpi_rank == 0)
+        std::cout << "---------------" << std::endl;
 
-    // for (int i = 0; i < mpi_size; i++)
-    // {
-    //     if (i == mpi_rank)
-    //     {
-    //         std::cout << "rank " << mpi_rank << std::endl;
-    //         f.print();
-    //     }
-    //     MPI_Barrier(MPI_COMM_WORLD);
-    // }
+    for (int i = 0; i < mpi_size; i++)
+    {
+        if (i == mpi_rank)
+        {
+            std::cout << "rank " << mpi_rank << std::endl;
+            f.print();
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
 
     MPI_Finalize();
 

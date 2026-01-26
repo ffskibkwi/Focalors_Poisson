@@ -6,7 +6,7 @@
 void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);
-    for (int i = 0; i < csn; i++)
+    for (int i = 0; i < cn; i++)
     {
         t_a.clear();
         if (mpi_rank == mpi_size - 1)

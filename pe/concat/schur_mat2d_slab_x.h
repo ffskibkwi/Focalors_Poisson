@@ -34,18 +34,10 @@ public:
         MPI_Comm_rank(communicator, &mpi_rank);
         MPI_Comm_size(communicator, &mpi_size);
 
-        int bsnx = (mpi_rank == mpi_size - 1) ? (bnx - bnx / mpi_size * mpi_rank) : bnx / mpi_size;
-        int csn  = (mpi_rank == mpi_size - 1) ? (cn - cn / mpi_size * mpi_rank) : cn / mpi_size;
+        bsnx = (mpi_rank == mpi_size - 1) ? (bnx - bnx / mpi_size * mpi_rank) : bnx / mpi_size;
+        csn  = (mpi_rank == mpi_size - 1) ? (cn - cn / mpi_size * mpi_rank) : cn / mpi_size;
 
-        for (int i = 0; i < mpi_size; i++)
-        {
-            if (i == mpi_rank)
-            {
-                std::cout << "rank " << mpi_rank << std::endl;
-                std::cout << "bsnx " << bsnx << std::endl;
-            }
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
+        value.init(csn, cn);
 
         buf_csn = new double[csn];
         buf_cn  = new double[cn];

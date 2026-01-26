@@ -15,7 +15,7 @@ public:
 
     // virtual void init() = 0;
     // virtual void init() = 0;
-    virtual void solve(field2& f, bool is_debugmode = true) = 0;
+    virtual void solve(field2& f) = 0;
 
     // 是否为内部通信器 root（串行/无通信器默认 true）
     virtual bool is_comm_root() const { return true; }

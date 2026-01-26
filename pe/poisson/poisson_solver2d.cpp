@@ -102,12 +102,12 @@ PoissonSolver2D::~PoissonSolver2D()
     delete chasing_method_x;
 }
 
-void PoissonSolver2D::solve(field2& f, bool is_debugmode)
+void PoissonSolver2D::solve(field2& f)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
 
-    if (env_config && env_config->debugMode && is_debugmode)
+    if (env_config && env_config->debug_poisson)
     {
         std::string fname_rhs =
             env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
@@ -127,7 +127,7 @@ void PoissonSolver2D::solve(field2& f, bool is_debugmode)
 
     std::swap(f, buffer);
 
-    if (env_config && env_config->debugMode && is_debugmode)
+    if (env_config && env_config->debug_poisson)
     {
         std::string fname_sol =
             env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);

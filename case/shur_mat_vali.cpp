@@ -8,7 +8,7 @@ class DomainSolver2DTest : public DomainSolver2D
 public:
     DomainSolver2DTest() {}
     ~DomainSolver2DTest() {}
-    void solve(field2& f, bool is_debugmode = true)
+    void solve(field2& f)
     {
         for (int i = 0; i < f.get_nx(); i++)
         {

@@ -29,7 +29,7 @@ public:
 
     void init();
 
-    void solve(field2& f, bool is_debugmode = true) override;
+    void solve(field2& f) override;
 
     double get_hx() const override { return hx; }
     double get_hy() const override { return hy; }

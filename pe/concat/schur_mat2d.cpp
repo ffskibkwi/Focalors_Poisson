@@ -12,7 +12,7 @@ void SchurMat2D_left::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(bnx - 1, i) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < cn; j++)
             value(j, i) = t_a(bnx - 1, j);
     }
@@ -42,7 +42,7 @@ void SchurMat2D_right::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(0, i) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < cn; j++)
             value(j, i) = t_a(0, j);
     }
@@ -72,7 +72,7 @@ void SchurMat2D_up::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(i, 0) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < cn; j++)
             value(j, i) = t_a(j, 0);
     }
@@ -102,7 +102,7 @@ void SchurMat2D_down::construct(DomainSolver2D* branch_solver)
     {
         t_a.clear();
         t_a(i, bny - 1) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < cn; j++)
             value(j, i) = t_a(j, bny - 1);
     }

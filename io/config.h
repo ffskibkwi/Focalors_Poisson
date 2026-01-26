@@ -12,7 +12,9 @@ public:
     bool track_pe_solve_total_time  = false;
 
     // Debug Output Control
-    bool        debugMode      = false;
+    bool        debug_gmres    = false;
+    bool        debug_poisson  = false;
+    bool        debug_concat   = false;
     std::string debugOutputDir = "./debug_output/";
 
     EnvironmentConfig() = default;

@@ -16,7 +16,7 @@ public:
         MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     }
     ~DomainSolver2DTest() {}
-    void solve(field2& f, bool is_debugmode = true)
+    void solve(field2& f)
     {
         for (int i = 0; i < f.get_nx(); i++)
         {

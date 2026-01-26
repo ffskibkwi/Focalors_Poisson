@@ -20,8 +20,6 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
     inner_env_config = EnvironmentConfig {};
     if (env_config)
         inner_env_config.showGmresRes = env_config->showGmresRes;
-    inner_env_config.showCurrentStep = false;
-    inner_env_config.debugMode       = false;
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
@@ -69,7 +67,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current = new SchurMat2D_left(neighbour_domain);
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debugMode)
+                if (env_config && env_config->debug_gmres)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
@@ -78,7 +76,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current = new SchurMat2D_right(neighbour_domain);
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debugMode)
+                if (env_config && env_config->debug_gmres)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
@@ -87,7 +85,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current = new SchurMat2D_up(neighbour_domain);
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debugMode)
+                if (env_config && env_config->debug_gmres)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
@@ -96,7 +94,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current = new SchurMat2D_down(neighbour_domain);
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debugMode)
+                if (env_config && env_config->debug_gmres)
                     current->dump_to_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
@@ -118,7 +116,7 @@ field2& GMRESSolver2D::Afun(field2& x)
         mul_buf = (*s) * x;                             // 仍会产生一次临时，但接口所限
         ft_buf.add_affine_transform(1.0, mul_buf, 0.0); // ft += mul_buf
     }
-    pe_solver->solve(ft_buf, false);
+    pe_solver->solve(ft_buf);
 
     afun_buf = x; // afun_buf = x - ft_buf（避免新分配）
     afun_buf.add_affine_transform(-1.0, ft_buf, 0.0);
@@ -145,12 +143,12 @@ void GMRESSolver2D::maybe_print_res() const
 
 // ... (keep existing includes if not covered)
 
-void GMRESSolver2D::solve(field2& b, bool is_debugmode)
+void GMRESSolver2D::solve(field2& b)
 {
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;
 
-    if (env_config && env_config->debugMode)
+    if (env_config && env_config->debug_gmres)
     {
         std::string fname_rhs =
             env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
@@ -273,7 +271,7 @@ void GMRESSolver2D::solve(field2& b, bool is_debugmode)
     b = x_buf;
     maybe_print_res();
 
-    if (env_config && env_config->debugMode)
+    if (env_config && env_config->debug_gmres)
     {
         std::string fname_sol =
             env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);

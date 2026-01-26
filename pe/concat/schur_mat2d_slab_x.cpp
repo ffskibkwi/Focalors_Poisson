@@ -11,7 +11,7 @@ void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
         t_a.clear();
         if (mpi_rank == mpi_size - 1)
             t_a(bsnx - 1, i) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         MPI_Scatterv(t_a.get_ptr(bsnx - 1),
                      cs_lengths,
                      cs_displacements,
@@ -59,7 +59,7 @@ void SchurMat2DSlabX_right::construct(DomainSolver2D* branch_solver)
         t_a.clear();
         if (mpi_rank == 0)
             t_a(0, i) = 1.;
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         MPI_Scatterv(
             t_a.get_ptr(0), cs_lengths, cs_displacements, MPI_DOUBLE, buf_csn, csn, MPI_DOUBLE, 0, communicator);
         for (int j = 0; j < csn; j++)
@@ -112,7 +112,7 @@ void SchurMat2DSlabX_up::construct(DomainSolver2D* branch_solver)
                 continue;
             t_a(i - cs_displacements[mpi_rank], 0) = 1.;
         }
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, 0);
     }
@@ -151,7 +151,7 @@ void SchurMat2DSlabX_down::construct(DomainSolver2D* branch_solver)
                 continue;
             t_a(i - cs_displacements[mpi_rank], bny - 1) = 1.;
         }
-        branch_solver->solve(t_a, false);
+        branch_solver->solve(t_a);
         for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, bny - 1);
     }

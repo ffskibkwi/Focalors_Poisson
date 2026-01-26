@@ -2,7 +2,6 @@
 
 #include "base/pch.h"
 
-#include "schur_mat2d.h"
 #include "base/domain/domain2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
@@ -10,6 +9,7 @@
 #include "io/config.h"
 #include "pe/poisson/chasing_method2d.h"
 #include "pe/poisson/poisson_solver2d.h"
+#include "schur_mat2d.h"
 #include <unordered_map>
 
 class GMRESSolver2D : public DomainSolver2D
@@ -23,7 +23,7 @@ public:
                   EnvironmentConfig* in_env_config = nullptr);
     ~GMRESSolver2D();
 
-    void solve(field2& f, bool is_debugmode) override;
+    void solve(field2& f) override;
 
     double get_hx() const override { return domain->hx; }
     double get_hy() const override { return domain->hy; }
@@ -38,12 +38,12 @@ public:
 
 private:
     // 成员参数（原 gmres 的未指定入参）：
-    Domain2DUniform*        domain;
-    Variable*               variable = nullptr;
+    Domain2DUniform*         domain;
+    Variable*                variable = nullptr;
     std::vector<SchurMat2D*> S_params;
-    int                     m       = 0;
-    double                  tol     = 0.0;
-    int                     maxIter = 0;
+    int                      m       = 0;
+    double                   tol     = 0.0;
+    int                      maxIter = 0;
 
     PoissonSolver2D* pe_solver;
 

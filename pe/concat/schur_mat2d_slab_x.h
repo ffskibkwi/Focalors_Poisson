@@ -61,8 +61,10 @@ public:
     int  get_size() const { return cn; }
     void print() { value.print(); }
 
-    virtual void   construct(DomainSolver2D* branch_solver) = 0;
-    virtual field2 operator*(const field2& root)            = 0;
+    // Input branch solver should solve at slab x
+    virtual void construct(DomainSolver2D* branch_solver) = 0;
+    // Input root should alloc at slab x
+    virtual field2 operator*(const field2& root) = 0;
 
     void set_name(const std::string& name) { value.set_name(name); }
 };

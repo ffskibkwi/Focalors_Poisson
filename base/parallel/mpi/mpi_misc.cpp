@@ -48,4 +48,15 @@ namespace MPIUtils
 
         delete[] char_buf;
     }
+
+    int get_slab_length(int total_length, int mpi_rank, int mpi_size)
+    {
+        return (mpi_rank == mpi_size - 1) ? (total_length - total_length / mpi_size * mpi_rank) :
+                                            total_length / mpi_size;
+    }
+
+    int get_slab_displacement(int total_length, int mpi_rank, int mpi_size)
+    {
+        return total_length / mpi_size * mpi_rank;
+    }
 } // namespace MPIUtils

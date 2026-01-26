@@ -25,4 +25,7 @@ namespace MPIUtils
     }
 
     void bcast_string(std::string& src_recv_str, int char_buf_size = 100);
+
+    int get_slab_length(int total_length, int mpi_rank, int mpi_size);
+    int get_slab_displacement(int total_length, int mpi_rank, int mpi_size);
 } // namespace MPIUtils

@@ -1,3 +1,4 @@
+#include "base/parallel/mpi/mpi_misc.h"
 #include "pe/concat/domain_solver.h"
 #include "pe/concat/schur_mat2d_slab_x.h"
 
@@ -36,9 +37,9 @@ void test_schur_direction(const std::string& label, Domain2DUniform& neighbor_do
         std::cout << "\n========== Testing " << label << " ==========" << std::endl;
 
     int neighbor_nx      = neighbor_domain.get_nx();
-    int nx_slab          = (mpi_rank == mpi_size - 1) ? (nx - nx / mpi_size * mpi_rank) : nx / mpi_size;
-    int nx_disp          = nx / mpi_size * mpi_rank;
-    int neighbor_nx_disp = neighbor_nx / mpi_size * mpi_rank;
+    int nx_slab          = MPIUtils::get_slab_length(nx, mpi_rank, mpi_size);
+    int nx_disp          = MPIUtils::get_slab_displacement(nx, mpi_rank, mpi_size);
+    int neighbor_nx_disp = MPIUtils::get_slab_displacement(neighbor_nx, mpi_rank, mpi_size);
 
     field2 f(nx_slab, ny);
 

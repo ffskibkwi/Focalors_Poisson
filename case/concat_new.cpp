@@ -106,12 +106,12 @@ int main(int argc, char* argv[])
     ConcatPoissonSolver2D solver(&v, env_config);
     solver.solve();
 
-    IO::field_to_csv(v_T1, "result/v_T1.txt");
-    IO::field_to_csv(v_T2, "result/v_T2.txt");
-    IO::field_to_csv(v_T3, "result/v_T3.txt");
-    IO::field_to_csv(v_T4, "result/v_T4.txt");
-    IO::field_to_csv(v_T5, "result/v_T5.txt");
-    IO::field_to_csv(v_T6, "result/v_T6.txt");
+    IO::write_csv(v_T1, "result/v_T1.txt");
+    IO::write_csv(v_T2, "result/v_T2.txt");
+    IO::write_csv(v_T3, "result/v_T3.txt");
+    IO::write_csv(v_T4, "result/v_T4.txt");
+    IO::write_csv(v_T5, "result/v_T5.txt");
+    IO::write_csv(v_T6, "result/v_T6.txt");
 
     return 0;
 }

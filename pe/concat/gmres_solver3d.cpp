@@ -75,7 +75,7 @@ GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
 
     V.resize(m + 1);
     for (int i = 0; i <= m; i++)
-        V[i].init(domain->nx, domain->ny, domain->nz, "V_" + std::to_string(i));
+        V[i].init(nx, ny, nz, "V_" + std::to_string(i));
 
     H.resize((m + 1) * m, 0.0);
     cs.resize(m, 0.0);
@@ -88,8 +88,8 @@ GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
 GMRESSolver3D::~GMRESSolver3D()
 {
     delete pe_solver;
-    for (auto* s : S_params)
-        delete s;
+    for (auto* S : S_params)
+        delete S;
 }
 
 void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,

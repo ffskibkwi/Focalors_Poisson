@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/parallel/mpi/mpi_misc.h"
 #include "base/pch.h"
 
 #include <mpi.h>
@@ -34,8 +35,8 @@ public:
         MPI_Comm_rank(communicator, &mpi_rank);
         MPI_Comm_size(communicator, &mpi_size);
 
-        bsnx = (mpi_rank == mpi_size - 1) ? (bnx - bnx / mpi_size * mpi_rank) : bnx / mpi_size;
-        csn  = (mpi_rank == mpi_size - 1) ? (cn - cn / mpi_size * mpi_rank) : cn / mpi_size;
+        bsnx = MPIUtils::get_slab_length(bnx, mpi_rank, mpi_size);
+        csn  = MPIUtils::get_slab_length(cn, mpi_rank, mpi_size);
 
         value.init(csn, cn);
 
@@ -46,8 +47,8 @@ public:
         cs_displacements = new int[mpi_size];
         for (int i = 0; i < mpi_size; i++)
         {
-            cs_lengths[i]       = (i == mpi_size - 1) ? (cn - cn / mpi_size * i) : cn / mpi_size;
-            cs_displacements[i] = i * cn / mpi_size;
+            cs_lengths[i]       = MPIUtils::get_slab_length(cn, i, mpi_size);
+            cs_displacements[i] = MPIUtils::get_slab_displacement(cn, i, mpi_size);
         }
     }
     ~SchurMat2DSlabX()
@@ -67,6 +68,7 @@ public:
     virtual field2 operator*(const field2& root) = 0;
 
     void set_name(const std::string& name) { value.set_name(name); }
+    void write_csv(const std::string& directory);
 };
 
 class SchurMat2DSlabX_left : public SchurMat2DSlabX

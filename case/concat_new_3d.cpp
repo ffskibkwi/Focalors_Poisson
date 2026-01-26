@@ -103,10 +103,10 @@ int main(int argc, char* argv[])
     ConcatPoissonSolver3D solver(&v, env_config);
     solver.solve();
 
-    IO::field_to_csv(v_T1, "result/concat_new_3d/v_T1");
-    IO::field_to_csv(v_T2, "result/concat_new_3d/v_T2");
-    IO::field_to_csv(v_T3, "result/concat_new_3d/v_T3");
-    IO::field_to_csv(v_T4, "result/concat_new_3d/v_T4");
+    IO::write_csv(v_T1, "result/concat_new_3d/v_T1");
+    IO::write_csv(v_T2, "result/concat_new_3d/v_T2");
+    IO::write_csv(v_T3, "result/concat_new_3d/v_T3");
+    IO::write_csv(v_T4, "result/concat_new_3d/v_T4");
 
     return 0;
 }

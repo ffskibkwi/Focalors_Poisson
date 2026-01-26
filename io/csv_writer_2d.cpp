@@ -7,52 +7,52 @@ namespace IO
 {
     namespace
     {
-    const char* position_type_to_string(VariablePositionType type)
-    {
-        switch (type)
+        const char* position_type_to_string(VariablePositionType type)
         {
-            case VariablePositionType::Center:
-                return "Center";
-            case VariablePositionType::XFace:
-                return "XFace";
-            case VariablePositionType::YFace:
-                return "YFace";
-            case VariablePositionType::Corner:
-                return "Corner";
-            default:
-                return "Null";
+            switch (type)
+            {
+                case VariablePositionType::Center:
+                    return "Center";
+                case VariablePositionType::XFace:
+                    return "XFace";
+                case VariablePositionType::YFace:
+                    return "YFace";
+                case VariablePositionType::Corner:
+                    return "Corner";
+                default:
+                    return "Null";
+            }
         }
-    }
 
-    void position_shift(VariablePositionType type, double& shift_x, double& shift_y)
-    {
-        switch (type)
+        void position_shift(VariablePositionType type, double& shift_x, double& shift_y)
         {
-            case VariablePositionType::Center:
-                shift_x = 0.5;
-                shift_y = 0.5;
-                break;
-            case VariablePositionType::XFace:
-                shift_x = 0.0;
-                shift_y = 0.5;
-                break;
-            case VariablePositionType::YFace:
-                shift_x = 0.5;
-                shift_y = 0.0;
-                break;
-            case VariablePositionType::Corner:
-                shift_x = 0.0;
-                shift_y = 0.0;
-                break;
-            default:
-                shift_x = 0.0;
-                shift_y = 0.0;
-                break;
+            switch (type)
+            {
+                case VariablePositionType::Center:
+                    shift_x = 0.5;
+                    shift_y = 0.5;
+                    break;
+                case VariablePositionType::XFace:
+                    shift_x = 0.0;
+                    shift_y = 0.5;
+                    break;
+                case VariablePositionType::YFace:
+                    shift_x = 0.5;
+                    shift_y = 0.0;
+                    break;
+                case VariablePositionType::Corner:
+                    shift_x = 0.0;
+                    shift_y = 0.0;
+                    break;
+                default:
+                    shift_x = 0.0;
+                    shift_y = 0.0;
+                    break;
+            }
         }
-    }
     } // namespace
 
-    bool array_to_csv(double** value, int nx, int ny, const std::string& filename)
+    bool write_csv(double** value, int nx, int ny, const std::string& filename)
     {
         fs::path path(filename);
         fs::path dir = path.parent_path();
@@ -91,7 +91,7 @@ namespace IO
         return true;
     }
 
-    bool field_to_csv(field2& field, const std::string& filename)
+    bool write_csv(field2& field, const std::string& filename)
     {
         fs::path path(filename);
         fs::path dir = path.parent_path();
@@ -130,7 +130,7 @@ namespace IO
         return true;
     }
 
-    bool csv_to_field(field2& field, const std::string& filename)
+    bool read_csv(field2& field, const std::string& filename)
     {
         std::ifstream infile(filename + ".csv");
 
@@ -169,8 +169,7 @@ namespace IO
         return true;
     }
 
-    bool
-    field_and_buffer_to_csv(field2& field, double* buffer, const std::string& filename, VariablePositionType pos_type)
+    bool write_csv(field2& field, double* buffer, const std::string& filename, VariablePositionType pos_type)
     {
         fs::path path(filename);
         fs::path dir = path.parent_path();
@@ -252,7 +251,7 @@ namespace IO
         return true;
     }
 
-    bool var_to_csv(const Variable& var, const std::string& filename)
+    bool write_csv(const Variable& var, const std::string& filename)
     {
         auto& domains        = var.geometry->domains;
         auto& field_map      = var.field_map;
@@ -272,72 +271,31 @@ namespace IO
                 if (var.position_type == VariablePositionType::XFace)
                 {
                     if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
-                        field_to_csv(*field, filename + "_" + domain->name);
+                        write_csv(*field, filename + "_" + domain->name);
                     else
-                        field_and_buffer_to_csv(*field,
-                                                buffers.at(LocationType::Right),
-                                                filename + "_" + domain->name,
-                                                VariablePositionType::XFace);
+                        write_csv(*field,
+                                  buffers.at(LocationType::Right),
+                                  filename + "_" + domain->name,
+                                  VariablePositionType::XFace);
                 }
                 else if (var.position_type == VariablePositionType::YFace)
                 {
                     if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
-                        field_to_csv(*field, filename + "_" + domain->name);
+                        write_csv(*field, filename + "_" + domain->name);
                     else
-                        field_and_buffer_to_csv(*field,
-                                                buffers.at(LocationType::Up),
-                                                filename + "_" + domain->name,
-                                                VariablePositionType::YFace);
+                        write_csv(*field,
+                                  buffers.at(LocationType::Up),
+                                  filename + "_" + domain->name,
+                                  VariablePositionType::YFace);
                 }
                 else
                 {
-                    field_to_csv(*field, filename + "_" + domain->name);
+                    write_csv(*field, filename + "_" + domain->name);
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[var_to_csv] Error: " << e.what() << std::endl;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool var_to_csv_full(const Variable& var, const std::string& filename)
-    {
-        auto& domains    = var.geometry->domains;
-        auto& field_map  = var.field_map;
-        auto& buffer_map = var.buffer_map;
-
-        for (auto& domain : domains)
-        {
-            try
-            {
-                auto& field   = field_map.at(domain);
-                auto& buffers = buffer_map.at(domain);
-
-                if (var.position_type == VariablePositionType::XFace)
-                {
-                    field_and_buffer_to_csv(*field,
-                                            buffers.at(LocationType::Right),
-                                            filename + "_" + domain->name,
-                                            VariablePositionType::XFace);
-                }
-                else if (var.position_type == VariablePositionType::YFace)
-                {
-                    field_and_buffer_to_csv(*field,
-                                            buffers.at(LocationType::Up),
-                                            filename + "_" + domain->name,
-                                            VariablePositionType::YFace);
-                }
-                else
-                {
-                    field_to_csv(*field, filename + "_" + domain->name);
-                }
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "[var_to_csv_full] Error: " << e.what() << std::endl;
+                std::cerr << "[write_csv] Error: " << e.what() << std::endl;
                 return false;
             }
         }
@@ -352,11 +310,11 @@ namespace IO
             return false;
         }
 
-        fs::path path(filename);
-        fs::path dir      = path.parent_path();
-        std::string stem  = path.stem().string();
-        std::string base  = stem;
-        std::string ext   = path.extension().string();
+        fs::path    path(filename);
+        fs::path    dir         = path.parent_path();
+        std::string stem        = path.stem().string();
+        std::string base        = stem;
+        std::string ext         = path.extension().string();
         std::string read_suffix = "_read";
 
         if (ext == ".m")
@@ -407,12 +365,10 @@ namespace IO
             outfile << "domains(" << idx << ").ly = " << domain->get_ly() << ";\n";
             outfile << "domains(" << idx << ").field = readmatrix([base '_" << domain->name << ".csv']);\n";
             outfile << "domains(" << idx << ").size = size(domains(" << idx << ").field);\n";
-            outfile << "domains(" << idx << ").x = domains(" << idx
-                    << ").offset(1) + (shift_x + (0:domains(" << idx << ").size(1)-1)) * domains(" << idx
-                    << ").hx;\n";
-            outfile << "domains(" << idx << ").y = domains(" << idx
-                    << ").offset(2) + (shift_y + (0:domains(" << idx << ").size(2)-1)) * domains(" << idx
-                    << ").hy;\n\n";
+            outfile << "domains(" << idx << ").x = domains(" << idx << ").offset(1) + (shift_x + (0:domains(" << idx
+                    << ").size(1)-1)) * domains(" << idx << ").hx;\n";
+            outfile << "domains(" << idx << ").y = domains(" << idx << ").offset(2) + (shift_y + (0:domains(" << idx
+                    << ").size(2)-1)) * domains(" << idx << ").hy;\n\n";
             idx++;
         }
 

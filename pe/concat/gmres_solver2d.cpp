@@ -33,7 +33,7 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
 
     V.resize(m + 1);
     for (int i = 0; i <= m; i++)
-        V[i].init(domain->nx, domain->ny);
+        V[i].init(nx, ny);
 
     H.resize((m + 1) * m, 0.0);
     cs.resize(m, 0.0);
@@ -43,7 +43,12 @@ GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
     resVec.clear();
 }
 
-GMRESSolver2D::~GMRESSolver2D() { delete pe_solver; }
+GMRESSolver2D::~GMRESSolver2D()
+{
+    delete pe_solver;
+    for (auto* S : S_params)
+        delete S;
+}
 
 void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
@@ -66,7 +71,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debug_gmres)
-                    current->dump_to_csv(env_config->debugOutputDir);
+                    current->write_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -75,7 +80,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debug_gmres)
-                    current->dump_to_csv(env_config->debugOutputDir);
+                    current->write_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -84,7 +89,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debug_gmres)
-                    current->dump_to_csv(env_config->debugOutputDir);
+                    current->write_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -93,7 +98,7 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 if (env_config && env_config->debug_gmres)
-                    current->dump_to_csv(env_config->debugOutputDir);
+                    current->write_csv(env_config->debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -144,7 +149,7 @@ void GMRESSolver2D::solve(field2& b)
     {
         std::string fname_rhs =
             env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::field_to_csv(b, fname_rhs);
+        IO::write_csv(b, fname_rhs);
     }
 
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
@@ -267,7 +272,7 @@ void GMRESSolver2D::solve(field2& b)
     {
         std::string fname_sol =
             env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::field_to_csv(b, fname_sol);
+        IO::write_csv(b, fname_sol);
     }
     solve_call_count++;
 

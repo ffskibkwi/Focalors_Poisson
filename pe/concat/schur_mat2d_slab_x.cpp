@@ -3,6 +3,8 @@
 #include "domain_solver.h"
 #include "io/csv_writer_2d.h"
 
+void SchurMat2DSlabX::write_csv(const std::string& directory) { IO::write_csv(value, directory); }
+
 void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);

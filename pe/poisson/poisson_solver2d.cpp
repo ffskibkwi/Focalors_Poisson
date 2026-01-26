@@ -111,7 +111,7 @@ void PoissonSolver2D::solve(field2& f)
     {
         std::string fname_rhs =
             env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::field_to_csv(f, fname_rhs);
+        IO::write_csv(f, fname_rhs);
     }
 
     buffer.set_size(nx, ny);
@@ -131,7 +131,7 @@ void PoissonSolver2D::solve(field2& f)
     {
         std::string fname_sol =
             env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::field_to_csv(f, fname_sol);
+        IO::write_csv(f, fname_sol);
     }
 
     solve_call_count++;

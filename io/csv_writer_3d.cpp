@@ -5,7 +5,7 @@
 
 namespace IO
 {
-    bool field_to_csv(field3& field, const std::string& filename)
+    bool write_csv(field3& field, const std::string& filename)
     {
         fs::path path(filename);
         fs::path dir = path.parent_path();
@@ -47,7 +47,7 @@ namespace IO
         return true;
     }
 
-    bool csv_to_field(field3& field, const std::string& filename)
+    bool read_csv(field3& field, const std::string& filename)
     {
         std::ifstream infile(filename + ".csv");
 
@@ -92,8 +92,7 @@ namespace IO
         return true;
     }
 
-    bool
-    field_and_buffer_to_csv(field3& field, field2& buffer, const std::string& filename, VariablePositionType pos_type)
+    bool write_csv(field3& field, field2& buffer, const std::string& filename, VariablePositionType pos_type)
     {
         fs::path path(filename);
         fs::path dir = path.parent_path();
@@ -212,7 +211,7 @@ namespace IO
         return true;
     }
 
-    bool var_to_csv(const Variable3D& var, const std::string& filename)
+    bool write_csv(const Variable3D& var, const std::string& filename)
     {
         auto& domains        = var.geometry->domains;
         auto& field_map      = var.field_map;
@@ -233,41 +232,41 @@ namespace IO
                 if (var.position_type == VariablePositionType::XFace)
                 {
                     if (boundary_type.at(LocationType::Right) == PDEBoundaryType::Adjacented)
-                        field_to_csv(*field, filename + "_" + domain->name);
+                        write_csv(*field, filename + "_" + domain->name);
                     else
-                        field_and_buffer_to_csv(*field,
-                                                *buffers.at(LocationType::Right),
-                                                filename + "_" + domain->name,
-                                                VariablePositionType::XFace);
+                        write_csv(*field,
+                                  *buffers.at(LocationType::Right),
+                                  filename + "_" + domain->name,
+                                  VariablePositionType::XFace);
                 }
                 else if (var.position_type == VariablePositionType::YFace)
                 {
                     if (boundary_type.at(LocationType::Back) == PDEBoundaryType::Adjacented)
-                        field_to_csv(*field, filename + "_" + domain->name);
+                        write_csv(*field, filename + "_" + domain->name);
                     else
-                        field_and_buffer_to_csv(*field,
-                                                *buffers.at(LocationType::Back),
-                                                filename + "_" + domain->name,
-                                                VariablePositionType::YFace);
+                        write_csv(*field,
+                                  *buffers.at(LocationType::Back),
+                                  filename + "_" + domain->name,
+                                  VariablePositionType::YFace);
                 }
                 else if (var.position_type == VariablePositionType::ZFace)
                 {
                     if (boundary_type.at(LocationType::Up) == PDEBoundaryType::Adjacented)
-                        field_to_csv(*field, filename + "_" + domain->name);
+                        write_csv(*field, filename + "_" + domain->name);
                     else
-                        field_and_buffer_to_csv(*field,
-                                                *buffers.at(LocationType::Up),
-                                                filename + "_" + domain->name,
-                                                VariablePositionType::ZFace);
+                        write_csv(*field,
+                                  *buffers.at(LocationType::Up),
+                                  filename + "_" + domain->name,
+                                  VariablePositionType::ZFace);
                 }
                 else
                 {
-                    field_to_csv(*field, filename + "_" + domain->name);
+                    write_csv(*field, filename + "_" + domain->name);
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "[var_to_csv] Error: " << e.what() << std::endl;
+                std::cerr << "[write_csv] Error: " << e.what() << std::endl;
                 return false;
             }
         }

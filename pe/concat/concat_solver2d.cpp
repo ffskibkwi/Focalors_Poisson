@@ -171,7 +171,7 @@ void ConcatPoissonSolver2D::solve()
             if (env_config && env_config->debug_concat)
             {
                 std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
-                IO::field_to_csv(*temp_fields[domain], fname_Ainv);
+                IO::write_csv(*temp_fields[domain], fname_Ainv);
             }
             if (env_config && env_config->showCurrentStep)
             {

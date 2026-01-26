@@ -6,7 +6,6 @@
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "io/config.h"
-#include "pe/poisson/chasing_method2d.h"
 #include "pe/poisson/poisson_solver2d.h"
 #include "schur_mat2d.h"
 #include <unordered_map>
@@ -30,10 +29,7 @@ public:
     // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b
     void set_initial_guess(field2* x0) { x0_override = x0; }
 
-    // 统一：环境配置通过构造函数传入
-
 private:
-    // 成员参数（原 gmres 的未指定入参）：
     Domain2DUniform*         domain;
     Variable*                variable = nullptr;
     std::vector<SchurMat2D*> S_params;
@@ -43,7 +39,6 @@ private:
 
     PoissonSolver2D* pe_solver;
 
-    // 预分配的临时缓冲（避免在 solve 中动态分配）：
     std::vector<field2> V;      // 大小 m+1，每个与域尺寸一致
     std::vector<double> H;      // 大小 (m+1)*m
     std::vector<double> cs;     // 大小 m
@@ -52,7 +47,6 @@ private:
     std::vector<double> y;      // 最大大小 m（使用前 j 元素）
     std::vector<double> resVec; // 残差历史（每次 solve 前清空）
 
-    // 复用的 field2 缓冲，避免 solve 内部动态分配
     field2 x_buf;
     field2 r_buf;
     field2 w_buf;
@@ -60,14 +54,11 @@ private:
     field2 mul_buf;
     field2 afun_buf;
 
-    // 可选初值覆盖
     field2* x0_override = nullptr;
 
-    // 环境配置（只读使用）
     EnvironmentConfig* env_config = nullptr;
     EnvironmentConfig  inner_env_config; // 用于内部 Poisson（关闭 showCurrentStep）
 
-    // 与原实现一致的 Afun
     field2& Afun(field2& x);
 
     void maybe_print_res() const;

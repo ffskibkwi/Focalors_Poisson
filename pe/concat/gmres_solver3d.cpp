@@ -1,7 +1,4 @@
 #include "gmres_solver3d.h"
-#include <cmath>
-#include <iostream>
-#include <vector>
 
 namespace
 {

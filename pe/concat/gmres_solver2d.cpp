@@ -1,7 +1,5 @@
 #include "gmres_solver2d.h"
-#include <cmath>
-#include <iostream>
-#include <vector>
+#include "io/csv_writer_2d.h"
 
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform*   in_domain,
                              Variable*          in_variable,
@@ -136,9 +134,6 @@ void GMRESSolver2D::maybe_print_res() const
         std::cout << "]" << std::endl;
     }
 }
-
-#include "io/csv_writer_2d.h"
-#include <string>
 
 void GMRESSolver2D::solve(field2& b)
 {

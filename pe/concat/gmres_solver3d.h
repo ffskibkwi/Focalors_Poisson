@@ -7,7 +7,6 @@
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "io/config.h"
-#include "pe/poisson/chasing_method3d.h"
 #include "pe/poisson/poisson_solver3d.h"
 #include "schur_mat3d.h"
 #include <unordered_map>

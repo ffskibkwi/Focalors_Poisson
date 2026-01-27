@@ -27,7 +27,7 @@ public:
     }
 };
 
-void test(const std::string& label, LocationType neighbor_loc)
+void test(LocationType neighbor_loc)
 {
     int mpi_rank = 0, mpi_size = 1;
 
@@ -35,7 +35,7 @@ void test(const std::string& label, LocationType neighbor_loc)
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     if (mpi_rank == 0)
-        std::cout << "\n========== Testing " << label << " ==========" << std::endl;
+        std::cout << "\n========== Testing " << neighbor_loc << " ==========" << std::endl;
 
     int nx          = 3;
     int ny          = 5;
@@ -103,10 +103,10 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    test("LEFT", LocationType::Left);
-    test("RIGHT", LocationType::Right);
-    test("DOWN", LocationType::Down);
-    test("UP", LocationType::Up);
+    test(LocationType::Left);
+    test(LocationType::Right);
+    test(LocationType::Down);
+    test(LocationType::Up);
 
     MPI_Finalize();
 

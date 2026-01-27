@@ -5,6 +5,28 @@
 
 #include <string>
 
+PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
+                                           int             in_ny,
+                                           double          in_hx,
+                                           double          in_hy,
+                                           PDEBoundaryType in_boundary_type_left,
+                                           PDEBoundaryType in_boundary_type_right,
+                                           PDEBoundaryType in_boundary_type_down,
+                                           PDEBoundaryType in_boundary_type_up,
+                                           MPI_Comm        in_communicator)
+    : PoissonSolver2DBase(in_nx,
+                          in_ny,
+                          in_hx,
+                          in_hy,
+                          in_boundary_type_left,
+                          in_boundary_type_right,
+                          in_boundary_type_down,
+                          in_boundary_type_up)
+    , communicator(in_communicator)
+{
+    init();
+}
+
 PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
                                            Variable*          in_variable,
                                            EnvironmentConfig* in_env_config,
@@ -20,6 +42,11 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
     , domain_name(in_domain->name)
     , env_config(in_env_config)
     , communicator(in_communicator)
+{
+    init();
+}
+
+void PoissonSolver2DSlabX::init()
 {
     MPI_Comm_rank(communicator, &mpi_rank);
     MPI_Comm_size(communicator, &mpi_size);

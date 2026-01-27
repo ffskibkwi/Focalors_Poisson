@@ -2,6 +2,26 @@
 #include "io/csv_writer_2d.h"
 #include <string>
 
+PoissonSolver2D::PoissonSolver2D(int             in_nx,
+                                 int             in_ny,
+                                 double          in_hx,
+                                 double          in_hy,
+                                 PDEBoundaryType in_boundary_type_left,
+                                 PDEBoundaryType in_boundary_type_right,
+                                 PDEBoundaryType in_boundary_type_down,
+                                 PDEBoundaryType in_boundary_type_up)
+    : PoissonSolver2DBase(in_nx,
+                          in_ny,
+                          in_hx,
+                          in_hy,
+                          in_boundary_type_left,
+                          in_boundary_type_right,
+                          in_boundary_type_down,
+                          in_boundary_type_up)
+{
+    init();
+}
+
 PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config)
     : PoissonSolver2DBase(in_domain->nx,
                           in_domain->ny,
@@ -13,6 +33,11 @@ PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variab
                           in_variable->boundary_type_map[in_domain][LocationType::Up])
     , domain_name(in_domain->name)
     , env_config(in_env_config)
+{
+    init();
+}
+
+void PoissonSolver2D::init()
 {
     buffer.init(nx, ny, "buffer");
 

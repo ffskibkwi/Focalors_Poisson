@@ -1,5 +1,33 @@
 #include "poisson_solver3d.h"
 
+PoissonSolver3D::PoissonSolver3D(int             in_nx,
+                                 int             in_ny,
+                                 int             in_nz,
+                                 double          in_hx,
+                                 double          in_hy,
+                                 double          in_hz,
+                                 PDEBoundaryType in_boundary_type_left,
+                                 PDEBoundaryType in_boundary_type_right,
+                                 PDEBoundaryType in_boundary_type_front,
+                                 PDEBoundaryType in_boundary_type_back,
+                                 PDEBoundaryType in_boundary_type_down,
+                                 PDEBoundaryType in_boundary_type_up)
+    : PoissonSolver3DBase(in_nx,
+                          in_ny,
+                          in_nz,
+                          in_hx,
+                          in_hy,
+                          in_hz,
+                          in_boundary_type_left,
+                          in_boundary_type_right,
+                          in_boundary_type_front,
+                          in_boundary_type_back,
+                          in_boundary_type_down,
+                          in_boundary_type_up)
+{
+    init();
+}
+
 PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable, EnvironmentConfig* in_env_config)
     : PoissonSolver3DBase(in_domain->nx,
                           in_domain->ny,
@@ -15,6 +43,11 @@ PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_vari
                           in_variable->boundary_type_map[in_domain][LocationType::Up])
     , domain_name(in_domain->name)
     , env_config(in_env_config)
+{
+    init();
+}
+
+void PoissonSolver3D::init()
 {
     buffer.init(nx, ny, nz, "buffer");
 

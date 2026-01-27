@@ -14,6 +14,8 @@ enum class LocationType : std::uint8_t
     Back
 };
 
+std::ostream& operator<<(std::ostream& os, LocationType type);
+
 /**
  * @brief Get the opposite location type
  * @param location The location type
@@ -48,6 +50,8 @@ enum class PDEBoundaryType : std::uint8_t
     Adjacented,
     Null // Default boundary type
 };
+
+std::ostream& operator<<(std::ostream& os, PDEBoundaryType type);
 
 bool isDirLike(PDEBoundaryType t);
 

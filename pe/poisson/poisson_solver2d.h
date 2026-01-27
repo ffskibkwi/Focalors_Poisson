@@ -11,11 +11,21 @@ class PoissonSolver2D : public PoissonSolver2DBase
 {
 public:
     PoissonSolver2D() {};
+    PoissonSolver2D(int             in_nx,
+                    int             in_ny,
+                    double          in_hx,
+                    double          in_hy,
+                    PDEBoundaryType in_boundary_type_left,
+                    PDEBoundaryType in_boundary_type_right,
+                    PDEBoundaryType in_boundary_type_down,
+                    PDEBoundaryType in_boundary_type_up);
     PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
 
     void solve(field2& f) override;
 
 private:
+    void init();
+
     field2 buffer;
 
     std::string domain_name;

@@ -49,6 +49,8 @@ enum class PDEBoundaryType : std::uint8_t
     Null // Default boundary type
 };
 
+bool isDirLike(PDEBoundaryType t);
+
 enum class FluidBoundaryType : std::uint8_t
 {
     Wall,       // Wall boundary; velocity -> Dirichlet; pressure -> Neumann

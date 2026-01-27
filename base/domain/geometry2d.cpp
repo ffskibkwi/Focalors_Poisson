@@ -168,8 +168,9 @@ void Geometry2D::build_tree()
         tree_root = domains[0];
     else
         tree_root = TreeUtils::findOptimalRoot(adjacency);
-    tree_map   = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
-    parent_map = TreeUtils::buildParentMapFromTree(tree_map);
+    tree_map             = TreeUtils::buildTreeMapFromRoot(tree_root, adjacency);
+    parent_map           = TreeUtils::buildParentMapFromTree(tree_map);
+    hierarchical_domains = TreeUtils::buildLevelsFromTree(tree_root, tree_map);
 
     is_prepared = true;
 }

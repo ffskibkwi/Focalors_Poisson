@@ -23,27 +23,28 @@ public:
 
     Variable2D() = default;
     Variable2D(const std::string& in_name);
-    ~Variable2D() = default;
+    virtual ~Variable2D() = default;
 
     VariablePositionType position_type = VariablePositionType::Null;
 
-    void set_geometry(Geometry2D& g);
+    virtual void set_geometry(Geometry2D& g);
 
-    void check_geometry(Domain2DUniform* s);
+    virtual void check_geometry(Domain2DUniform* s);
 
-    void set_center_field(Domain2DUniform* s, field2& f);
-    void set_x_edge_field(Domain2DUniform* s, field2& f);
-    void set_y_edge_field(Domain2DUniform* s, field2& f);
-    void set_corner_field(Domain2DUniform* s, field2& f);
+    virtual void set_center_field(Domain2DUniform* s, field2& f);
+    virtual void set_x_edge_field(Domain2DUniform* s, field2& f);
+    virtual void set_y_edge_field(Domain2DUniform* s, field2& f);
+    virtual void set_corner_field(Domain2DUniform* s, field2& f);
 
-    void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
-    void set_boundary_type(Domain2DUniform* s, std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
-    void fill_boundary_type(PDEBoundaryType type);
+    virtual void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
+    virtual void set_boundary_type(Domain2DUniform*                                                s,
+                                   std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
+    virtual void fill_boundary_type(PDEBoundaryType type);
 
-    void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
-    void
+    virtual void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
+    virtual void
     set_boundary_value_from_func_global(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f);
-    void fill_boundary_value_from_func_global(std::function<double(double, double)> f);
+    virtual void fill_boundary_value_from_func_global(std::function<double(double, double)> f);
 
-    void set_value_from_func_global(std::function<double(double, double)> func);
+    virtual void set_value_from_func_global(std::function<double(double, double)> func);
 };

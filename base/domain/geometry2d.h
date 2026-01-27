@@ -29,6 +29,7 @@ public:
     Domain2DUniform*                                                                         tree_root = nullptr;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>>          parent_map;
+    std::vector<std::vector<Domain2DUniform*>>                                               hierarchical_domains;
 
     Geometry2D() = default;
     ~Geometry2D();

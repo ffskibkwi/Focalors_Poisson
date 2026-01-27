@@ -4,18 +4,9 @@
 #include <algorithm>
 #include <array>
 
-namespace
-{
-    constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
-        LocationType::Left,
-        LocationType::Right,
-        LocationType::Down,
-        LocationType::Up,
-    };
-}
-
-Variable2DSlabX::Variable2DSlabX(const std::string& in_name)
-    : name(in_name)
+Variable2DSlabX::Variable2DSlabX(const std::string& in_name, MPI_Comm _communicator)
+    : Variable2D(in_name)
+    , communicator(_communicator)
 {}
 
 /**
@@ -24,39 +15,38 @@ Variable2DSlabX::Variable2DSlabX(const std::string& in_name)
  */
 void Variable2DSlabX::set_geometry(Geometry2D& g)
 {
-    geometry = &g;
-    for (auto& domainAdjPair : geometry->adjacency)
+    MPI_Comm_rank(communicator, &mpi_rank);
+    MPI_Comm_size(communicator, &mpi_size);
+
+    Variable2D::set_geometry(g);
+
+    for (auto level : g.hierarchical_domains)
     {
-        Domain2DUniform* domain = domainAdjPair.first;
-        for (auto& locToNeighbor : domainAdjPair.second)
+        int nx_sum = 0;
+        for (auto domain : level)
+            nx_sum += domain->get_nx();
+
+        int color = 0;
+        int right = 0;
+        for (int i = 0; i < level.size() - 1; i++)
         {
-            LocationType loc               = locToNeighbor.first;
-            boundary_type_map[domain][loc] = PDEBoundaryType::Adjacented;
+            auto domain = level[i];
+
+            int comm_size = (double)domain->get_nx() / nx_sum * mpi_size;
+            if (comm_size == 0)
+                comm_size = 1;
+            right += comm_size;
+
+            if (mpi_rank >= right)
+                color++;
         }
-    }
 
-    // We suppose that when set the variable, the consstuction of the geometry has been finished
-    // So we initial the corner boundary map here
-    for (auto& domain : geometry->domains)
-    {
-        left_up_corner_value_map[domain]    = 0.0;
-        right_down_corner_value_map[domain] = 0.0;
-    }
-}
+        MPI_Comm slab_comm;
+        MPI_Comm_split(MPI_COMM_WORLD, color, mpi_rank, &slab_comm);
 
-/**
- * @brief Check geometry (before set fields)
- * @throws std::runtime_error If geometry is not set, domain is not part of the geometry,
- *         or the domain mesh size is invalid.
- */
-void Variable2DSlabX::check_geometry(Domain2DUniform* s)
-{
-    if (geometry == nullptr)
-        throw std::runtime_error("Variable2DSlabX has no geometry set");
-    if (s->parent != geometry)
-        throw std::runtime_error("Domain not found in geometry");
-    if (s->nx <= 0 || s->ny <= 0)
-        throw std::runtime_error("Domain mesh size invalid");
+        hierarchical_slab_parent.push_back(level[color]);
+        hierarchical_slab_comm.push_back(slab_comm);
+    }
 }
 
 /**

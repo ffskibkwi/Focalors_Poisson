@@ -1,5 +1,4 @@
 #include "concat_solver2d.h"
-#include "base/domain/geometry_tree.hpp"
 #include "io/csv_writer_2d.h"
 
 #include <chrono>
@@ -30,12 +29,11 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, Environmen
     if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
         variable->geometry->solve_prepare();
 
-    tree_root  = variable->geometry->tree_root;
-    tree_map   = variable->geometry->tree_map;
-    parent_map = variable->geometry->parent_map;
-    field_map  = variable->field_map;
-
-    solve_order = TreeUtils::buildLevelsFromTree(tree_root, tree_map);
+    tree_root   = variable->geometry->tree_root;
+    tree_map    = variable->geometry->tree_map;
+    parent_map  = variable->geometry->parent_map;
+    field_map   = variable->field_map;
+    solve_order = variable->geometry->hierarchical_domains;
     solve_order.erase(solve_order.begin()); // erase tree_root
     construct_solver_map();
     // Construct the temp field for each domain

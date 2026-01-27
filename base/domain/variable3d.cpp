@@ -4,18 +4,6 @@
 #include <algorithm>
 #include <array>
 
-namespace
-{
-    constexpr std::array<LocationType, 6> kBoundaryLocations3D = {
-        LocationType::Left,
-        LocationType::Right,
-        LocationType::Front,
-        LocationType::Back,
-        LocationType::Down,
-        LocationType::Up,
-    };
-}
-
 Variable3D::Variable3D(const std::string& in_name)
     : name(in_name)
 {}

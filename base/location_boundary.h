@@ -15,6 +15,22 @@ enum class LocationType : std::uint8_t
     Back
 };
 
+constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
+    LocationType::Left,
+    LocationType::Right,
+    LocationType::Down,
+    LocationType::Up,
+};
+
+constexpr std::array<LocationType, 6> kBoundaryLocations3D = {
+    LocationType::Left,
+    LocationType::Right,
+    LocationType::Front,
+    LocationType::Back,
+    LocationType::Down,
+    LocationType::Up,
+};
+
 std::ostream& operator<<(std::ostream& os, LocationType type);
 
 /**

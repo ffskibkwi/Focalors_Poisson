@@ -4,16 +4,6 @@
 #include <algorithm>
 #include <array>
 
-namespace
-{
-    constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
-        LocationType::Left,
-        LocationType::Right,
-        LocationType::Down,
-        LocationType::Up,
-    };
-}
-
 Variable2D::Variable2D(const std::string& in_name)
     : name(in_name)
 {}

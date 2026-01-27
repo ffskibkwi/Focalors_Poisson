@@ -79,7 +79,7 @@ void test(const std::string& label, LocationType neighbor_loc)
     {
         for (int j = 0; j < p_root.get_ny(); j++)
         {
-            p_root(i, j) = i * p_root.get_ny() + j + 1;
+            p_root(i, j) = (i + nx_disp) * p_root.get_ny() + j + 1;
         }
     }
 

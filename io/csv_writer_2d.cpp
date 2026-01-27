@@ -251,7 +251,7 @@ namespace IO
         return true;
     }
 
-    bool write_csv(const Variable& var, const std::string& filename)
+    bool write_csv(const Variable2D& var, const std::string& filename)
     {
         auto& domains        = var.geometry->domains;
         auto& field_map      = var.field_map;
@@ -302,7 +302,7 @@ namespace IO
         return true;
     }
 
-    bool matlab_read_var(const Variable& var, const std::string& filename)
+    bool matlab_read_var(const Variable2D& var, const std::string& filename)
     {
         if (!var.geometry)
         {

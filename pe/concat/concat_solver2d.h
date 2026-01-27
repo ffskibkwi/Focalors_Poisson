@@ -5,7 +5,7 @@
 #include "base/domain/domain2d.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"
-#include "base/domain/variable.h"
+#include "base/domain/variable2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
 #include "gmres_solver2d.h"
@@ -19,9 +19,9 @@ class ConcatPoissonSolver2D
 {
     // Simple: Only for single main domain geometry
 public:
-    Variable* variable = nullptr;
+    Variable2D* variable = nullptr;
 
-    ConcatPoissonSolver2D(Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~ConcatPoissonSolver2D();
 
     // void init();

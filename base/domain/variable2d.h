@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-class Variable
+class Variable2D
 {
 public:
     std::string                                                                     name;
@@ -21,9 +21,9 @@ public:
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>>         boundary_value_map;
 
-    Variable() = default;
-    Variable(const std::string& in_name);
-    ~Variable() = default;
+    Variable2D() = default;
+    Variable2D(const std::string& in_name);
+    ~Variable2D() = default;
 
     VariablePositionType position_type = VariablePositionType::Null;
 

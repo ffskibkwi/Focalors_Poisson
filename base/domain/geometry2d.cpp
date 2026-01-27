@@ -55,7 +55,7 @@ void Geometry2D::connect(Domain2DUniform* a, LocationType dir, Domain2DUniform* 
     adjacency[a][dir]           = b;
     adjacency[b][opposite(dir)] = a;
 
-    // 不再在几何层面设置边界类型，边界类型应绑定在 Variable 上
+    // 不再在几何层面设置边界类型，边界类型应绑定在 Variable2D 上
 
     // Set the size
     // In  this function, b is decided by a
@@ -83,7 +83,7 @@ void Geometry2D::check()
         // Check the domain profile
         if (!s->check_profile())
             throw std::runtime_error("Domain " + s->name + " has invalid profile");
-        // 不再在几何层面校验边界类型（边界由 Variable 管理）
+        // 不再在几何层面校验边界类型（边界由 Variable2D 管理）
         // Deprecated: single main domain detection is removed in favor of tree-based analysis
     }
 

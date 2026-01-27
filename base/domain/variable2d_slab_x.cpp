@@ -1,4 +1,4 @@
-#include "variable.h"
+#include "variable2d_slab_x.h"
 #include "base/parallel/omp/enable_openmp.h"
 
 #include <algorithm>
@@ -14,7 +14,7 @@ namespace
     };
 }
 
-Variable::Variable(const std::string& in_name)
+Variable2DSlabX::Variable2DSlabX(const std::string& in_name)
     : name(in_name)
 {}
 
@@ -22,7 +22,7 @@ Variable::Variable(const std::string& in_name)
  * @brief Attach this variable to a geometry.
  * @param g Geometry to bind to this variable.
  */
-void Variable::set_geometry(Geometry2D& g)
+void Variable2DSlabX::set_geometry(Geometry2D& g)
 {
     geometry = &g;
     for (auto& domainAdjPair : geometry->adjacency)
@@ -49,10 +49,10 @@ void Variable::set_geometry(Geometry2D& g)
  * @throws std::runtime_error If geometry is not set, domain is not part of the geometry,
  *         or the domain mesh size is invalid.
  */
-void Variable::check_geometry(Domain2DUniform* s)
+void Variable2DSlabX::check_geometry(Domain2DUniform* s)
 {
     if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
+        throw std::runtime_error("Variable2DSlabX has no geometry set");
     if (s->parent != geometry)
         throw std::runtime_error("Domain not found in geometry");
     if (s->nx <= 0 || s->ny <= 0)
@@ -68,7 +68,7 @@ void Variable::check_geometry(Domain2DUniform* s)
  *
  * If the field name is "Default", it will be initialized with the name "variable".
  */
-void Variable::set_center_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_center_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
@@ -86,7 +86,7 @@ void Variable::set_center_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Center;
 }
 
-void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_x_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
@@ -105,7 +105,7 @@ void Variable::set_x_edge_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::XFace;
 }
 
-void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_y_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
@@ -124,7 +124,7 @@ void Variable::set_y_edge_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::YFace;
 }
 
-void Variable::set_corner_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
@@ -143,7 +143,7 @@ void Variable::set_corner_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Corner;
 }
 
-void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
+void Variable2DSlabX::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
 {
     check_geometry(s);
     // 若该侧为几何邻接面，则仅允许设置为 Adjacented
@@ -167,8 +167,8 @@ void Variable::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBounda
     boundary_type_map[s][loc] = type;
 }
 
-void Variable::set_boundary_type(Domain2DUniform*                                                s,
-                                 std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list)
+void Variable2DSlabX::set_boundary_type(Domain2DUniform*                                                s,
+                                        std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list)
 {
     for (const auto& pair : list)
     {
@@ -176,10 +176,10 @@ void Variable::set_boundary_type(Domain2DUniform*                               
     }
 }
 
-void Variable::fill_boundary_type(PDEBoundaryType type)
+void Variable2DSlabX::fill_boundary_type(PDEBoundaryType type)
 {
     if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
+        throw std::runtime_error("Variable2DSlabX has no geometry set");
 
     for (auto* domain : geometry->domains)
     {
@@ -193,7 +193,7 @@ void Variable::fill_boundary_type(PDEBoundaryType type)
     }
 }
 
-void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
+void Variable2DSlabX::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
@@ -217,9 +217,9 @@ void Variable::set_boundary_value(Domain2DUniform* s, LocationType loc, double i
     }
 }
 
-void Variable::set_boundary_value_from_func_global(Domain2DUniform*                      s,
-                                                   LocationType                          loc,
-                                                   std::function<double(double, double)> f)
+void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*                      s,
+                                                          LocationType                          loc,
+                                                          std::function<double(double, double)> f)
 {
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
@@ -292,10 +292,10 @@ void Variable::set_boundary_value_from_func_global(Domain2DUniform*             
     }
 }
 
-void Variable::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
+void Variable2DSlabX::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
 {
     if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
+        throw std::runtime_error("Variable2DSlabX has no geometry set");
 
     for (auto* domain : geometry->domains)
     {
@@ -317,7 +317,7 @@ void Variable::fill_boundary_value_from_func_global(std::function<double(double,
     }
 }
 
-void Variable::set_value_from_func_global(std::function<double(double, double)> func)
+void Variable2DSlabX::set_value_from_func_global(std::function<double(double, double)> func)
 {
     double shift_x = 0.5;
     double shift_y = 0.5;

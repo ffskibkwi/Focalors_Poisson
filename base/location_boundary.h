@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <stdexcept>
 
 enum class LocationType : std::uint8_t

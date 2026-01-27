@@ -1,7 +1,7 @@
 #include "base/domain/domain2d.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"
-#include "base/domain/variable.h"
+#include "base/domain/variable2d.h"
 #include "base/field/field2.h"
 #include "pe/concat/gmres_solver2d.h"
 

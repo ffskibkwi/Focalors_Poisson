@@ -12,7 +12,7 @@ void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIte
     maxIter = in_maxIter;
 }
 
-ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable* in_variable, EnvironmentConfig* in_env_config)
+ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config)
     : variable(in_variable)
     , env_config(in_env_config)
 {

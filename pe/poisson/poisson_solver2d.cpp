@@ -22,7 +22,7 @@ PoissonSolver2D::PoissonSolver2D(int             in_nx,
     init();
 }
 
-PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config)
+PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable2D* in_variable, EnvironmentConfig* in_env_config)
     : PoissonSolver2DBase(in_domain->nx,
                           in_domain->ny,
                           in_domain->hx,

@@ -28,7 +28,7 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
 }
 
 PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
-                                           Variable*          in_variable,
+                                           Variable2D*        in_variable,
                                            EnvironmentConfig* in_env_config,
                                            MPI_Comm           in_communicator)
     : PoissonSolver2DBase(in_domain->nx,

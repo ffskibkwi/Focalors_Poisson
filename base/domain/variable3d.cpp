@@ -252,7 +252,7 @@ void Variable3D::set_boundary_type(Domain3DUniform*                             
 void Variable3D::fill_boundary_type(PDEBoundaryType type)
 {
     if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
+        throw std::runtime_error("Variable2D has no geometry set");
 
     for (auto* domain : geometry->domains)
     {
@@ -430,7 +430,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 void Variable3D::fill_boundary_value_from_func_global(std::function<double(double, double, double)> f)
 {
     if (geometry == nullptr)
-        throw std::runtime_error("Variable has no geometry set");
+        throw std::runtime_error("Variable2D has no geometry set");
 
     for (auto* domain : geometry->domains)
     {

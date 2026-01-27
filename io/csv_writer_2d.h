@@ -10,7 +10,7 @@ namespace IO
 
     bool read_csv(field2& field, const std::string& filename);
 
-    bool write_csv(const Variable& var, const std::string& filename);
+    bool write_csv(const Variable2D& var, const std::string& filename);
 
-    bool matlab_read_var(const Variable& var, const std::string& filename);
+    bool matlab_read_var(const Variable2D& var, const std::string& filename);
 } // namespace IO

@@ -3,7 +3,7 @@
 #include "base/pch.h"
 
 #include "base/domain/domain2d.h"
-#include "base/domain/variable.h"
+#include "base/domain/variable2d.h"
 #include "io/config.h"
 #include "poisson_solver2d_base.h"
 
@@ -19,7 +19,7 @@ public:
                     PDEBoundaryType in_boundary_type_right,
                     PDEBoundaryType in_boundary_type_down,
                     PDEBoundaryType in_boundary_type_up);
-    PoissonSolver2D(Domain2DUniform* in_domain, Variable* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    PoissonSolver2D(Domain2DUniform* in_domain, Variable2D* in_variable, EnvironmentConfig* in_env_config = nullptr);
 
     void solve(field2& f) override;
 

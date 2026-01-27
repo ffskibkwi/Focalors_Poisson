@@ -3,7 +3,7 @@
 #include "base/pch.h"
 
 #include "base/domain/domain2d.h"
-#include "base/domain/variable.h"
+#include "base/domain/variable2d.h"
 #include "io/config.h"
 #include "poisson_solver2d_base.h"
 
@@ -23,7 +23,7 @@ public:
                          PDEBoundaryType in_boundary_type_up,
                          MPI_Comm        in_communicator = MPI_COMM_WORLD);
     PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
-                         Variable*          in_variable,
+                         Variable2D*        in_variable,
                          EnvironmentConfig* in_env_config   = nullptr,
                          MPI_Comm           in_communicator = MPI_COMM_WORLD);
     ~PoissonSolver2DSlabX();

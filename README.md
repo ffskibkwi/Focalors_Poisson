@@ -88,7 +88,7 @@ cmake --build build --parallel $(nproc) #推荐使用并行编译，将$(nproc)�
 1.  在 `case/` 目录下创建一个新的 `.cpp` 文件
 2.  包含 Focalors 的核心头文件
 3.  定义拼接几何`Geometry`与边界条件
-4.  在构建的`Variable`中构建右端项
+4.  在构建的`Variable2D`中构建右端项
 5.  初始化并调用求解器
 6.  将结果输出到文件
 7.  （默认情况下，根目录的 `CMakeLists.txt` 中已经包含了`case/`目录下的所有文件，所以可以直接进行编译）

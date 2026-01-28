@@ -62,10 +62,7 @@ void Variable2D::set_center_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    f.init(s->nx, s->ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -80,10 +77,7 @@ void Variable2D::set_x_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    f.init(s->nx, s->ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -99,10 +93,7 @@ void Variable2D::set_y_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    f.init(s->nx, s->ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -118,10 +109,7 @@ void Variable2D::set_corner_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx + 1, s->ny + 1, name + "_" + s->name);
-    else
-        f.init(s->nx + 1, s->ny + 1);
+    f.init(s->nx + 1, s->ny + 1, name + "_" + s->name);
 
     field_map[s] = &f;
 

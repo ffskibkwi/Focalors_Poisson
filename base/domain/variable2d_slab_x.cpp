@@ -1,4 +1,5 @@
 #include "variable2d_slab_x.h"
+#include "base/parallel/mpi/mpi_misc.h"
 #include "base/parallel/omp/enable_openmp.h"
 
 #include <algorithm>
@@ -44,9 +45,20 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
         MPI_Comm slab_comm;
         MPI_Comm_split(MPI_COMM_WORLD, color, mpi_rank, &slab_comm);
 
-        hierarchical_slab_parent.push_back(level[color]);
-        hierarchical_slab_comm.push_back(slab_comm);
+        hierarchical_slab_parents.push_back(level[color]);
+        hierarchical_slab_comms.push_back(slab_comm);
+
+        int hierarchical_rank = 0;
+        int hierarchical_size = 0;
+        MPI_Comm_rank(slab_comm, &hierarchical_rank);
+        MPI_Comm_size(slab_comm, &hierarchical_size);
+        hierarchical_slab_ranks.push_back(hierarchical_rank);
+        hierarchical_slab_sizes.push_back(hierarchical_size);
     }
+
+    // for O(1) access
+    for (int i = 0; i < hierarchical_slab_parents.size(); i++)
+        slab_parent_to_level[hierarchical_slab_parents[i]] = i;
 }
 
 /**
@@ -62,16 +74,23 @@ void Variable2DSlabX::set_center_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_ranks[level];
+
+    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int ny  = s->ny;
+
+    f.init(snx, ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
     // Center variable only need left and down buffer
-    buffer_map[s][LocationType::Left] = new double[s->ny];
-    buffer_map[s][LocationType::Down] = new double[s->nx];
+    buffer_map[s][LocationType::Left] = new double[ny];
+    buffer_map[s][LocationType::Down] = new double[snx];
 
     position_type = VariablePositionType::Center;
 }
@@ -80,17 +99,24 @@ void Variable2DSlabX::set_x_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_ranks[level];
+
+    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int ny  = s->ny;
+
+    f.init(snx, ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::Left]  = new double[ny];
+    buffer_map[s][LocationType::Right] = new double[ny];
+    buffer_map[s][LocationType::Down]  = new double[snx];
+    buffer_map[s][LocationType::Up]    = new double[snx];
 
     position_type = VariablePositionType::XFace;
 }
@@ -99,17 +125,24 @@ void Variable2DSlabX::set_y_edge_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny);
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_ranks[level];
+
+    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int ny  = s->ny;
+
+    f.init(snx, ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::Left]  = new double[ny];
+    buffer_map[s][LocationType::Right] = new double[ny];
+    buffer_map[s][LocationType::Down]  = new double[snx];
+    buffer_map[s][LocationType::Up]    = new double[snx];
 
     position_type = VariablePositionType::YFace;
 }
@@ -118,17 +151,24 @@ void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx + 1, s->ny + 1, name + "_" + s->name);
-    else
-        f.init(s->nx + 1, s->ny + 1);
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_ranks[level];
+
+    int snx = MPIUtils::get_slab_length(s->nx + 1, slab_rank, slab_size);
+    int ny  = s->ny + 1;
+
+    f.init(snx, ny, name + "_" + s->name);
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny + 1];
-    buffer_map[s][LocationType::Right] = new double[s->ny + 1];
-    buffer_map[s][LocationType::Down]  = new double[s->nx + 1];
-    buffer_map[s][LocationType::Up]    = new double[s->nx + 1];
+    buffer_map[s][LocationType::Left]  = new double[ny];
+    buffer_map[s][LocationType::Right] = new double[ny];
+    buffer_map[s][LocationType::Down]  = new double[snx];
+    buffer_map[s][LocationType::Up]    = new double[snx];
 
     position_type = VariablePositionType::Corner;
 }

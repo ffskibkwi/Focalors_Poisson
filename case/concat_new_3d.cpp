@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     v.set_geometry(geo_tee);
 
     // 创建field3并设置到Variable3D
-    field3 v_T1("v_T1"), v_T2("v_T2"), v_T3("v_T3"), v_T4("v_T4");
+    field3 v_T1, v_T2, v_T3, v_T4;
 
     // 使用Variable3D的set_center_field方法
     v.set_center_field(&T1, v_T1);

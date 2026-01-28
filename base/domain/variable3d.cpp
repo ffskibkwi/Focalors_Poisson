@@ -99,10 +99,7 @@ void Variable3D::set_center_field(Domain3DUniform* s, field3& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny, s->nz);
+    f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -124,10 +121,7 @@ void Variable3D::set_x_face_center_field(Domain3DUniform* s, field3& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny, s->nz);
+    f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -152,10 +146,7 @@ void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny, s->nz);
+    f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
 
     field_map[s] = &f;
 
@@ -180,10 +171,7 @@ void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
 {
     check_geometry(s);
 
-    if (f.get_name() == "Default")
-        f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
-    else
-        f.init(s->nx, s->ny, s->nz);
+    f.init(s->nx, s->ny, s->nz, name + "_" + s->name);
 
     field_map[s] = &f;
 

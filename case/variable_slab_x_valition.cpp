@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
             if (i == mpi_rank)
             {
                 std::cout << "rank " << mpi_rank << ' ';
-                std::cout << p.hierarchical_slab_parent[level]->name << std::endl;
+                std::cout << p.hierarchical_slab_parents[level]->name << std::endl;
             }
             MPI_Barrier(MPI_COMM_WORLD);
         }

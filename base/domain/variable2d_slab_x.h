@@ -33,6 +33,10 @@ public:
     MPI_Comm communicator = MPI_COMM_WORLD;
     int      mpi_rank, mpi_size;
 
-    std::vector<Domain2DUniform*> hierarchical_slab_parent;
-    std::vector<MPI_Comm>         hierarchical_slab_comm;
+    std::vector<Domain2DUniform*> hierarchical_slab_parents;
+    std::vector<MPI_Comm>         hierarchical_slab_comms;
+    std::vector<MPI_Comm>         hierarchical_slab_ranks;
+    std::vector<MPI_Comm>         hierarchical_slab_sizes;
+
+    std::unordered_map<Domain2DUniform*, int> slab_parent_to_level;
 };

@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
     Variable2D v("v");
     v.set_geometry(geo_tee);
-    field2 v_T1("v_T1"), v_T2("v_T2"), v_T3("v_T3"), v_T4("v_T4"), v_T5("v_T5"), v_T6("v_T6");
+    field2 v_T1, v_T2, v_T3, v_T4, v_T5, v_T6;
     v.set_center_field(&T1, v_T1);
     v.set_center_field(&T2, v_T2);
     v.set_center_field(&T3, v_T3);

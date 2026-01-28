@@ -2,27 +2,6 @@
 
 namespace
 {
-    const char* location_to_string(LocationType location)
-    {
-        switch (location)
-        {
-            case LocationType::Left:
-                return "Left";
-            case LocationType::Right:
-                return "Right";
-            case LocationType::Front:
-                return "Front";
-            case LocationType::Back:
-                return "Back";
-            case LocationType::Down:
-                return "Down";
-            case LocationType::Up:
-                return "Up";
-            default:
-                return "Unknown";
-        }
-    }
-
     const char* safe_domain_name(const Domain3DUniform* domain) { return domain ? domain->name.c_str() : "unknown"; }
 
     void
@@ -94,8 +73,7 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         if (env_config && env_config->showCurrentStep)
         {
             std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
-                      << safe_domain_name(neighbour_domain) << " at " << location_to_string(location) << " start"
-                      << std::endl;
+                      << safe_domain_name(neighbour_domain) << " at " << location << " start" << std::endl;
         }
         // Construct the Schur matrix for each neighbour domain of main domain
         SchurMat3D* current = nullptr;
@@ -143,8 +121,7 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         if (env_config && env_config->showCurrentStep)
         {
             std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
-                      << safe_domain_name(neighbour_domain) << " at " << location_to_string(location) << " done"
-                      << std::endl;
+                      << safe_domain_name(neighbour_domain) << " at " << location << " done" << std::endl;
         }
     }
     if (env_config && env_config->showCurrentStep)

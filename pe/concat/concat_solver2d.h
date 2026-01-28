@@ -24,11 +24,14 @@ public:
     ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~ConcatPoissonSolver2D();
 
-    // void init();
     void set_parameter(int in_m, double in_tol, int in_maxIter);
     void solve();
 
 protected:
+    void construct_solver_map();
+
+    void boundary_assembly();
+
     std::unordered_map<Domain2DUniform*, field2*> temp_fields;
 
     std::unordered_map<Domain2DUniform*, DomainSolver2D*> solver_map;
@@ -40,8 +43,6 @@ protected:
     double tol     = 1e-8;
     int    maxIter = 100;
 
-    void construct_solver_map();
-
     Domain2DUniform*                                                                         tree_root = nullptr;
     std::unordered_map<Domain2DUniform*, field2*>                                            field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
@@ -49,6 +50,4 @@ protected:
 
     EnvironmentConfig* env_config;
     bool               showGmresRes = false;
-
-    void boundary_assembly();
 };

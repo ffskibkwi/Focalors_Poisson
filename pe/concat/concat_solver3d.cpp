@@ -1,29 +1,5 @@
 #include "concat_solver3d.h"
 
-namespace
-{
-    const char* location_to_string(LocationType location)
-    {
-        switch (location)
-        {
-            case LocationType::Left:
-                return "Left";
-            case LocationType::Right:
-                return "Right";
-            case LocationType::Front:
-                return "Front";
-            case LocationType::Back:
-                return "Back";
-            case LocationType::Down:
-                return "Down";
-            case LocationType::Up:
-                return "Up";
-            default:
-                return "Unknown";
-        }
-    }
-} // namespace
-
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
     m       = in_m;
@@ -190,7 +166,7 @@ void ConcatPoissonSolver3D::solve()
             {
                 auto parent = parent_map[domain];
                 std::cout << "[Concat3D] Top-down pass: solve domain " << domain->name << " (parent "
-                          << parent.second->name << " at " << location_to_string(parent.first) << ")" << std::endl;
+                          << parent.second->name << " at " << parent.first << ")" << std::endl;
             }
 
             field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);

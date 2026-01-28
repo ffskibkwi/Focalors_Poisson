@@ -30,6 +30,10 @@ public:
     void solve();
 
 private:
+    void construct_solver_map();
+
+    void boundary_assembly();
+
     std::unordered_map<Domain3DUniform*, field3*> temp_fields;
 
     std::unordered_map<Domain3DUniform*, DomainSolver3D*> solver_map;
@@ -41,8 +45,6 @@ private:
     double tol     = 1e-8;
     int    maxIter = 100;
 
-    void construct_solver_map();
-
     Domain3DUniform*                                                                         tree_root = nullptr;
     std::unordered_map<Domain3DUniform*, field3*>                                            field_map;
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, Domain3DUniform*>> tree_map;
@@ -50,6 +52,4 @@ private:
 
     EnvironmentConfig* env_config;
     bool               showGmresRes = false;
-
-    void boundary_assembly();
 };

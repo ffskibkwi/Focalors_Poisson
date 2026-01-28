@@ -115,8 +115,6 @@ bool Domain2DUniform::check_boundary() const
            boundary_type_down != PDEBoundaryType::Null && boundary_type_up != PDEBoundaryType::Null;
 }
 
-void Domain2DUniform::construct_field(field2& f) { f.init(nx, ny); }
-
 double Domain2DUniform::get_pos_x() const { return pos_x; }
 double Domain2DUniform::get_pos_y() const { return pos_y; }
 double Domain2DUniform::get_hx() const { return hx; }

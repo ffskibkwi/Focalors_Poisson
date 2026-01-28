@@ -45,7 +45,8 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
         MPI_Comm slab_comm;
         MPI_Comm_split(MPI_COMM_WORLD, color, mpi_rank, &slab_comm);
 
-        hierarchical_slab_parents.push_back(level[color]);
+        auto current_domain = level[color];
+        hierarchical_slab_parents.push_back(current_domain);
         hierarchical_slab_comms.push_back(slab_comm);
 
         int hierarchical_rank = 0;
@@ -54,6 +55,10 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
         MPI_Comm_size(slab_comm, &hierarchical_size);
         hierarchical_slab_ranks.push_back(hierarchical_rank);
         hierarchical_slab_sizes.push_back(hierarchical_size);
+        hierarchical_slab_nxs.push_back(
+            MPIUtils::get_slab_length(current_domain->nx, hierarchical_rank, hierarchical_size));
+        hierarchical_slab_disps.push_back(
+            MPIUtils::get_slab_displacement(current_domain->nx, hierarchical_rank, hierarchical_size));
     }
 
     // for O(1) access
@@ -77,11 +82,10 @@ void Variable2DSlabX::set_center_field(Domain2DUniform* s, field2& f)
     int level = 0;
     if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
         level = slab_parent_to_level[s];
+    else
+        return;
 
-    int slab_rank = hierarchical_slab_ranks[level];
-    int slab_size = hierarchical_slab_ranks[level];
-
-    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int snx = hierarchical_slab_nxs[level];
     int ny  = s->ny;
 
     f.init(snx, ny, name + "_" + s->name);
@@ -102,11 +106,10 @@ void Variable2DSlabX::set_x_edge_field(Domain2DUniform* s, field2& f)
     int level = 0;
     if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
         level = slab_parent_to_level[s];
+    else
+        return;
 
-    int slab_rank = hierarchical_slab_ranks[level];
-    int slab_size = hierarchical_slab_ranks[level];
-
-    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int snx = hierarchical_slab_nxs[level];
     int ny  = s->ny;
 
     f.init(snx, ny, name + "_" + s->name);
@@ -128,11 +131,10 @@ void Variable2DSlabX::set_y_edge_field(Domain2DUniform* s, field2& f)
     int level = 0;
     if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
         level = slab_parent_to_level[s];
+    else
+        return;
 
-    int slab_rank = hierarchical_slab_ranks[level];
-    int slab_size = hierarchical_slab_ranks[level];
-
-    int snx = MPIUtils::get_slab_length(s->nx, slab_rank, slab_size);
+    int snx = hierarchical_slab_nxs[level];
     int ny  = s->ny;
 
     f.init(snx, ny, name + "_" + s->name);
@@ -154,11 +156,10 @@ void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
     int level = 0;
     if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
         level = slab_parent_to_level[s];
+    else
+        return;
 
-    int slab_rank = hierarchical_slab_ranks[level];
-    int slab_size = hierarchical_slab_ranks[level];
-
-    int snx = MPIUtils::get_slab_length(s->nx + 1, slab_rank, slab_size);
+    int snx = hierarchical_slab_nxs[level];
     int ny  = s->ny + 1;
 
     f.init(snx, ny, name + "_" + s->name);
@@ -173,64 +174,24 @@ void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Corner;
 }
 
-void Variable2DSlabX::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
-{
-    check_geometry(s);
-    // 若该侧为几何邻接面，则仅允许设置为 Adjacented
-    if (geometry && geometry->adjacency.count(s) && geometry->adjacency[s].count(loc))
-    {
-        if (type != PDEBoundaryType::Adjacented)
-            throw std::runtime_error("Attempt to override an adjacented face with non-Adjacented boundary on domain " +
-                                     s->name);
-        boundary_type_map[s][loc] = PDEBoundaryType::Adjacented;
-        return;
-    }
-
-    // 若该侧已被设置为 Adjacented，则不允许再改为其他类型
-    if (boundary_type_map[s].count(loc) && boundary_type_map[s][loc] == PDEBoundaryType::Adjacented &&
-        type != PDEBoundaryType::Adjacented)
-    {
-        throw std::runtime_error("Attempt to change previously Adjacented boundary to another type on domain " +
-                                 s->name);
-    }
-
-    boundary_type_map[s][loc] = type;
-}
-
-void Variable2DSlabX::set_boundary_type(Domain2DUniform*                                                s,
-                                        std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list)
-{
-    for (const auto& pair : list)
-    {
-        set_boundary_type(s, pair.first, pair.second);
-    }
-}
-
-void Variable2DSlabX::fill_boundary_type(PDEBoundaryType type)
-{
-    if (geometry == nullptr)
-        throw std::runtime_error("Variable2DSlabX has no geometry set");
-
-    for (auto* domain : geometry->domains)
-    {
-        auto& type_map = boundary_type_map[domain];
-        for (LocationType loc : kBoundaryLocations2D)
-        {
-            if (type_map.find(loc) != type_map.end())
-                continue;
-            set_boundary_type(domain, loc, type);
-        }
-    }
-}
-
 void Variable2DSlabX::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);
+
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+    else
+        return;
+
+    int snx = hierarchical_slab_nxs[level];
+    int ny  = s->ny;
+
     has_boundary_value_map[s][loc] = true;
     if (loc == LocationType::Left || loc == LocationType::Right)
     {
-        boundary_value_map[s][loc] = new double[s->ny];
-        for (int j = 0; j < s->ny; j++)
+        boundary_value_map[s][loc] = new double[ny];
+        for (int j = 0; j < ny; j++)
             boundary_value_map[s][loc][j] = in_value;
 
         if (loc == LocationType::Left)
@@ -238,8 +199,8 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* s, LocationType loc, d
     }
     else if (loc == LocationType::Down || loc == LocationType::Up)
     {
-        boundary_value_map[s][loc] = new double[s->nx];
-        for (int i = 0; i < s->nx; i++)
+        boundary_value_map[s][loc] = new double[snx];
+        for (int i = 0; i < snx; i++)
             boundary_value_map[s][loc][i] = in_value;
 
         if (loc == LocationType::Down)
@@ -252,6 +213,24 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
                                                           std::function<double(double, double)> f)
 {
     check_geometry(s);
+
+    int level = 0;
+    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s];
+    else
+        return;
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_sizes[level];
+
+    // Left bound at rank=0, Right bound at rank=size-1
+    if (loc == LocationType::Left || loc == LocationType::Right)
+        if (slab_rank != 0 && slab_rank != slab_size - 1)
+            return;
+
+    int nx_slab = hierarchical_slab_nxs[level];
+    int nx_disp = hierarchical_slab_disps[level];
+
     has_boundary_value_map[s][loc] = true;
 
     double shift_x = 0.5;
@@ -302,11 +281,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
     }
     else if (loc == LocationType::Down || loc == LocationType::Up)
     {
-        int i_size;
-        if (position_type == VariablePositionType::Corner)
-            i_size = s->nx + 1;
-        else
-            i_size = s->nx;
+        int i_size = nx_slab;
 
         boundary_value_map[s][loc] = new double[i_size];
 
@@ -315,7 +290,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
 
         for (int i = 0; i < i_size; i++)
         {
-            double gx                     = s->get_offset_x() + (shift_x + i) * s->get_hx();
+            double gx                     = s->get_offset_x() + (shift_x + (i + nx_disp)) * s->get_hx();
             double gy                     = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
             boundary_value_map[s][loc][i] = f(gx, gy);
         }
@@ -380,12 +355,15 @@ void Variable2DSlabX::set_value_from_func_global(std::function<double(double, do
         Domain2DUniform* s = pair.first;
         field2*          f = pair.second;
 
+        int level   = slab_parent_to_level[s];
+        int nx_disp = hierarchical_slab_disps[level];
+
         OPENMP_PARALLEL_FOR()
         for (int i = 0; i < f->get_nx(); ++i)
         {
             for (int j = 0; j < f->get_ny(); ++j)
             {
-                double gx  = s->get_offset_x() + (shift_x + i) * s->get_hx();
+                double gx  = s->get_offset_x() + (shift_x + (i + nx_disp)) * s->get_hx();
                 double gy  = s->get_offset_y() + (shift_y + j) * s->get_hy();
                 (*f)(i, j) = func(gx, gy);
             }

@@ -155,8 +155,6 @@ bool Domain3DUniform::check_boundary() const
            boundary_type_down != PDEBoundaryType::Null && boundary_type_up != PDEBoundaryType::Null;
 }
 
-void Domain3DUniform::construct_field(field3& f) { f.init(nx, ny, nz); }
-
 double Domain3DUniform::get_pos_x() const { return pos_x; }
 double Domain3DUniform::get_pos_y() const { return pos_y; }
 double Domain3DUniform::get_pos_z() const { return pos_z; }

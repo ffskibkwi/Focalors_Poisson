@@ -21,7 +21,7 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
 
     Variable2D::set_geometry(g);
 
-    for (auto level : g.hierarchical_domains)
+    for (auto level : g.hierarchical_solve_levels)
     {
         int nx_sum = 0;
         for (auto domain : level)
@@ -63,7 +63,10 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
 
     // for O(1) access
     for (int i = 0; i < hierarchical_slab_parents.size(); i++)
-        slab_parent_to_level[hierarchical_slab_parents[i]] = i;
+    {
+        auto domain_mpi                              = static_cast<Domain2DMPIUniform*>(hierarchical_slab_parents[i]);
+        slab_parent_to_level[domain_mpi->get_uuid()] = i;
+    }
 }
 
 /**
@@ -75,13 +78,13 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
  *
  * If the field name is "Default", it will be initialized with the name "variable".
  */
-void Variable2DSlabX::set_center_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_center_field(Domain2DMPIUniform* s, field2& f)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -99,13 +102,13 @@ void Variable2DSlabX::set_center_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Center;
 }
 
-void Variable2DSlabX::set_x_edge_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_x_edge_field(Domain2DMPIUniform* s, field2& f)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -124,13 +127,13 @@ void Variable2DSlabX::set_x_edge_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::XFace;
 }
 
-void Variable2DSlabX::set_y_edge_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_y_edge_field(Domain2DMPIUniform* s, field2& f)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -149,13 +152,13 @@ void Variable2DSlabX::set_y_edge_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::YFace;
 }
 
-void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
+void Variable2DSlabX::set_corner_field(Domain2DMPIUniform* s, field2& f)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -174,13 +177,13 @@ void Variable2DSlabX::set_corner_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Corner;
 }
 
-void Variable2DSlabX::set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value)
+void Variable2DSlabX::set_boundary_value(Domain2DMPIUniform* s, LocationType loc, double in_value)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -208,15 +211,15 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* s, LocationType loc, d
     }
 }
 
-void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*                      s,
+void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DMPIUniform*                   s,
                                                           LocationType                          loc,
                                                           std::function<double(double, double)> f)
 {
     check_geometry(s);
 
     int level = 0;
-    if (slab_parent_to_level.find(s) != slab_parent_to_level.end())
-        level = slab_parent_to_level[s];
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
     else
         return;
 
@@ -317,7 +320,7 @@ void Variable2DSlabX::fill_boundary_value_from_func_global(std::function<double(
             if (has_it != has_map.end() && has_it->second)
                 continue;
 
-            set_boundary_value_from_func_global(domain, loc, f);
+            set_boundary_value_from_func_global(static_cast<Domain2DMPIUniform*>(domain), loc, f);
         }
     }
 }
@@ -352,10 +355,10 @@ void Variable2DSlabX::set_value_from_func_global(std::function<double(double, do
 
     for (auto& pair : field_map)
     {
-        Domain2DUniform* s = pair.first;
-        field2*          f = pair.second;
+        Domain2DMPIUniform* s = static_cast<Domain2DMPIUniform*>(pair.first);
+        field2*             f = pair.second;
 
-        int level   = slab_parent_to_level[s];
+        int level   = slab_parent_to_level[s->get_uuid()];
         int nx_disp = hierarchical_slab_disps[level];
 
         OPENMP_PARALLEL_FOR()

@@ -53,8 +53,6 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
         // Construct the Schur matrix for each neibour domain of main domain
         SchurMat2D* current = nullptr;
 
-        // Suppress debug output for branch solver during Schur matrix construction
-        // because this process calls solve() many times
         DomainSolver2D* branch_solver = solver_map.at(neighbour_domain);
 
         switch (location)

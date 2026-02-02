@@ -29,8 +29,8 @@ public:
     void schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map);
 
-    // 可选：设置外部初始猜测 x0；若未设置则默认 x0 = b
-    void set_initial_guess(field2* x0) { x0_override = x0; }
+    // Caller should ensure all processes in both comm will call this function
+    friend void migrate_from(GMRESSolver2DSlabX* src, GMRESSolver2DSlabX* dest);
 
 private:
     Domain2DUniform*              domain;

@@ -9,9 +9,7 @@
 #include "base/domain/variable3d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
-#include "gmres_solver3d.h"
-#include "pe/poisson/poisson_solver3d.h"
-#include "schur_mat3d.h"
+#include "io/config.h"
 
 #include "schur_mat3d.h"
 #include <unordered_map>
@@ -19,7 +17,6 @@
 
 class ConcatPoissonSolver3D
 {
-    // Simple: Only for single main domain geometry
 public:
     Variable3D* variable = nullptr;
 
@@ -30,6 +27,7 @@ public:
     void solve();
 
 private:
+    void construct_solver_map_at_domain(Domain3DUniform* domain);
     void construct_solver_map();
 
     void boundary_assembly();
@@ -37,7 +35,7 @@ private:
     std::unordered_map<Domain3DUniform*, field3*> temp_fields;
 
     std::unordered_map<Domain3DUniform*, DomainSolver3D*> solver_map;
-    std::vector<std::vector<Domain3DUniform*>>            solve_order;
+    std::vector<std::vector<Domain3DUniform*>>            hierarchical_solve_levels;
 
     std::vector<double> resVec;
 
@@ -52,4 +50,5 @@ private:
 
     EnvironmentConfig* env_config;
     bool               showGmresRes = false;
+    bool               track_time   = false;
 };

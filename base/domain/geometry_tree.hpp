@@ -96,8 +96,7 @@ namespace TreeUtils
 
     template<typename DomainT>
     std::vector<std::vector<DomainT*>>
-    buildLevelsFromTree(DomainT*                                                                        root,
-                        const std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map)
+    BFS(DomainT* root, const std::unordered_map<DomainT*, std::unordered_map<LocationType, DomainT*>>& tree_map)
     {
         std::vector<std::vector<DomainT*>> levels;
         if (!root)

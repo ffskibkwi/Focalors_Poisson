@@ -1,9 +1,19 @@
 #include "schur_mat2d_slab_x.h"
 
+#include "base/parallel/mpi/distribute_slab.h"
 #include "domain_solver.h"
 #include "io/csv_writer_2d.h"
 
 void SchurMat2DSlabX::write_csv(const std::string& directory) { IO::write_csv(value, directory); }
+
+void migrate_from(SchurMat2DSlabX* src, SchurMat2DSlabX* dest)
+{
+    field2*  data_src  = src != nullptr ? &(src->value) : nullptr;
+    field2*  data_dest = dest != nullptr ? &(dest->value) : nullptr;
+    MPI_Comm comm_src  = src != nullptr ? src->communicator : MPI_COMM_NULL;
+    MPI_Comm comm_dest = dest != nullptr ? dest->communicator : MPI_COMM_NULL;
+    MPIUtils::redistribute_2d_slab_sync(data_src, data_dest, comm_src, comm_dest);
+}
 
 void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
 {

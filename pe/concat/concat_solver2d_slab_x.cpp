@@ -1,102 +1,140 @@
-#include "concat_solver2d.h"
-#include "gmres_solver2d.h"
+#include "concat_solver2d_slab_x.h"
+#include "base/domain/domain2d_mpi.h"
+#include "gmres_solver2d_slab_x.h"
 #include "io/csv_writer_2d.h"
-#include "pe/poisson/poisson_solver2d.h"
+#include "pe/poisson/poisson_solver2d_slab_x.h"
 
+#include <chrono>
 #include <string>
 
-void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
+std::unordered_map<Domain2DUniform*, DomainSolver2D*>
+ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, bool is_local, MPI_Comm local_comm)
 {
-    m       = in_m;
-    tol     = in_tol;
-    maxIter = in_maxIter;
-}
+    // assume domain A in layer n is adjacented with domain B, C, D in layer n+1
+    // and domain A occupies rank [m, m+a], domain B occupies rank [k, k+b]
+    // [m, m+a] is inrelevant with [k, k+b], they may be overlapping or not.
+    // so when creating solver in A, assuming solver in B, C, D is created. we still need to create
+    // solver using B, C, D domain size and A rank for A
+    std::unordered_map<Domain2DUniform*, DomainSolver2D*> local_solver_map;
 
-ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config)
-    : variable(in_variable)
-    , env_config(in_env_config)
-{
-    // config load
-    if (in_env_config)
+    // fill local_solver_map
+    std::unordered_map<LocationType, Domain2DUniform*>& local_adjacency = tree_map[domain];
+    for (auto kv : local_adjacency)
     {
-        showGmresRes = in_env_config->showGmresRes;
+        Domain2DMPIUniform* adjacented_domain = static_cast<Domain2DMPIUniform*>(kv.second);
+        int                 adjacented_uuid   = adjacented_domain->get_uuid();
+
+        // Construct gmres solvers in adjacented_domain but
+        // communicator who belongs to current iterated domain
+        if (tree_map[adjacented_domain].size() > 0)
+        {
+            GMRESSolver2DSlabX* adjacented_gmres_local = nullptr;
+            GMRESSolver2DSlabX* adjacented_gmres       = nullptr;
+
+            // filter process who belongs to current iterated domain
+            if (is_local)
+            {
+                adjacented_gmres_local =
+                    new GMRESSolver2DSlabX(adjacented_domain, m, tol, maxIter, env_config, local_comm);
+                adjacented_gmres_local->set_solver(
+                    new PoissonSolver2DSlabX(adjacented_domain, variable, env_config, local_comm));
+            }
+
+            // filter process who belongs to adjacented_domain
+            if (variable->slab_parent_to_level.find(adjacented_domain->get_uuid()) !=
+                variable->slab_parent_to_level.end())
+            {
+                adjacented_gmres = static_cast<GMRESSolver2DSlabX*>(solver_map[adjacented_domain]);
+            }
+
+            migrate_from(adjacented_gmres, adjacented_gmres_local);
+
+            // filter process who belongs to current iterated domain
+            if (is_local)
+                local_solver_map[adjacented_domain] = adjacented_gmres_local;
+        }
+        // Construct pe solvers in adjacented_domain but
+        // communicator who belongs to current iterated domain
+        else
+        {
+            // filter process who belongs to current iterated domain
+            if (is_local)
+                local_solver_map[adjacented_domain] =
+                    new PoissonSolver2DSlabX(adjacented_domain, variable, env_config, local_comm);
+        }
     }
 
-    // geometry double check
-    if (variable->geometry == nullptr)
-        throw std::runtime_error("ConcatPoissonSolver2D: variable->geometry is null");
-    if (!variable->geometry->is_checked)
-        variable->geometry->check();
-    if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
-        variable->geometry->solve_prepare();
+    return local_solver_map;
+}
 
-    tree_root                 = variable->geometry->tree_root;
-    tree_map                  = variable->geometry->tree_map;
-    parent_map                = variable->geometry->parent_map;
-    field_map                 = variable->field_map;
-    hierarchical_solve_levels = variable->geometry->hierarchical_solve_levels;
-    hierarchical_solve_levels.erase(hierarchical_solve_levels.begin()); // erase tree_root
-    construct_solver_map();
-    // Construct the temp field for each domain
-    for (auto& [domain, field] : field_map)
+void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DMPIUniform* domain)
+{
+    bool     is_local = false;
+    MPI_Comm local_comm;
+    // filter process who belongs to current iterated domain
+    if (variable->slab_parent_to_level.find(domain->get_uuid()) != variable->slab_parent_to_level.end())
     {
-        if (domain != tree_root)
-            temp_fields[domain] = new field2(field->get_nx(), field->get_ny(), field->get_name() + "_temp");
+        is_local = true;
+
+        int local_level = variable->slab_parent_to_level[domain->get_uuid()];
+        local_comm      = variable->hierarchical_slab_comms[local_level];
     }
 
-    track_time = env_config && env_config->track_pe_construct_time;
-}
-
-ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
-{
-    for (auto& [domain, temp_field] : temp_fields)
-        delete temp_field;
-    for (auto kv : solver_map)
-        delete kv.second;
-}
-
-void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)
-{
     if (tree_map[domain].size() > 0)
     {
-        solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter, env_config);
-        auto* gmres        = static_cast<GMRESSolver2D*>(solver_map[domain]);
-        gmres->set_solver(new PoissonSolver2D(domain, variable, env_config));
+        GMRESSolver2DSlabX* gmres = nullptr;
 
-        std::chrono::steady_clock::time_point t0, t1;
-        if (track_time)
-            t0 = std::chrono::steady_clock::now();
-
-        gmres->schur_mat_construct(tree_map[domain], solver_map);
-
-        if (track_time)
+        // filter process who belongs to current iterated domain
+        if (is_local)
         {
-            t1 = std::chrono::steady_clock::now();
-            schur_total += t1 - t0;
+            solver_map[domain] = new GMRESSolver2DSlabX(domain, m, tol, maxIter, env_config, local_comm);
+            gmres              = static_cast<GMRESSolver2DSlabX*>(solver_map[domain]);
+            gmres->set_solver(new PoissonSolver2DSlabX(domain, variable, env_config, local_comm));
+        }
+
+        std::unordered_map<Domain2DUniform*, DomainSolver2D*> local_solver_map =
+            construct_local_solver_map(domain, is_local, local_comm);
+
+        // filter process who belongs to current iterated domain
+        if (is_local)
+        {
+            std::chrono::steady_clock::time_point t0, t1;
+            if (track_time)
+                t0 = std::chrono::steady_clock::now();
+
+            gmres->schur_mat_construct(tree_map[domain], local_solver_map);
+
+            if (track_time)
+            {
+                t1 = std::chrono::steady_clock::now();
+                schur_total += t1 - t0;
+            }
         }
     }
     else
     {
-        solver_map[domain] = new PoissonSolver2D(domain, variable, env_config);
+        // filter process who belongs to current iterated domain
+        if (is_local)
+            solver_map[domain] = new PoissonSolver2DSlabX(domain, variable, env_config, local_comm);
     }
 }
 
-void ConcatPoissonSolver2D::construct_solver_map()
+void ConcatPoissonSolver2DSlabX::construct_solver_map()
 {
     if (track_time)
         schur_total = std::chrono::duration<double, std::milli>(0.0);
 
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
         for (Domain2DUniform* domain : *it)
-            construct_solver_map_at_domain(domain);
+            construct_solver_map_at_domain(static_cast<Domain2DMPIUniform*>(domain));
 
-    construct_solver_map_at_domain(tree_root);
+    construct_solver_map_at_domain(static_cast<Domain2DMPIUniform*>(tree_root));
 
     if (track_time)
         std::cout << "[Concat] Schur complement build total=" << schur_total.count() << " ms" << std::endl;
 }
 
-void ConcatPoissonSolver2D::solve()
+void ConcatPoissonSolver2DSlabX::solve()
 {
     const bool track_detail_time = env_config && env_config->track_pe_solve_detail_time;
     const bool track_total_time  = env_config && env_config->track_pe_solve_total_time;
@@ -237,7 +275,7 @@ void ConcatPoissonSolver2D::solve()
     }
 }
 
-void ConcatPoissonSolver2D::boundary_assembly()
+void ConcatPoissonSolver2DSlabX::boundary_assembly()
 {
     // Apply boundary conditions to all domains in the geometry
     for (auto& domain : variable->geometry->domains)

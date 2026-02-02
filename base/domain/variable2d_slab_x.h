@@ -1,5 +1,6 @@
 #pragma once
 
+#include "domain2d_mpi.h"
 #include "variable2d.h"
 
 #include <mpi.h>
@@ -13,14 +14,15 @@ public:
 
     void set_geometry(Geometry2D& g);
 
-    void set_center_field(Domain2DUniform* s, field2& f);
-    void set_x_edge_field(Domain2DUniform* s, field2& f);
-    void set_y_edge_field(Domain2DUniform* s, field2& f);
-    void set_corner_field(Domain2DUniform* s, field2& f);
+    void set_center_field(Domain2DMPIUniform* s, field2& f);
+    void set_x_edge_field(Domain2DMPIUniform* s, field2& f);
+    void set_y_edge_field(Domain2DMPIUniform* s, field2& f);
+    void set_corner_field(Domain2DMPIUniform* s, field2& f);
 
-    void set_boundary_value(Domain2DUniform* s, LocationType loc, double in_value);
-    void
-    set_boundary_value_from_func_global(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f);
+    void set_boundary_value(Domain2DMPIUniform* s, LocationType loc, double in_value);
+    void set_boundary_value_from_func_global(Domain2DMPIUniform*                   s,
+                                             LocationType                          loc,
+                                             std::function<double(double, double)> f);
     void fill_boundary_value_from_func_global(std::function<double(double, double)> f);
 
     void set_value_from_func_global(std::function<double(double, double)> func);
@@ -36,5 +38,5 @@ public:
     std::vector<int>              hierarchical_slab_nxs;
     std::vector<int>              hierarchical_slab_disps;
 
-    std::unordered_map<Domain2DUniform*, int> slab_parent_to_level;
+    std::unordered_map<int, int> slab_parent_to_level;
 };

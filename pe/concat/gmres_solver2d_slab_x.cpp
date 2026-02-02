@@ -64,8 +64,6 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
         // Construct the Schur matrix for each neibour domain of main domain
         SchurMat2DSlabX* current = nullptr;
 
-        // Suppress debug output for branch solver during Schur matrix construction
-        // because this process calls solve() many times
         DomainSolver2D* branch_solver = solver_map.at(neighbour_domain);
 
         switch (location)
@@ -294,4 +292,65 @@ void GMRESSolver2DSlabX::solve(field2& b)
 
     if (env_config && env_config->showCurrentStep)
         std::cout << "[GMRES] solve: done" << std::endl;
+}
+
+void migrate_from(GMRESSolver2DSlabX* src, GMRESSolver2DSlabX* dest)
+{
+    if (dest != nullptr)
+        dest->S_params.clear();
+
+    int length_src = 0;
+    if (src != nullptr)
+        length_src = src->S_params.size();
+
+    // sync to dest
+    MPI_Allreduce(MPI_IN_PLACE, &length_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+    std::vector<LocationType> loc_src(length_src, LocationType::Left);
+    if (src != nullptr)
+    {
+        for (int i = 0; i < length_src; i++)
+        {
+            SchurMat2DSlabX* S_src = src->S_params[i];
+            loc_src[i]             = S_src->get_loc();
+        }
+    }
+
+    // sync to dest
+    MPI_Allreduce(MPI_IN_PLACE, loc_src.data(), length_src, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+    for (int i = 0; i < length_src; i++)
+    {
+        SchurMat2DSlabX* S_src  = src != nullptr ? src->S_params[i] : nullptr;
+        SchurMat2DSlabX* S_dest = nullptr;
+        if (dest != nullptr)
+        {
+            Domain2DUniform* domain       = dest->domain;
+            MPI_Comm         communicator = dest->communicator;
+            switch (loc_src[i])
+            {
+                case LocationType::Left:
+                    S_dest = new SchurMat2DSlabX_left(domain, communicator);
+                    break;
+                case LocationType::Right:
+                    S_dest = new SchurMat2DSlabX_right(domain, communicator);
+                    break;
+                case LocationType::Down:
+                    S_dest = new SchurMat2DSlabX_down(domain, communicator);
+                    break;
+                case LocationType::Up:
+                    S_dest = new SchurMat2DSlabX_up(domain, communicator);
+                    break;
+                default:
+                    std::cerr << "Unkown LocationType in GMRESSolver2DSlabX::migrate_from" << std::endl;
+                    return;
+                    break;
+            }
+        }
+
+        migrate_from(S_src, S_dest);
+
+        if (dest != nullptr)
+            dest->S_params.push_back(S_dest);
+    }
 }

@@ -8,16 +8,15 @@
 #include "base/domain/variable2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
-#include "gmres_solver2d.h"
-#include "pe/poisson/poisson_solver2d.h"
-
+#include "io/config.h"
 #include "schur_mat2d.h"
+
+#include <chrono>
 #include <unordered_map>
 #include <vector>
 
 class ConcatPoissonSolver2D
 {
-    // Simple: Only for single main domain geometry
 public:
     Variable2D* variable = nullptr;
 
@@ -28,6 +27,7 @@ public:
     void solve();
 
 protected:
+    void construct_solver_map_at_domain(Domain2DUniform* domain);
     void construct_solver_map();
 
     void boundary_assembly();
@@ -35,7 +35,7 @@ protected:
     std::unordered_map<Domain2DUniform*, field2*> temp_fields;
 
     std::unordered_map<Domain2DUniform*, DomainSolver2D*> solver_map;
-    std::vector<std::vector<Domain2DUniform*>>            solve_order;
+    std::vector<std::vector<Domain2DUniform*>>            hierarchical_solve_levels;
 
     std::vector<double> resVec;
 
@@ -48,6 +48,8 @@ protected:
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>>          parent_map;
 
-    EnvironmentConfig* env_config;
-    bool               showGmresRes = false;
+    bool                                      showGmresRes = false;
+    EnvironmentConfig*                        env_config;
+    bool                                      track_time = false;
+    std::chrono::duration<double, std::milli> schur_total; // should be clear at the beginning of construct_solver_map
 };

@@ -1,4 +1,6 @@
 #include "concat_solver3d.h"
+#include "gmres_solver3d.h"
+#include "pe/poisson/poisson_solver3d.h"
 
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
@@ -25,12 +27,12 @@ ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable, Environmen
     if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
         variable->geometry->solve_prepare();
 
-    tree_root   = variable->geometry->tree_root;
-    tree_map    = variable->geometry->tree_map;
-    parent_map  = variable->geometry->parent_map;
-    field_map   = variable->field_map;
-    solve_order = variable->geometry->hierarchical_domains;
-    solve_order.erase(solve_order.begin()); // erase tree_root
+    tree_root                 = variable->geometry->tree_root;
+    tree_map                  = variable->geometry->tree_map;
+    parent_map                = variable->geometry->parent_map;
+    field_map                 = variable->field_map;
+    hierarchical_solve_levels = variable->geometry->hierarchical_solve_levels;
+    hierarchical_solve_levels.erase(hierarchical_solve_levels.begin()); // erase tree_root
     construct_solver_map();
 
     // Construct the temp field for each domain
@@ -40,6 +42,8 @@ ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable, Environmen
             temp_fields[domain] =
                 new field3(field->get_nx(), field->get_ny(), field->get_nz(), field->get_name() + "_temp");
     }
+
+    track_time = env_config && env_config->track_pe_construct_time;
 }
 
 ConcatPoissonSolver3D::~ConcatPoissonSolver3D()
@@ -50,40 +54,28 @@ ConcatPoissonSolver3D::~ConcatPoissonSolver3D()
         delete kv.second;
 }
 
-void ConcatPoissonSolver3D::construct_solver_map()
+void ConcatPoissonSolver3D::construct_solver_map_at_domain(Domain3DUniform* domain)
 {
-    // Construct solvers (for non-root domains)
-    for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
+    if (tree_map[domain].size() > 0)
     {
-        auto level = *it;
-        for (Domain3DUniform* domain : level)
-        {
-            if (tree_map[domain].size() > 0)
-            {
-                solver_map[domain] = new GMRESSolver3D(domain, m, tol, maxIter, env_config);
-                auto* gmres        = static_cast<GMRESSolver3D*>(solver_map[domain]);
-                gmres->schur_mat_construct(tree_map[domain], solver_map);
-                gmres->set_solver(new PoissonSolver3D(domain, variable, env_config));
-            }
-            else
-            {
-                solver_map[domain] = new PoissonSolver3D(domain, variable, env_config);
-            }
-        }
-    }
-
-    // Construct solver for root domain
-    if (tree_map[tree_root].size() > 0)
-    {
-        solver_map[tree_root] = new GMRESSolver3D(tree_root, m, tol, maxIter, env_config);
-        auto* gmres           = static_cast<GMRESSolver3D*>(solver_map[tree_root]);
-        gmres->schur_mat_construct(tree_map[tree_root], solver_map);
-        gmres->set_solver(new PoissonSolver3D(tree_root, variable, env_config));
+        solver_map[domain] = new GMRESSolver3D(domain, m, tol, maxIter, env_config);
+        auto* gmres        = static_cast<GMRESSolver3D*>(solver_map[domain]);
+        gmres->schur_mat_construct(tree_map[domain], solver_map);
+        gmres->set_solver(new PoissonSolver3D(domain, variable, env_config));
     }
     else
     {
-        solver_map[tree_root] = new PoissonSolver3D(tree_root, variable, env_config);
+        solver_map[domain] = new PoissonSolver3D(domain, variable, env_config);
     }
+}
+
+void ConcatPoissonSolver3D::construct_solver_map()
+{
+    for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
+        for (Domain3DUniform* domain : *it)
+            construct_solver_map_at_domain(domain);
+
+    construct_solver_map_at_domain(tree_root);
 }
 
 void ConcatPoissonSolver3D::solve()
@@ -101,7 +93,7 @@ void ConcatPoissonSolver3D::solve()
     // Righthand construction (bottom-up pass)
     if (env_config && env_config->showCurrentStep)
         std::cout << "[Concat3D] Bottom-up pass: start" << std::endl;
-    for (auto it = solve_order.rbegin(); it != solve_order.rend(); ++it)
+    for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
     {
         auto level = *it;
         for (Domain3DUniform* domain : level)
@@ -158,7 +150,7 @@ void ConcatPoissonSolver3D::solve()
     // Branch equations (top-down pass)
     if (env_config && env_config->showCurrentStep)
         std::cout << "[Concat3D] Top-down pass: start" << std::endl;
-    for (auto level : solve_order)
+    for (auto level : hierarchical_solve_levels)
     {
         for (Domain3DUniform* domain : level)
         {

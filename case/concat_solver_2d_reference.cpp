@@ -3,13 +3,10 @@
 #include "base/domain/geometry_tree.hpp"
 #include "base/domain/variable2d.h"
 #include "base/field/field2.h"
-
 #include "base/location_boundary.h"
-
-#include "pe/concat/concat_solver2d.h"
-
 #include "io/config.h"
 #include "io/csv_writer_2d.h"
+#include "pe/concat/concat_solver2d.h"
 
 void fill(field2& f)
 {
@@ -27,12 +24,17 @@ int main(int argc, char* argv[])
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();
 
-    Domain2DUniform T2(3, 3, 1.0, 1.0, "T2");
+    int nx_2 = 3;
+    int ny_2 = 3;
+    int nx_1 = 6;
+    int ny_3 = 9;
+
+    Domain2DUniform T2(nx_2, ny_2, 1.0, 1.0, "T2");
     Domain2DUniform T1("T1");
-    T1.set_nx(6);
+    T1.set_nx(nx_1);
     T1.set_lx(2.0);
     Domain2DUniform T3("T3");
-    T3.set_ny(9);
+    T3.set_ny(ny_3);
     T3.set_ly(3.0);
 
     geo_tee.add_domain({&T1, &T2, &T3});

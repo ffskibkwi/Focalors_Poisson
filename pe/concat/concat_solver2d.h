@@ -28,7 +28,7 @@ public:
     void solve();
 
 protected:
-    void init_before_constructing_solver();
+    void init_before_constructing_solver(Variable2D* _variable);
 
     void construct_solver_map_at_domain(Domain2DUniform* domain);
     void construct_solver_map();

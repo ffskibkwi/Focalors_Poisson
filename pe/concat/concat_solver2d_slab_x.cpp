@@ -11,7 +11,7 @@ ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_varia
     variable   = in_variable;
     env_config = in_env_config;
 
-    init_before_constructing_solver();
+    init_before_constructing_solver(variable);
     construct_solver_map();
 }
 
@@ -151,10 +151,11 @@ void ConcatPoissonSolver2DSlabX::solve()
     boundary_assembly();
 
     // *hx*hx for each field
-    for (auto& domain : variable->geometry->domains)
+    for (auto kv : field_map)
     {
-        field2& f = *field_map[domain];
-        f         = f * (domain->hx * domain->hx);
+        auto  domain = kv.first;
+        auto& f      = *kv.second;
+        f            = f * (domain->hx * domain->hx);
     }
 
     auto solve_start = std::chrono::steady_clock::time_point();

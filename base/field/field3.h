@@ -139,7 +139,7 @@ public:
     friend void swap(field3& lhs, field3& rhs);
 
 protected:
-    int         nx, ny, nz;
-    int         size_n;
-    std::string name = "Default";
+    int         nx = 0, ny = 0, nz = 0;
+    int         size_n = 0;
+    std::string name   = "Default";
 };

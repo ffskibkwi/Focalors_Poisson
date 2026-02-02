@@ -13,7 +13,7 @@ ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable, Environmen
     : variable(in_variable)
     , env_config(in_env_config)
 {
-    init_before_constructing_solver();
+    init_before_constructing_solver(variable);
     construct_solver_map();
 }
 
@@ -25,21 +25,21 @@ ConcatPoissonSolver3D::~ConcatPoissonSolver3D()
         delete kv.second;
 }
 
-void ConcatPoissonSolver3D::init_before_constructing_solver()
+void ConcatPoissonSolver3D::init_before_constructing_solver(Variable3D* _variable)
 {
     // geometry double check
-    if (variable->geometry == nullptr)
-        throw std::runtime_error("ConcatPoissonSolver3D: variable->geometry is null");
-    if (!variable->geometry->is_checked)
-        variable->geometry->check();
-    if (variable->geometry->tree_root == nullptr || variable->geometry->tree_map.empty())
-        variable->geometry->solve_prepare();
+    if (_variable->geometry == nullptr)
+        throw std::runtime_error("ConcatPoissonSolver3D: _variable->geometry is null");
+    if (!_variable->geometry->is_checked)
+        _variable->geometry->check();
+    if (_variable->geometry->tree_root == nullptr || _variable->geometry->tree_map.empty())
+        _variable->geometry->solve_prepare();
 
-    tree_root                 = variable->geometry->tree_root;
-    tree_map                  = variable->geometry->tree_map;
-    parent_map                = variable->geometry->parent_map;
-    field_map                 = variable->field_map;
-    hierarchical_solve_levels = variable->geometry->hierarchical_solve_levels;
+    tree_root                 = _variable->geometry->tree_root;
+    tree_map                  = _variable->geometry->tree_map;
+    parent_map                = _variable->geometry->parent_map;
+    field_map                 = _variable->field_map;
+    hierarchical_solve_levels = _variable->geometry->hierarchical_solve_levels;
     hierarchical_solve_levels.erase(hierarchical_solve_levels.begin()); // erase tree_root
 
     // Construct the temp field for each domain
@@ -84,10 +84,11 @@ void ConcatPoissonSolver3D::solve()
     boundary_assembly();
 
     // *hx*hx for each field
-    for (auto& domain : variable->geometry->domains)
+    for (auto kv : field_map)
     {
-        field3& f = *field_map[domain];
-        f         = f * (domain->hx * domain->hx);
+        auto  domain = kv.first;
+        auto& f      = *kv.second;
+        f            = f * (domain->hx * domain->hx);
     }
 
     // Righthand construction (bottom-up pass)

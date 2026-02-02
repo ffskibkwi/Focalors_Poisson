@@ -76,7 +76,7 @@ public:
     void print();
 
 protected:
-    unsigned int nx, ny;
-    unsigned int size_n;
-    std::string  name = "Default";
+    unsigned int nx = 0, ny = 0;
+    unsigned int size_n = 0;
+    std::string  name   = "Default";
 };

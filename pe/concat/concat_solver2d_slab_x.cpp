@@ -4,8 +4,16 @@
 #include "io/csv_writer_2d.h"
 #include "pe/poisson/poisson_solver2d_slab_x.h"
 
-#include <chrono>
 #include <string>
+
+ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable, EnvironmentConfig* in_env_config)
+{
+    variable   = in_variable;
+    env_config = in_env_config;
+
+    init_before_constructing_solver();
+    construct_solver_map();
+}
 
 std::unordered_map<Domain2DUniform*, DomainSolver2D*>
 ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, bool is_local, MPI_Comm local_comm)
@@ -21,7 +29,7 @@ ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, 
     std::unordered_map<LocationType, Domain2DUniform*>& local_adjacency = tree_map[domain];
     for (auto kv : local_adjacency)
     {
-        Domain2DMPIUniform* adjacented_domain = static_cast<Domain2DMPIUniform*>(kv.second);
+        Domain2DUniformMPI* adjacented_domain = static_cast<Domain2DUniformMPI*>(kv.second);
         int                 adjacented_uuid   = adjacented_domain->get_uuid();
 
         // Construct gmres solvers in adjacented_domain but
@@ -67,7 +75,7 @@ ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, 
     return local_solver_map;
 }
 
-void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DMPIUniform* domain)
+void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DUniformMPI* domain)
 {
     bool     is_local = false;
     MPI_Comm local_comm;
@@ -126,9 +134,9 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map()
 
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
         for (Domain2DUniform* domain : *it)
-            construct_solver_map_at_domain(static_cast<Domain2DMPIUniform*>(domain));
+            construct_solver_map_at_domain(static_cast<Domain2DUniformMPI*>(domain));
 
-    construct_solver_map_at_domain(static_cast<Domain2DMPIUniform*>(tree_root));
+    construct_solver_map_at_domain(static_cast<Domain2DUniformMPI*>(tree_root));
 
     if (track_time)
         std::cout << "[Concat] Schur complement build total=" << schur_total.count() << " ms" << std::endl;

@@ -20,6 +20,7 @@ class ConcatPoissonSolver2D
 public:
     Variable2D* variable = nullptr;
 
+    ConcatPoissonSolver2D() {}
     ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config = nullptr);
     ~ConcatPoissonSolver2D();
 
@@ -27,6 +28,8 @@ public:
     void solve();
 
 protected:
+    void init_before_constructing_solver();
+
     void construct_solver_map_at_domain(Domain2DUniform* domain);
     void construct_solver_map();
 

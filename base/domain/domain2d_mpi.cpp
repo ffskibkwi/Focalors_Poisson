@@ -1,8 +1,8 @@
 #include "domain2d_mpi.h"
 
-int Domain2DMPIUniform::s_counter = 0;
+int Domain2DUniformMPI::s_counter = 0;
 
-Domain2DMPIUniform::Domain2DMPIUniform(MPI_Comm _communicator)
+Domain2DUniformMPI::Domain2DUniformMPI(MPI_Comm _communicator)
     : communicator(_communicator)
 {
     MPI_Comm_rank(communicator, &mpi_rank);
@@ -11,14 +11,14 @@ Domain2DMPIUniform::Domain2DMPIUniform(MPI_Comm _communicator)
     uuid = s_counter++;
 }
 
-Domain2DMPIUniform::Domain2DMPIUniform(const std::string& in_name, MPI_Comm _communicator)
+Domain2DUniformMPI::Domain2DUniformMPI(const std::string& in_name, MPI_Comm _communicator)
     : Domain2DUniform(in_name)
     , communicator(_communicator)
 {
     sync_uuid();
 }
 
-Domain2DMPIUniform::Domain2DMPIUniform(int                in_nx,
+Domain2DUniformMPI::Domain2DUniformMPI(int                in_nx,
                                        int                in_ny,
                                        double             in_lx,
                                        double             in_ly,
@@ -30,14 +30,14 @@ Domain2DMPIUniform::Domain2DMPIUniform(int                in_nx,
     sync_uuid();
 }
 
-Domain2DMPIUniform::Domain2DMPIUniform(int in_nx, int in_ny, const std::string& in_name, MPI_Comm _communicator)
+Domain2DUniformMPI::Domain2DUniformMPI(int in_nx, int in_ny, const std::string& in_name, MPI_Comm _communicator)
     : Domain2DUniform(in_nx, in_ny, in_name)
     , communicator(_communicator)
 {
     sync_uuid();
 }
 
-void Domain2DMPIUniform::sync_uuid()
+void Domain2DUniformMPI::sync_uuid()
 {
     MPI_Comm_rank(communicator, &mpi_rank);
     MPI_Comm_size(communicator, &mpi_size);

@@ -16,12 +16,20 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, Environmen
     : variable(in_variable)
     , env_config(in_env_config)
 {
-    // config load
-    if (in_env_config)
-    {
-        showGmresRes = in_env_config->showGmresRes;
-    }
+    init_before_constructing_solver();
+    construct_solver_map();
+}
 
+ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
+{
+    for (auto& [domain, temp_field] : temp_fields)
+        delete temp_field;
+    for (auto kv : solver_map)
+        delete kv.second;
+}
+
+void ConcatPoissonSolver2D::init_before_constructing_solver()
+{
     // geometry double check
     if (variable->geometry == nullptr)
         throw std::runtime_error("ConcatPoissonSolver2D: variable->geometry is null");
@@ -36,7 +44,7 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, Environmen
     field_map                 = variable->field_map;
     hierarchical_solve_levels = variable->geometry->hierarchical_solve_levels;
     hierarchical_solve_levels.erase(hierarchical_solve_levels.begin()); // erase tree_root
-    construct_solver_map();
+
     // Construct the temp field for each domain
     for (auto& [domain, field] : field_map)
     {
@@ -44,15 +52,8 @@ ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, Environmen
             temp_fields[domain] = new field2(field->get_nx(), field->get_ny(), field->get_name() + "_temp");
     }
 
-    track_time = env_config && env_config->track_pe_construct_time;
-}
-
-ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
-{
-    for (auto& [domain, temp_field] : temp_fields)
-        delete temp_field;
-    for (auto kv : solver_map)
-        delete kv.second;
+    showGmresRes = env_config && env_config->showGmresRes;
+    track_time   = env_config && env_config->track_pe_construct_time;
 }
 
 void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)

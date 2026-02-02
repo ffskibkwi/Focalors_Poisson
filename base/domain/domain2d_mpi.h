@@ -4,18 +4,18 @@
 
 #include <mpi.h>
 
-class Domain2DMPIUniform : public Domain2DUniform
+class Domain2DUniformMPI : public Domain2DUniform
 {
 public:
-    Domain2DMPIUniform(MPI_Comm _communicator = MPI_COMM_WORLD);
-    Domain2DMPIUniform(const std::string& in_name, MPI_Comm _communicator = MPI_COMM_WORLD);
-    Domain2DMPIUniform(int                in_nx,
+    Domain2DUniformMPI(MPI_Comm _communicator = MPI_COMM_WORLD);
+    Domain2DUniformMPI(const std::string& in_name, MPI_Comm _communicator = MPI_COMM_WORLD);
+    Domain2DUniformMPI(int                in_nx,
                        int                in_ny,
                        double             in_lx,
                        double             in_ly,
                        const std::string& in_name,
                        MPI_Comm           _communicator = MPI_COMM_WORLD);
-    Domain2DMPIUniform(int in_nx, int in_ny, const std::string& in_name, MPI_Comm _communicator = MPI_COMM_WORLD);
+    Domain2DUniformMPI(int in_nx, int in_ny, const std::string& in_name, MPI_Comm _communicator = MPI_COMM_WORLD);
 
     int get_uuid() { return uuid; }
 

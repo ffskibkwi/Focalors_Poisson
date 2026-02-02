@@ -14,13 +14,13 @@ public:
 
     void set_geometry(Geometry2D& g);
 
-    void set_center_field(Domain2DMPIUniform* s, field2& f);
-    void set_x_edge_field(Domain2DMPIUniform* s, field2& f);
-    void set_y_edge_field(Domain2DMPIUniform* s, field2& f);
-    void set_corner_field(Domain2DMPIUniform* s, field2& f);
+    void set_center_field(Domain2DUniformMPI* s, field2& f);
+    void set_x_edge_field(Domain2DUniformMPI* s, field2& f);
+    void set_y_edge_field(Domain2DUniformMPI* s, field2& f);
+    void set_corner_field(Domain2DUniformMPI* s, field2& f);
 
-    void set_boundary_value(Domain2DMPIUniform* s, LocationType loc, double in_value);
-    void set_boundary_value_from_func_global(Domain2DMPIUniform*                   s,
+    void set_boundary_value(Domain2DUniformMPI* s, LocationType loc, double in_value);
+    void set_boundary_value_from_func_global(Domain2DUniformMPI*                   s,
                                              LocationType                          loc,
                                              std::function<double(double, double)> f);
     void fill_boundary_value_from_func_global(std::function<double(double, double)> f);

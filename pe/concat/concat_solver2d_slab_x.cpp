@@ -1,5 +1,6 @@
 #include "concat_solver2d_slab_x.h"
 #include "base/domain/domain2d_mpi.h"
+#include "base/parallel/mpi/distribute_slab.h"
 #include "gmres_solver2d_slab_x.h"
 #include "io/csv_writer_2d.h"
 #include "pe/poisson/poisson_solver2d_slab_x.h"
@@ -209,10 +210,20 @@ void ConcatPoissonSolver2DSlabX::solve()
                     MPI_Comm_size(comm_child, &mpi_size_child);
                 }
 
-                if (location == LocationType::Left)
+                if (location == LocationType::Left || location == LocationType::Right)
                 {
-                    bool is_desired_slab_local = mpi_rank_local == 0;
-                    bool is_desired_slab_child = mpi_rank_child == mpi_size_child - 1;
+                    bool is_desired_slab_local = false, is_desired_slab_child = false;
+                    if (location == LocationType::Left)
+                    {
+                        is_desired_slab_local = mpi_rank_local == 0;
+                        is_desired_slab_child = mpi_rank_child == mpi_size_child - 1;
+                    }
+                    else
+                    {
+                        is_desired_slab_local = mpi_rank_local == mpi_size_local - 1;
+                        is_desired_slab_child = mpi_rank_child == 0;
+                    }
+
                     // first slab of domain and last slab of child domain are located at same process
                     if (is_desired_slab_local && is_desired_slab_child)
                     {
@@ -238,12 +249,15 @@ void ConcatPoissonSolver2DSlabX::solve()
                         MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
                         if (is_desired_slab_child)
-                            MPI_Send(temp_fields[child_domain]->get_ptr(temp_fields[child_domain]->get_nx() - 1, 0),
+                        {
+                            int i = location == LocationType::Left ? temp_fields[child_domain]->get_nx() - 1 : 0;
+                            MPI_Send(temp_fields[child_domain]->get_ptr(i, 0),
                                      temp_fields[child_domain]->get_ny(),
                                      MPI_DOUBLE,
                                      mpi_rank_dest,
                                      0,
                                      MPI_COMM_WORLD);
+                        }
                         if (is_desired_slab_local)
                             MPI_Recv(buffer,
                                      temp_fields[domain]->get_ny(),
@@ -261,59 +275,7 @@ void ConcatPoissonSolver2DSlabX::solve()
                         }
                     }
                 }
-                else if (location == LocationType::Right)
-                {
-                    bool is_desired_slab_local = mpi_rank_local == mpi_size_local - 1;
-                    bool is_desired_slab_child = mpi_rank_child == 0;
-                    // first slab of domain and last slab of child domain are located at same process
-                    if (is_desired_slab_local && is_desired_slab_child)
-                    {
-                        temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                        field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                    }
-                    else
-                    {
-                        double* buffer = nullptr;
-                        if (is_desired_slab_local)
-                            buffer = get_buffer(temp_fields[domain]->get_ny());
-
-                        int mpi_rank_src, mpi_rank_dest;
-                        // filter process who owns first slab of current iterated domain
-                        if (is_desired_slab_local)
-                            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);
-                        // filter process who owns last slab of current iterated domain's child
-                        if (is_desired_slab_child)
-                            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_src);
-
-                        // Synchronize metadata across MPI_COMM_WORLD
-                        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-                        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-
-                        if (is_desired_slab_child)
-                            MPI_Send(temp_fields[child_domain]->get_ptr(0, 0),
-                                     temp_fields[child_domain]->get_ny(),
-                                     MPI_DOUBLE,
-                                     mpi_rank_dest,
-                                     0,
-                                     MPI_COMM_WORLD);
-                        if (is_desired_slab_local)
-                            MPI_Recv(buffer,
-                                     temp_fields[domain]->get_ny(),
-                                     MPI_DOUBLE,
-                                     mpi_rank_src,
-                                     0,
-                                     MPI_COMM_WORLD,
-                                     MPI_STATUS_IGNORE);
-
-                        // filter process who owns first slab of current iterated domain
-                        if (is_desired_slab_local)
-                        {
-                            temp_fields[domain]->bond_add(location, -1., buffer);
-                            field_map[domain]->bond_add(location, -1., buffer);
-                        }
-                    }
-                }
-                else if (location == LocationType::Down)
+                else if (location == LocationType::Down || location == LocationType::Up)
                 {
                     int result;
                     MPI_Comm_compare(comm_local, comm_child, &result);
@@ -323,7 +285,36 @@ void ConcatPoissonSolver2DSlabX::solve()
                         field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
                     }
                     else
-                    {}
+                    {
+                        int nx_slab_local = 0, nx_slab_child = 0;
+                        if (is_local)
+                            nx_slab_local = temp_fields[domain]->get_nx();
+                        if (is_child)
+                            nx_slab_child = temp_fields[child_domain]->get_nx();
+
+                        double *buffer_local = nullptr, *buffer_child = nullptr;
+                        if (is_local)
+                        {
+                            buffer_local = get_buffer(nx_slab_local);
+                        }
+                        if (is_child)
+                        {
+                            buffer_child = get_buffer(nx_slab_child);
+
+                            int j = location == LocationType::Down ? 0 : temp_fields[child_domain]->get_ny() - 1;
+                            for (int i = 0; i < nx_slab_child; i++)
+                                buffer_child[i] = (*temp_fields[child_domain])(i, j);
+                        }
+
+                        MPIUtils::redistribute_slab(
+                            buffer_child, buffer_local, nx_slab_child, nx_slab_local, comm_child, comm_local);
+
+                        if (is_local)
+                        {
+                            temp_fields[domain]->bond_add(location, -1., buffer_local);
+                            field_map[domain]->bond_add(location, -1., buffer_local);
+                        }
+                    }
                 }
             }
 

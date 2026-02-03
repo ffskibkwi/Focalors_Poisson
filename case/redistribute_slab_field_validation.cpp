@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     // Process 0,1: (field, nullptr)
     // Process 2:   (field, field)
     // Process 3:   (nullptr, field)
-    MPIUtils::redistribute_2d_slab_sync(ptr_src, ptr_dest, comm_src, comm_dest);
+    MPIUtils::redistribute_slab(ptr_src, ptr_dest, comm_src, comm_dest);
 
     // --- Verification ---
     if (ptr_dest)

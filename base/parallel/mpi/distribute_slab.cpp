@@ -5,7 +5,131 @@
 
 namespace MPIUtils
 {
-    void redistribute_2d_slab_sync(field2* matrix_src, field2* matrix_dest, MPI_Comm comm_src, MPI_Comm comm_dest)
+    void redistribute_slab(double*  buffer_src,
+                           double*  buffer_dest,
+                           int      n_src,
+                           int      n_dest,
+                           MPI_Comm comm_src,
+                           MPI_Comm comm_dest)
+    {
+        int world_rank, world_size;
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+        // Arrays to map World Ranks to Sub-Comm Ranks
+        std::vector<int> src_ranks_in_world(world_size, -1);
+        std::vector<int> dest_ranks_in_world(world_size, -1);
+
+        int my_rank_src = -1, size_src = 0;
+        int my_rank_dest = -1, size_dest = 0;
+
+        // Get local rank and total size for source/dest communicators
+        if (comm_src != MPI_COMM_NULL)
+        {
+            MPI_Comm_rank(comm_src, &my_rank_src);
+            MPI_Comm_size(comm_src, &size_src);
+        }
+        if (comm_dest != MPI_COMM_NULL)
+        {
+            MPI_Comm_rank(comm_dest, &my_rank_dest);
+            MPI_Comm_size(comm_dest, &size_dest);
+        }
+
+        // Synchronize metadata across all processes in MPI_COMM_WORLD
+        MPI_Allgather(&my_rank_src, 1, MPI_INT, src_ranks_in_world.data(), 1, MPI_INT, MPI_COMM_WORLD);
+        MPI_Allgather(&my_rank_dest, 1, MPI_INT, dest_ranks_in_world.data(), 1, MPI_INT, MPI_COMM_WORLD);
+
+        int n_total = 0;
+        int local_n = (comm_src != MPI_COMM_NULL) ? n_src : 0;
+
+        // Calculate global total length and max sizes for loop bounds
+        MPI_Allreduce(&local_n, &n_total, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &size_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &size_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+        // Build mapping: Sub-Comm Rank -> World Rank
+        std::vector<int> src_to_world(size_src);
+        std::vector<int> dest_to_world(size_dest);
+        for (int i = 0; i < world_size; ++i)
+        {
+            if (src_ranks_in_world[i] != -1)
+                src_to_world[src_ranks_in_world[i]] = i;
+            if (dest_ranks_in_world[i] != -1)
+                dest_to_world[dest_ranks_in_world[i]] = i;
+        }
+
+        std::vector<MPI_Request> requests;
+
+        // --- Sender Logic ---
+        if (comm_src != MPI_COMM_NULL && buffer_src != nullptr)
+        {
+            int my_start = get_slab_displacement(n_total, my_rank_src, size_src);
+            int my_end   = my_start + n_src;
+
+            for (int p_dest = 0; p_dest < size_dest; ++p_dest)
+            {
+                int target_start = get_slab_displacement(n_total, p_dest, size_dest);
+                int target_n     = get_slab_length(n_total, p_dest, size_dest);
+                int target_end   = target_start + target_n;
+
+                // Calculate overlap between source slab and target slab
+                int overlap_start = std::max(my_start, target_start);
+                int overlap_end   = std::min(my_end, target_end);
+
+                if (overlap_start < overlap_end)
+                {
+                    MPI_Request req;
+                    MPI_Isend(buffer_src + (overlap_start - my_start),
+                              (overlap_end - overlap_start),
+                              MPI_DOUBLE,
+                              dest_to_world[p_dest],
+                              102,
+                              MPI_COMM_WORLD,
+                              &req);
+                    requests.push_back(req);
+                }
+            }
+        }
+
+        // --- Receiver Logic ---
+        if (comm_dest != MPI_COMM_NULL && buffer_dest != nullptr)
+        {
+            int my_start = get_slab_displacement(n_total, my_rank_dest, size_dest);
+            int my_end   = my_start + n_dest;
+
+            for (int p_src = 0; p_src < size_src; ++p_src)
+            {
+                int src_start = get_slab_displacement(n_total, p_src, size_src);
+                int src_n     = get_slab_length(n_total, p_src, size_src);
+                int src_end   = src_start + src_n;
+
+                // Calculate overlap between destination slab and source slab
+                int overlap_start = std::max(my_start, src_start);
+                int overlap_end   = std::min(my_end, src_end);
+
+                if (overlap_start < overlap_end)
+                {
+                    MPI_Request req;
+                    MPI_Irecv(buffer_dest + (overlap_start - my_start),
+                              (overlap_end - overlap_start),
+                              MPI_DOUBLE,
+                              src_to_world[p_src],
+                              102,
+                              MPI_COMM_WORLD,
+                              &req);
+                    requests.push_back(req);
+                }
+            }
+        }
+
+        // Wait for all non-blocking communications to complete
+        if (!requests.empty())
+        {
+            MPI_Waitall(static_cast<int>(requests.size()), requests.data(), MPI_STATUSES_IGNORE);
+        }
+    }
+
+    void redistribute_slab(field2* matrix_src, field2* matrix_dest, MPI_Comm comm_src, MPI_Comm comm_dest)
     {
         int world_rank, world_size;
         MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);

@@ -19,4 +19,8 @@ protected:
     void construct_solver_map();
 
     void boundary_assembly();
+
+    double* get_buffer(int size);
+
+    std::unordered_map<int, double*> buffer_map;
 };

@@ -31,6 +31,8 @@ public:
     MPI_Comm communicator = MPI_COMM_WORLD;
     int      mpi_rank, mpi_size;
 
+    // hierarchical var contains tree root
+
     std::vector<Domain2DUniform*> hierarchical_slab_parents;
     std::vector<MPI_Comm>         hierarchical_slab_comms;
     std::vector<int>              hierarchical_slab_ranks;

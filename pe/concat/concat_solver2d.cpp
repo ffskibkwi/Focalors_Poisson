@@ -129,7 +129,9 @@ void ConcatPoissonSolver2D::solve()
                 temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
                 field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
             }
-
+        }
+        for (Domain2DUniform* domain : level)
+        {
             if (env_config && env_config->showCurrentStep)
             {
                 double s_pre = temp_fields[domain]->sum();
@@ -200,7 +202,9 @@ void ConcatPoissonSolver2D::solve()
         for (Domain2DUniform* domain : level)
         {
             field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
-
+        }
+        for (Domain2DUniform* domain : level)
+        {
             if (env_config && env_config->showCurrentStep)
             {
                 double s_pre = field_map[domain]->sum();

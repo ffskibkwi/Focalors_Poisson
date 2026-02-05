@@ -30,4 +30,6 @@ protected:
     double* get_buffer(int size);
 
     std::unordered_map<int, double*> buffer_map;
+
+    int mpi_rank = 0, mpi_size = 1;
 };

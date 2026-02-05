@@ -9,6 +9,9 @@
 
 ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable, EnvironmentConfig* in_env_config)
 {
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+
     variable   = in_variable;
     env_config = in_env_config;
 
@@ -409,7 +412,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
 {
     bool is_dest = variable->slab_parent_to_level.find(domain_dest->get_uuid()) != variable->slab_parent_to_level.end();
 
-    MPI_Comm comm_dest;
+    MPI_Comm comm_dest     = MPI_COMM_NULL;
     int      mpi_rank_dest = -1;
     int      mpi_size_dest = -1;
     if (is_dest)
@@ -423,7 +426,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
 
     bool is_src = variable->slab_parent_to_level.find(domain_src->get_uuid()) != variable->slab_parent_to_level.end();
 
-    MPI_Comm comm_src;
+    MPI_Comm comm_src     = MPI_COMM_NULL;
     int      mpi_rank_src = -1;
     int      mpi_size_src = -1;
     if (is_src)
@@ -492,7 +495,8 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
     else if (location == LocationType::Down || location == LocationType::Up)
     {
         int result;
-        MPI_Comm_compare(comm_dest, comm_src, &result);
+        if (is_src && is_dest)
+            MPI_Comm_compare(comm_dest, comm_src, &result);
         if (result == MPI_IDENT || result == MPI_CONGRUENT)
         {
             for (auto* f : f_dest)

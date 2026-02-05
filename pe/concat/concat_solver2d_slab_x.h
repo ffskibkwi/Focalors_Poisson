@@ -20,6 +20,13 @@ protected:
 
     void boundary_assembly();
 
+    void bond_add_slab(Domain2DUniformMPI*         domain_src,
+                       Domain2DUniformMPI*         domain_dest,
+                       LocationType                location,
+                       double                      coeff,
+                       field2*                     f_src,
+                       const std::vector<field2*>& f_dest);
+
     double* get_buffer(int size);
 
     std::unordered_map<int, double*> buffer_map;

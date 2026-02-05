@@ -164,6 +164,7 @@ void ConcatPoissonSolver2DSlabX::solve()
         solve_start = std::chrono::steady_clock::now();
 
     // Righthand construction
+    int local_level = variable->hierarchical_slab_parents.size() - 1;
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
     {
         auto level = *it;
@@ -173,20 +174,6 @@ void ConcatPoissonSolver2DSlabX::solve()
 
             bool is_local =
                 variable->slab_parent_to_level.find(domain->get_uuid()) != variable->slab_parent_to_level.end();
-
-            MPI_Comm comm_local;
-            int      mpi_rank_local = -1;
-            int      mpi_size_local = -1;
-            if (is_local)
-            {
-                int local_level = variable->slab_parent_to_level[domain->get_uuid()];
-                comm_local      = variable->hierarchical_slab_comms[local_level];
-
-                MPI_Comm_rank(comm_local, &mpi_rank_local);
-                MPI_Comm_size(comm_local, &mpi_size_local);
-            }
-
-            // filter process who belongs to current iterated domain
             if (is_local)
                 (*temp_fields[domain]) = (*field_map[domain]);
 
@@ -197,163 +184,68 @@ void ConcatPoissonSolver2DSlabX::solve()
                 bool is_child = variable->slab_parent_to_level.find(child_domain->get_uuid()) !=
                                 variable->slab_parent_to_level.end();
 
-                MPI_Comm comm_child;
-                int      mpi_rank_child = -1;
-                int      mpi_size_child = -1;
-                // filter process who belongs to current iterated domain's child
-                if (is_child)
-                {
-                    int local_level_child = variable->slab_parent_to_level[child_domain->get_uuid()];
-                    comm_child            = variable->hierarchical_slab_comms[local_level_child];
+                field2* f_temp       = is_local ? temp_fields[domain] : nullptr;
+                field2* f            = is_local ? field_map[domain] : nullptr;
+                field2* f_temp_child = is_child ? temp_fields[child_domain] : nullptr;
 
-                    MPI_Comm_rank(comm_child, &mpi_rank_child);
-                    MPI_Comm_size(comm_child, &mpi_size_child);
-                }
-
-                if (location == LocationType::Left || location == LocationType::Right)
-                {
-                    bool is_desired_slab_local = false, is_desired_slab_child = false;
-                    if (location == LocationType::Left)
-                    {
-                        is_desired_slab_local = mpi_rank_local == 0;
-                        is_desired_slab_child = mpi_rank_child == mpi_size_child - 1;
-                    }
-                    else
-                    {
-                        is_desired_slab_local = mpi_rank_local == mpi_size_local - 1;
-                        is_desired_slab_child = mpi_rank_child == 0;
-                    }
-
-                    // first slab of domain and last slab of child domain are located at same process
-                    if (is_desired_slab_local && is_desired_slab_child)
-                    {
-                        temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                        field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                    }
-                    else
-                    {
-                        double* buffer = nullptr;
-                        if (is_desired_slab_local)
-                            buffer = get_buffer(temp_fields[domain]->get_ny());
-
-                        int mpi_rank_src, mpi_rank_dest;
-                        // filter process who owns first slab of current iterated domain
-                        if (is_desired_slab_local)
-                            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);
-                        // filter process who owns last slab of current iterated domain's child
-                        if (is_desired_slab_child)
-                            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_src);
-
-                        // Synchronize metadata across MPI_COMM_WORLD
-                        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-                        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-
-                        if (is_desired_slab_child)
-                        {
-                            int i = location == LocationType::Left ? temp_fields[child_domain]->get_nx() - 1 : 0;
-                            MPI_Send(temp_fields[child_domain]->get_ptr(i, 0),
-                                     temp_fields[child_domain]->get_ny(),
-                                     MPI_DOUBLE,
-                                     mpi_rank_dest,
-                                     0,
-                                     MPI_COMM_WORLD);
-                        }
-                        if (is_desired_slab_local)
-                            MPI_Recv(buffer,
-                                     temp_fields[domain]->get_ny(),
-                                     MPI_DOUBLE,
-                                     mpi_rank_src,
-                                     0,
-                                     MPI_COMM_WORLD,
-                                     MPI_STATUS_IGNORE);
-
-                        // filter process who owns first slab of current iterated domain
-                        if (is_desired_slab_local)
-                        {
-                            temp_fields[domain]->bond_add(location, -1., buffer);
-                            field_map[domain]->bond_add(location, -1., buffer);
-                        }
-                    }
-                }
-                else if (location == LocationType::Down || location == LocationType::Up)
-                {
-                    int result;
-                    MPI_Comm_compare(comm_local, comm_child, &result);
-                    if (result == MPI_IDENT || result == MPI_CONGRUENT)
-                    {
-                        temp_fields[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                        field_map[domain]->bond_add(location, -1., *temp_fields[child_domain]);
-                    }
-                    else
-                    {
-                        int nx_slab_local = 0, nx_slab_child = 0;
-                        if (is_local)
-                            nx_slab_local = temp_fields[domain]->get_nx();
-                        if (is_child)
-                            nx_slab_child = temp_fields[child_domain]->get_nx();
-
-                        double *buffer_local = nullptr, *buffer_child = nullptr;
-                        if (is_local)
-                        {
-                            buffer_local = get_buffer(nx_slab_local);
-                        }
-                        if (is_child)
-                        {
-                            buffer_child = get_buffer(nx_slab_child);
-
-                            int j = location == LocationType::Down ? 0 : temp_fields[child_domain]->get_ny() - 1;
-                            for (int i = 0; i < nx_slab_child; i++)
-                                buffer_child[i] = (*temp_fields[child_domain])(i, j);
-                        }
-
-                        MPIUtils::redistribute_slab(
-                            buffer_child, buffer_local, nx_slab_child, nx_slab_local, comm_child, comm_local);
-
-                        if (is_local)
-                        {
-                            temp_fields[domain]->bond_add(location, -1., buffer_local);
-                            field_map[domain]->bond_add(location, -1., buffer_local);
-                        }
-                    }
-                }
+                bond_add_slab(child_domain, domain, location, -1.0, f_temp_child, {f_temp, f});
             }
+        }
 
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_pre = temp_fields[domain]->sum();
-                std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
-            }
+        if (local_level < 0)
+        {
+            std::cerr << "local_level = " << local_level << std::endl;
+            continue;
+        }
 
-            if (track_detail_time)
-            {
-                auto t0 = std::chrono::steady_clock::now();
-                solver_map[domain]->solve(*temp_fields[domain]);
-                auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Domain " << domain->name
-                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
-                          << std::endl;
-            }
-            else
-            {
-                solver_map[domain]->solve(*temp_fields[domain]);
-            }
+        Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
+        local_level--;
 
-            if (env_config && env_config->debug_concat)
-            {
-                std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
-                IO::write_csv(*temp_fields[domain], fname_Ainv);
-            }
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_post = temp_fields[domain]->sum();
-                std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
-            }
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_pre = temp_fields[domain]->sum();
+            std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+        }
+
+        if (track_detail_time)
+        {
+            auto t0 = std::chrono::steady_clock::now();
+            solver_map[domain]->solve(*temp_fields[domain]);
+            auto t1 = std::chrono::steady_clock::now();
+            std::cout << "[Concat] Domain " << domain->name
+                      << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
+                      << std::endl;
+        }
+        else
+        {
+            solver_map[domain]->solve(*temp_fields[domain]);
+        }
+
+        if (env_config && env_config->debug_concat)
+        {
+            std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
+            IO::write_csv(*temp_fields[domain], fname_Ainv);
+        }
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_post = temp_fields[domain]->sum();
+            std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
         }
     }
 
     // Root equation
-    for (auto& [location, child_domain] : tree_map[tree_root])
-        field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
+    for (auto& [location, _child_domain] : tree_map[tree_root])
+    {
+        Domain2DUniformMPI* child_domain = static_cast<Domain2DUniformMPI*>(_child_domain);
+
+        bool is_child =
+            variable->slab_parent_to_level.find(child_domain->get_uuid()) != variable->slab_parent_to_level.end();
+
+        field2* f            = field_map[tree_root];
+        field2* f_temp_child = is_child ? temp_fields[child_domain] : nullptr;
+
+        bond_add_slab(child_domain, static_cast<Domain2DUniformMPI*>(tree_root), location, -1.0, f_temp_child, {f});
+    }
 
     if (env_config && env_config->showCurrentStep)
     {
@@ -383,39 +275,51 @@ void ConcatPoissonSolver2DSlabX::solve()
     }
 
     // Branch equations
+    local_level = 1;
     for (auto level : hierarchical_solve_levels)
     {
-        for (Domain2DUniform* domain : level)
+        for (Domain2DUniform* _domain : level)
         {
-            field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
+            Domain2DUniformMPI* domain   = static_cast<Domain2DUniformMPI*>(_domain);
+            LocationType        location = parent_map[domain].first;
+            Domain2DUniformMPI* parent   = static_cast<Domain2DUniformMPI*>(parent_map[domain].second);
 
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_pre = field_map[domain]->sum();
-                std::cout << "[Concat] Branch domain " << domain->name << " field sum before solve=" << s_pre
-                          << std::endl;
-            }
+            bool is_parent =
+                variable->slab_parent_to_level.find(parent->get_uuid()) != variable->slab_parent_to_level.end();
 
-            if (track_detail_time)
-            {
-                auto t0 = std::chrono::steady_clock::now();
-                solver_map[domain]->solve(*field_map[domain]);
-                auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Branch domain " << domain->name
-                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
-                          << std::endl;
-            }
-            else
-            {
-                solver_map[domain]->solve(*field_map[domain]);
-            }
+            field2* f        = field_map[domain];
+            field2* f_parent = is_parent ? field_map[parent] : nullptr;
 
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_post = field_map[domain]->sum();
-                std::cout << "[Concat] Branch domain " << domain->name << " field sum after solve=" << s_post
-                          << std::endl;
-            }
+            bond_add_slab(parent, domain, location, -1.0, f_parent, {f});
+        }
+
+        Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
+        local_level++;
+
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_pre = field_map[domain]->sum();
+            std::cout << "[Concat] Branch domain " << domain->name << " field sum before solve=" << s_pre << std::endl;
+        }
+
+        if (track_detail_time)
+        {
+            auto t0 = std::chrono::steady_clock::now();
+            solver_map[domain]->solve(*field_map[domain]);
+            auto t1 = std::chrono::steady_clock::now();
+            std::cout << "[Concat] Branch domain " << domain->name
+                      << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
+                      << std::endl;
+        }
+        else
+        {
+            solver_map[domain]->solve(*field_map[domain]);
+        }
+
+        if (env_config && env_config->showCurrentStep)
+        {
+            double s_post = field_map[domain]->sum();
+            std::cout << "[Concat] Branch domain " << domain->name << " field sum after solve=" << s_post << std::endl;
         }
     }
 
@@ -492,6 +396,137 @@ void ConcatPoissonSolver2DSlabX::boundary_assembly()
         {
             double* boundary_value = var_value_map[LocationType::Up];
             f.up_bond_add(-1.0 / hy, boundary_value);
+        }
+    }
+}
+
+void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domain_src,
+                                               Domain2DUniformMPI*         domain_dest,
+                                               LocationType                location,
+                                               double                      coeff,
+                                               field2*                     f_src,
+                                               const std::vector<field2*>& f_dest)
+{
+    bool is_dest = variable->slab_parent_to_level.find(domain_dest->get_uuid()) != variable->slab_parent_to_level.end();
+
+    MPI_Comm comm_dest;
+    int      mpi_rank_dest = -1;
+    int      mpi_size_dest = -1;
+    if (is_dest)
+    {
+        int local_level = variable->slab_parent_to_level[domain_dest->get_uuid()];
+        comm_dest       = variable->hierarchical_slab_comms[local_level];
+
+        MPI_Comm_rank(comm_dest, &mpi_rank_dest);
+        MPI_Comm_size(comm_dest, &mpi_size_dest);
+    }
+
+    bool is_src = variable->slab_parent_to_level.find(domain_src->get_uuid()) != variable->slab_parent_to_level.end();
+
+    MPI_Comm comm_src;
+    int      mpi_rank_src = -1;
+    int      mpi_size_src = -1;
+    if (is_src)
+    {
+        int local_level_src = variable->slab_parent_to_level[domain_src->get_uuid()];
+        comm_src            = variable->hierarchical_slab_comms[local_level_src];
+
+        MPI_Comm_rank(comm_src, &mpi_rank_src);
+        MPI_Comm_size(comm_src, &mpi_size_src);
+    }
+
+    if (location == LocationType::Left || location == LocationType::Right)
+    {
+        bool is_desired_slab_dest = false, is_desired_slab_src = false;
+        if (location == LocationType::Left)
+        {
+            is_desired_slab_dest = mpi_rank_dest == 0;
+            is_desired_slab_src  = mpi_rank_src == mpi_size_src - 1;
+        }
+        else
+        {
+            is_desired_slab_dest = mpi_rank_dest == mpi_size_dest - 1;
+            is_desired_slab_src  = mpi_rank_src == 0;
+        }
+
+        // first slab of domain and last slab of child domain are located at same process
+        if (is_desired_slab_dest && is_desired_slab_src)
+        {
+            for (auto* f : f_dest)
+                f->bond_add(location, coeff, *f_src);
+        }
+        else
+        {
+            double* buffer = nullptr;
+            if (is_desired_slab_dest)
+                buffer = get_buffer(f_dest[0]->get_ny());
+
+            int mpi_rank_src, mpi_rank_dest;
+            // filter process who owns first slab of current iterated domain
+            if (is_desired_slab_dest)
+                MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);
+            // filter process who owns last slab of current iterated domain's child
+            if (is_desired_slab_src)
+                MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_src);
+
+            // Synchronize metadata across MPI_COMM_WORLD
+            MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+            MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
+            if (is_desired_slab_src)
+            {
+                int i = location == LocationType::Left ? f_src->get_nx() - 1 : 0;
+                MPI_Send(f_src->get_ptr(i, 0), f_src->get_ny(), MPI_DOUBLE, mpi_rank_dest, 0, MPI_COMM_WORLD);
+            }
+            if (is_desired_slab_dest)
+                MPI_Recv(buffer, f_dest[0]->get_ny(), MPI_DOUBLE, mpi_rank_src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            // filter process who owns first slab of current iterated domain
+            if (is_desired_slab_dest)
+            {
+                for (auto* f : f_dest)
+                    f->bond_add(location, coeff, buffer);
+            }
+        }
+    }
+    else if (location == LocationType::Down || location == LocationType::Up)
+    {
+        int result;
+        MPI_Comm_compare(comm_dest, comm_src, &result);
+        if (result == MPI_IDENT || result == MPI_CONGRUENT)
+        {
+            for (auto* f : f_dest)
+                f->bond_add(location, coeff, *f_src);
+        }
+        else
+        {
+            int nx_slab_dest = 0, nx_slab_src = 0;
+            if (is_dest)
+                nx_slab_dest = f_dest[0]->get_nx();
+            if (is_src)
+                nx_slab_src = f_src->get_nx();
+
+            double *buffer_dest = nullptr, *buffer_src = nullptr;
+            if (is_dest)
+            {
+                buffer_dest = get_buffer(nx_slab_dest);
+            }
+            if (is_src)
+            {
+                buffer_src = get_buffer(nx_slab_src);
+
+                int j = location == LocationType::Down ? 0 : f_src->get_ny() - 1;
+                for (int i = 0; i < nx_slab_src; i++)
+                    buffer_src[i] = (*f_src)(i, j);
+            }
+
+            MPIUtils::redistribute_slab(buffer_src, buffer_dest, nx_slab_src, nx_slab_dest, comm_src, comm_dest);
+
+            if (is_dest)
+            {
+                for (auto* f : f_dest)
+                    f->bond_add(location, coeff, buffer_dest);
+            }
         }
     }
 }

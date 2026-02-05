@@ -42,6 +42,9 @@ int main(int argc, char* argv[])
     geo_tee.connect(&T2, LocationType::Left, &T1);
     geo_tee.connect(&T2, LocationType::Down, &T3);
 
+    geo_tee.check();
+    geo_tee.solve_prepare();
+
     Variable2D v("v");
     v.set_geometry(geo_tee);
     field2 v_T1, v_T2, v_T3;

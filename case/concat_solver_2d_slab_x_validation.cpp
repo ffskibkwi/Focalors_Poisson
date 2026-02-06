@@ -95,9 +95,11 @@ int main(int argc, char* argv[])
     solver.solve();
 
     print_mpi(v_T1, mpi_rank, mpi_size);
-    std::cout << "--------------------------" << std::endl;
+    if (mpi_rank == 0)
+        std::cout << "--------------------------" << std::endl;
     print_mpi(v_T2, mpi_rank, mpi_size);
-    std::cout << "--------------------------" << std::endl;
+    if (mpi_rank == 0)
+        std::cout << "--------------------------" << std::endl;
     print_mpi(v_T3, mpi_rank, mpi_size);
 
     MPI_Finalize();

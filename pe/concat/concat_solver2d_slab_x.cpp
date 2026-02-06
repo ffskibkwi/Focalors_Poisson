@@ -452,6 +452,21 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             is_desired_slab_src  = mpi_rank_src == 0;
         }
 
+        int mpi_rank_src, mpi_rank_dest;
+        // filter process who owns first slab of current iterated domain
+        if (is_desired_slab_dest)
+            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);
+        // filter process who owns last slab of current iterated domain's child
+        if (is_desired_slab_src)
+            MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_src);
+
+        // Synchronize metadata across MPI_COMM_WORLD
+        // It should be called by all process,
+        // so even though mpi_rank_src, mpi_rank_dest are only used by only one if case
+        // it can not be put in if block
+        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+
         // first slab of domain and last slab of child domain are located at same process
         if (is_desired_slab_dest && is_desired_slab_src)
         {
@@ -463,18 +478,6 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             double* buffer = nullptr;
             if (is_desired_slab_dest)
                 buffer = get_buffer(f_dest[0]->get_ny());
-
-            int mpi_rank_src, mpi_rank_dest;
-            // filter process who owns first slab of current iterated domain
-            if (is_desired_slab_dest)
-                MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);
-            // filter process who owns last slab of current iterated domain's child
-            if (is_desired_slab_src)
-                MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_src);
-
-            // Synchronize metadata across MPI_COMM_WORLD
-            MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-            MPI_Allreduce(MPI_IN_PLACE, &mpi_rank_dest, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
             if (is_desired_slab_src)
             {

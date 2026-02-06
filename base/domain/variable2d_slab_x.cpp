@@ -389,7 +389,7 @@ void Variable2DSlabX::print_slab_info()
             for (int i = 0; i < level.size(); i++)
             {
                 Domain2DUniformMPI* domain = static_cast<Domain2DUniformMPI*>(level[i]);
-                std::cout << " domain " << domain->get_uuid();
+                std::cout << " domain name = " << domain->name << " uuid = " << domain->get_uuid();
                 std::cout << " [" << domain->get_nx() << ", " << domain->get_ny() << "]" << std::endl;
             }
         }

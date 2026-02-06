@@ -56,3 +56,32 @@ std::ostream& operator<<(std::ostream& os, PDEBoundaryType type)
 }
 
 bool isDirLike(PDEBoundaryType t) { return t == PDEBoundaryType::Dirichlet || t == PDEBoundaryType::Adjacented; }
+
+std::ostream& operator<<(std::ostream& os, VariablePositionType type)
+{
+    switch (type)
+    {
+        case VariablePositionType::Center:
+            os << "Center";
+            break;
+        case VariablePositionType::XFace:
+            os << "XFace";
+            break;
+        case VariablePositionType::YFace:
+            os << "YFace";
+            break;
+        case VariablePositionType::ZFace:
+            os << "ZFace";
+            break;
+        case VariablePositionType::Corner:
+            os << "Corner";
+            break;
+        case VariablePositionType::Null:
+            os << "Null";
+            break;
+        default:
+            os << "Unknown";
+            break;
+    }
+    return os;
+}

@@ -27,6 +27,8 @@ public:
 
     void set_value_from_func_global(std::function<double(double, double)> func);
 
+    void print_slab_info();
+
     // slab
     MPI_Comm communicator = MPI_COMM_WORLD;
     int      mpi_rank, mpi_size;

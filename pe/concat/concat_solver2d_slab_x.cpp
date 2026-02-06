@@ -494,9 +494,12 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
     }
     else if (location == LocationType::Down || location == LocationType::Up)
     {
-        int result;
+        int result = MPI_UNEQUAL;
         if (is_src && is_dest)
-            MPI_Comm_compare(comm_dest, comm_src, &result);
+        {
+            if (!(comm_src == MPI_COMM_NULL && comm_dest == MPI_COMM_NULL))
+                MPI_Comm_compare(comm_dest, comm_src, &result);
+        }
         if (result == MPI_IDENT || result == MPI_CONGRUENT)
         {
             for (auto* f : f_dest)

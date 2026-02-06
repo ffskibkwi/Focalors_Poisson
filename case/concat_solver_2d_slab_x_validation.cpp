@@ -9,6 +9,8 @@
 #include "io/csv_writer_2d.h"
 #include "pe/concat/concat_solver2d_slab_x.h"
 
+#include <unistd.h> // for sleep
+
 void fill(field2& f, int disp)
 {
     for (int i = 0; i < f.get_nx(); i++)
@@ -41,6 +43,11 @@ int main(int argc, char* argv[])
 
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+
+    // debug
+    volatile int ii = 0; // use volatile to avoid compiler optimatize out variable
+    while (ii == 0)
+        sleep(1);
 
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();
@@ -81,6 +88,8 @@ int main(int argc, char* argv[])
     fill(v_T1, nx_1_disp);
     fill(v_T2, nx_2_disp);
     fill(v_T3, nx_2_disp);
+
+    v.print_slab_info();
 
     ConcatPoissonSolver2DSlabX solver(&v, env_config);
     solver.solve();

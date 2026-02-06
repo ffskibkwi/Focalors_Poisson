@@ -98,6 +98,8 @@ enum class VariablePositionType : std::uint8_t
     Null
 };
 
+std::ostream& operator<<(std::ostream& os, VariablePositionType type);
+
 namespace std
 {
     template<>

@@ -373,3 +373,44 @@ void Variable2DSlabX::set_value_from_func_global(std::function<double(double, do
         }
     }
 }
+
+void Variable2DSlabX::print_slab_info()
+{
+    if (mpi_rank == 0)
+    {
+        std::cout << "Variable2DSlabX slab info:" << std::endl;
+        std::cout << "PositionType = " << position_type << std::endl;
+        int level_num = 0;
+        for (auto level : geometry->hierarchical_solve_levels)
+        {
+            std::cout << "Level " << level_num << std::endl;
+            level_num++;
+
+            for (int i = 0; i < level.size(); i++)
+            {
+                Domain2DUniformMPI* domain = static_cast<Domain2DUniformMPI*>(level[i]);
+                std::cout << " domain " << domain->get_uuid();
+                std::cout << " [" << domain->get_nx() << ", " << domain->get_ny() << "]" << std::endl;
+            }
+        }
+    }
+
+    for (int level = 0; level < hierarchical_slab_parents.size(); level++)
+    {
+        if (mpi_rank == 0)
+            std::cout << "Level " << level << std::endl;
+
+        for (int i = 0; i < mpi_size; i++)
+        {
+            if (i == mpi_rank)
+            {
+                Domain2DUniformMPI* domain = static_cast<Domain2DUniformMPI*>(hierarchical_slab_parents[level]);
+                std::cout << "rank " << mpi_rank;
+                std::cout << " domain " << domain->get_uuid();
+                std::cout << " [" << hierarchical_slab_nxs[level] << ", " << field_map[domain]->get_ny() << "] + "
+                          << hierarchical_slab_disps[level] << std::endl;
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
+    }
+}

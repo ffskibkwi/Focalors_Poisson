@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     // debug
-    volatile int ii = 0; // use volatile to avoid compiler optimatize out variable
-    while (ii == 0)
-        sleep(1);
+    // volatile int ii = 0; // use volatile to avoid compiler optimatize out variable
+    // while (ii == 0)
+    //     sleep(1);
 
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();

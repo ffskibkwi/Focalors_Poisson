@@ -118,12 +118,13 @@ void SchurMat2DSlabX_up::construct(DomainSolver2D* branch_solver)
     for (int i = 0; i < cn; i++)
     {
         t_a.clear();
-        if (i >= cs_displacements[mpi_rank])
-        {
-            if (mpi_rank < mpi_size - 1 && i >= cs_displacements[mpi_rank + 1])
-                continue;
+
+        bool is_located = i >= cs_displacements[mpi_rank];
+        if (mpi_rank < mpi_size - 1)
+            is_located &= i < cs_displacements[mpi_rank + 1];
+        if (is_located)
             t_a(i - cs_displacements[mpi_rank], 0) = 1.;
-        }
+
         branch_solver->solve(t_a);
         for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, 0);
@@ -157,12 +158,13 @@ void SchurMat2DSlabX_down::construct(DomainSolver2D* branch_solver)
     for (int i = 0; i < cn; i++)
     {
         t_a.clear();
-        if (i >= cs_displacements[mpi_rank])
-        {
-            if (mpi_rank < mpi_size - 1 && i >= cs_displacements[mpi_rank + 1])
-                continue;
+
+        bool is_located = i >= cs_displacements[mpi_rank];
+        if (mpi_rank < mpi_size - 1)
+            is_located &= i < cs_displacements[mpi_rank + 1];
+        if (is_located)
             t_a(i - cs_displacements[mpi_rank], bny - 1) = 1.;
-        }
+
         branch_solver->solve(t_a);
         for (int j = 0; j < csn; j++)
             value(j, i) = t_a(j, bny - 1);

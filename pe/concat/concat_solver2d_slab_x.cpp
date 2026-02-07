@@ -409,7 +409,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             is_desired_slab_src  = mpi_rank_src == 0;
         }
 
-        int mpi_rank_src, mpi_rank_dest;
+        int mpi_rank_src = -1, mpi_rank_dest = -1;
         // filter process who owns first slab of current iterated domain
         if (is_desired_slab_dest)
             MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank_dest);

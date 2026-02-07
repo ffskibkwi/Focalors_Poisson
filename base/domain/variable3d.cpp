@@ -10,9 +10,6 @@ Variable3D::Variable3D(const std::string& in_name)
 
 Variable3D::~Variable3D()
 {
-    for (auto kv : field_map)
-        delete kv.second;
-
     // Clean up boundary value buffers
     for (auto& domainPair : boundary_value_map)
     {

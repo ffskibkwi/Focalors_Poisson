@@ -10,7 +10,7 @@ class Variable2DSlabX : public Variable2D
 public:
     Variable2DSlabX() = default;
     Variable2DSlabX(const std::string& in_name, MPI_Comm _communicator = MPI_COMM_WORLD);
-    ~Variable2DSlabX() = default;
+    ~Variable2DSlabX();
 
     void set_geometry(Geometry2D& g);
 

@@ -10,6 +10,12 @@ Variable2DSlabX::Variable2DSlabX(const std::string& in_name, MPI_Comm _communica
     , communicator(_communicator)
 {}
 
+Variable2DSlabX::~Variable2DSlabX()
+{
+    for (auto comm : hierarchical_slab_comms)
+        MPI_Comm_free(&comm);
+}
+
 /**
  * @brief Attach this variable to a geometry.
  * @param g Geometry to bind to this variable.

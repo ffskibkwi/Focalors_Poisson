@@ -483,7 +483,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             {
                 buffer_src = get_buffer(nx_slab_src);
 
-                int j = location == LocationType::Down ? 0 : f_src->get_ny() - 1;
+                int j = location == LocationType::Down ? f_src->get_ny() - 1 : 0;
                 for (int i = 0; i < nx_slab_src; i++)
                     buffer_src[i] = (*f_src)(i, j);
             }

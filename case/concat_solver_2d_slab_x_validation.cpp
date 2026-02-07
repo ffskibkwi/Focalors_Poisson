@@ -94,25 +94,14 @@ int main(int argc, char* argv[])
     fill(v_T2, &v, &T2);
     fill(v_T3, &v, &T3);
 
-    auto print_field_mpi = [&](field2& f) {
-        if (mpi_rank == 0)
-        {
-            std::cout << "--------------------------" << std::endl;
-            std::cout << f.get_name() << std::endl;
-        }
-        for (int i = 0; i < mpi_size; i++)
-        {
-            if (i == mpi_rank)
-            {
-                std::cout << "rank " << mpi_rank << std::endl;
-                f.print();
-            }
-            MPI_Barrier(MPI_COMM_WORLD);
-        }
+    auto print_field = [&](field2& f) {
+        std::cout << "--------------------------" << std::endl;
+        std::cout << f.get_name() << std::endl;
+        f.print();
     };
-    print_field_mpi(v_T1);
-    print_field_mpi(v_T2);
-    print_field_mpi(v_T3);
+    print_field(v_T1);
+    print_field(v_T2);
+    print_field(v_T3);
 
     v.print_slab_info();
 

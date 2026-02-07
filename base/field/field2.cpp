@@ -282,10 +282,6 @@ void field2::up_bond_add(const double a, const field2& neighbour)
 
 void field2::bond_add(LocationType location, const double a, const field2& neighbour)
 {
-    std::cout << "before bond add " << location << std::endl;
-    std::cout << "neighbour " << neighbour.get_name() << std::endl;
-    neighbour.print();
-
     switch (location)
     {
         case LocationType::Left:
@@ -303,10 +299,6 @@ void field2::bond_add(LocationType location, const double a, const field2& neigh
         default:
             throw std::invalid_argument("Invalid location type");
     }
-
-    std::cout << "after bond add " << location << std::endl;
-    std::cout << "neighbour " << neighbour.get_name() << std::endl;
-    neighbour.print();
 }
 
 double& field2::operator()(int i, int j)

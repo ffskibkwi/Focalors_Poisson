@@ -159,7 +159,7 @@ void ConcatPoissonSolver2DSlabX::solve()
     {
         auto  domain = kv.first;
         auto& f      = *kv.second;
-        f            = f * (domain->hx * domain->hx);
+        f *= domain->hx * domain->hx;
     }
 
     auto solve_start = std::chrono::steady_clock::time_point();
@@ -204,19 +204,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
         local_level--;
 
-        if (env_config && env_config->debug_concat)
-        {
-            for (int i = 0; i < mpi_size; i++)
-            {
-                if (i == mpi_rank)
-                {
-                    std::cout << "before solve temp f " << domain->name << " rank " << mpi_rank << std::endl;
-                    temp_fields[domain]->print();
-                }
-                MPI_Barrier(MPI_COMM_WORLD);
-            }
-        }
-
         if (track_detail_time)
         {
             auto t0 = std::chrono::steady_clock::now();
@@ -229,19 +216,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         else
         {
             solver_map[domain]->solve(*temp_fields[domain]);
-        }
-
-        if (env_config && env_config->debug_concat)
-        {
-            for (int i = 0; i < mpi_size; i++)
-            {
-                if (i == mpi_rank)
-                {
-                    std::cout << "after solve temp f " << domain->name << " rank " << mpi_rank << std::endl;
-                    temp_fields[domain]->print();
-                }
-                MPI_Barrier(MPI_COMM_WORLD);
-            }
         }
     }
 
@@ -259,13 +233,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         bond_add_slab(child_domain, static_cast<Domain2DUniformMPI*>(tree_root), location, -1.0, f_temp_child, {f});
     }
 
-    if (env_config && env_config->showCurrentStep)
-    {
-        double s_root_pre = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre
-                  << std::endl;
-    }
-
     if (track_detail_time)
     {
         auto t0 = std::chrono::steady_clock::now();
@@ -277,13 +244,6 @@ void ConcatPoissonSolver2DSlabX::solve()
     else
     {
         solver_map[tree_root]->solve(*field_map[tree_root]);
-    }
-
-    if (env_config && env_config->showCurrentStep)
-    {
-        double s_root_post = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum after solve=" << s_root_post
-                  << std::endl;
     }
 
     // Branch equations
@@ -308,12 +268,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
         local_level++;
 
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_pre = field_map[domain]->sum();
-            std::cout << "[Concat] Branch domain " << domain->name << " field sum before solve=" << s_pre << std::endl;
-        }
-
         if (track_detail_time)
         {
             auto t0 = std::chrono::steady_clock::now();
@@ -326,12 +280,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         else
         {
             solver_map[domain]->solve(*field_map[domain]);
-        }
-
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_post = field_map[domain]->sum();
-            std::cout << "[Concat] Branch domain " << domain->name << " field sum after solve=" << s_post << std::endl;
         }
     }
 
@@ -512,6 +460,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             if (!(comm_src == MPI_COMM_NULL && comm_dest == MPI_COMM_NULL))
                 MPI_Comm_compare(comm_dest, comm_src, &result);
         }
+
         if (result == MPI_IDENT || result == MPI_CONGRUENT)
         {
             for (auto* f : f_dest)

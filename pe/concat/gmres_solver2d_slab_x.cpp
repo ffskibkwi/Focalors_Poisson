@@ -306,13 +306,14 @@ void migrate_from(GMRESSolver2DSlabX* src, GMRESSolver2DSlabX* dest)
     // sync to dest
     MPI_Allreduce(MPI_IN_PLACE, &length_src, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
-    std::vector<LocationType> loc_src(length_src, LocationType::Left);
+    // use int becuase the enum is uint8_t, unmatch with MPI_INT
+    std::vector<int> loc_src(length_src, -1);
     if (src != nullptr)
     {
         for (int i = 0; i < length_src; i++)
         {
             SchurMat2DSlabX* S_src = src->S_params[i];
-            loc_src[i]             = S_src->get_loc();
+            loc_src[i]             = static_cast<int>(S_src->get_loc());
         }
     }
 
@@ -327,7 +328,7 @@ void migrate_from(GMRESSolver2DSlabX* src, GMRESSolver2DSlabX* dest)
         {
             Domain2DUniform* domain       = dest->domain;
             MPI_Comm         communicator = dest->communicator;
-            switch (loc_src[i])
+            switch (static_cast<LocationType>(loc_src[i]))
             {
                 case LocationType::Left:
                     S_dest = new SchurMat2DSlabX_left(domain, communicator);

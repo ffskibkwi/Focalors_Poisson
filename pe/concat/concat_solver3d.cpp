@@ -88,7 +88,7 @@ void ConcatPoissonSolver3D::solve()
     {
         auto  domain = kv.first;
         auto& f      = *kv.second;
-        f            = f * (domain->hx * domain->hx);
+        f *= domain->hx * domain->hx;
     }
 
     // Righthand construction (bottom-up pass)

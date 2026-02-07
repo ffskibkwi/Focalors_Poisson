@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
 
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();
+    env_config->debug_concat      = true;
 
     int nx_2 = 3;
     int ny_2 = 3;
@@ -118,6 +119,8 @@ int main(int argc, char* argv[])
     ConcatPoissonSolver2DSlabX solver(&v, env_config);
     solver.solve();
 
+    if (mpi_rank == 0)
+        std::cout << "--------------------------" << std::endl;
     print_mpi(v_T1, mpi_rank, mpi_size);
     if (mpi_rank == 0)
         std::cout << "--------------------------" << std::endl;

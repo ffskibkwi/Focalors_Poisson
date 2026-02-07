@@ -104,7 +104,7 @@ field2 field2::operator-(const field2& rhs)
 
 field2 field2::operator*(const double a)
 {
-    field2 R(nx, ny);
+    field2 R(nx, ny, this->get_name());
 
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < nx; i++)
@@ -119,7 +119,7 @@ field2 field2::operator*(const field2& rhs)
     int n = this->ny;
     int p = rhs.ny;
 
-    field2 R(m, p);
+    field2 R(m, p, this->get_name() + '*' + rhs.get_name());
 
     OPENMP_PARALLEL_FOR()
     for (int i = 0; i < m; i++)
@@ -282,6 +282,10 @@ void field2::up_bond_add(const double a, const field2& neighbour)
 
 void field2::bond_add(LocationType location, const double a, const field2& neighbour)
 {
+    std::cout << "before bond add " << location << std::endl;
+    std::cout << "neighbour " << neighbour.get_name() << std::endl;
+    neighbour.print();
+
     switch (location)
     {
         case LocationType::Left:
@@ -299,6 +303,10 @@ void field2::bond_add(LocationType location, const double a, const field2& neigh
         default:
             throw std::invalid_argument("Invalid location type");
     }
+
+    std::cout << "after bond add " << location << std::endl;
+    std::cout << "neighbour " << neighbour.get_name() << std::endl;
+    neighbour.print();
 }
 
 double& field2::operator()(int i, int j)
@@ -379,7 +387,7 @@ void field2::transpose(field2& dst)
     }
 }
 
-void field2::print()
+void field2::print() const
 {
     for (int i = 0; i < nx; i++)
     {

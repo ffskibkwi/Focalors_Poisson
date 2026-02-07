@@ -73,7 +73,7 @@ public:
     friend void swap(field2& lhs, field2& rhs);
     void        transpose(field2& dst);
 
-    void print();
+    void print() const;
 
 protected:
     unsigned int nx = 0, ny = 0;

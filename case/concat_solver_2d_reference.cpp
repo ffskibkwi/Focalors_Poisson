@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
 {
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();
+    env_config->debug_concat      = true;
 
     int nx_2 = 3;
     int ny_2 = 3;
@@ -70,6 +71,7 @@ int main(int argc, char* argv[])
     ConcatPoissonSolver2D solver(&v, env_config);
     solver.solve();
 
+    std::cout << "--------------------------" << std::endl;
     v_T1.print();
     std::cout << "--------------------------" << std::endl;
     v_T2.print();

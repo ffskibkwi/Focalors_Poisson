@@ -110,7 +110,7 @@ void ConcatPoissonSolver2D::solve()
     {
         auto  domain = kv.first;
         auto& f      = *kv.second;
-        f            = f * (domain->hx * domain->hx);
+        f *= domain->hx * domain->hx;
     }
 
     auto solve_start = std::chrono::steady_clock::time_point();
@@ -132,12 +132,6 @@ void ConcatPoissonSolver2D::solve()
         }
         for (Domain2DUniform* domain : level)
         {
-            if (env_config && env_config->debug_concat)
-            {
-                std::cout << "before solve temp f " << domain->name << std::endl;
-                temp_fields[domain]->print();
-            }
-
             if (track_detail_time)
             {
                 auto t0 = std::chrono::steady_clock::now();
@@ -151,25 +145,12 @@ void ConcatPoissonSolver2D::solve()
             {
                 solver_map[domain]->solve(*temp_fields[domain]);
             }
-
-            if (env_config && env_config->debug_concat)
-            {
-                std::cout << "after solve temp f " << domain->name << std::endl;
-                temp_fields[domain]->print();
-            }
         }
     }
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
-
-    if (env_config && env_config->showCurrentStep)
-    {
-        double s_root_pre = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum before solve=" << s_root_pre
-                  << std::endl;
-    }
 
     if (track_detail_time)
     {
@@ -184,13 +165,6 @@ void ConcatPoissonSolver2D::solve()
         solver_map[tree_root]->solve(*field_map[tree_root]);
     }
 
-    if (env_config && env_config->showCurrentStep)
-    {
-        double s_root_post = field_map[tree_root]->sum();
-        std::cout << "[Concat] Root domain " << tree_root->name << " field sum after solve=" << s_root_post
-                  << std::endl;
-    }
-
     // Branch equations
     for (auto level : hierarchical_solve_levels)
     {
@@ -200,13 +174,6 @@ void ConcatPoissonSolver2D::solve()
         }
         for (Domain2DUniform* domain : level)
         {
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_pre = field_map[domain]->sum();
-                std::cout << "[Concat] Branch domain " << domain->name << " field sum before solve=" << s_pre
-                          << std::endl;
-            }
-
             if (track_detail_time)
             {
                 auto t0 = std::chrono::steady_clock::now();
@@ -219,13 +186,6 @@ void ConcatPoissonSolver2D::solve()
             else
             {
                 solver_map[domain]->solve(*field_map[domain]);
-            }
-
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_post = field_map[domain]->sum();
-                std::cout << "[Concat] Branch domain " << domain->name << " field sum after solve=" << s_post
-                          << std::endl;
             }
         }
     }

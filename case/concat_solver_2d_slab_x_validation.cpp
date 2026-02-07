@@ -26,19 +26,27 @@ void fill(field2& f, Variable2DSlabX* var, Domain2DUniformMPI* domain)
     }
 }
 
-void print_mpi(field2& f, int mpi_rank, int mpi_size)
-{
-    for (int i = 0; i < mpi_size; i++)
-    {
-        if (i == mpi_rank)
-        {
-            std::cout << "rank " << mpi_rank << std::endl;
-            f.print();
-        }
-        MPI_Barrier(MPI_COMM_WORLD);
-    }
-}
-
+/**
+ *
+ * y
+ * ▲
+ * │
+ * │      ┌──────┐
+ * │      │      │
+ * │      │  A5  │
+ * │      │      │
+ * ├──────┼──────┼──────┬──────┐
+ * │      │      │      │      │
+ * │  A2  │  A1  │  A3  │  A6  │
+ * │      │      │      │      │
+ * ├──────┼──────┼──────┴──────┘
+ * │      │      │
+ * │      │  A4  │
+ * │      │      │
+ * └──────┴──────┴──────────►
+ * O                         x
+ *
+ */
 int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
@@ -48,75 +56,81 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    // debug
+    // // debug
     // volatile int ii = 0; // use volatile to avoid compiler optimatize out variable
     // while (ii == 0)
     //     sleep(1);
 
     Geometry2D         geo_tee;
     EnvironmentConfig* env_config = new EnvironmentConfig();
-    env_config->debug_concat      = true;
 
-    int nx_2 = 3;
-    int ny_2 = 3;
-    int nx_1 = 6;
-    int ny_3 = 9;
+    int nx_1 = 8;
+    int ny_1 = 7;
+    int nx_2 = 7;
+    int nx_3 = 8;
+    int ny_4 = 8;
+    int ny_5 = 7;
+    int nx_6 = 8;
 
-    int nx_2_disp = MPIUtils::get_slab_displacement(nx_2, mpi_rank, mpi_size);
-    int nx_1_disp = MPIUtils::get_slab_displacement(nx_2, mpi_rank, mpi_size);
-
-    Domain2DUniformMPI T2(nx_2, ny_2, 1.0, 1.0, "T2");
-    Domain2DUniformMPI T1("T1");
-    T1.set_nx(nx_1);
-    T1.set_lx(2.0);
+    Domain2DUniformMPI T1(nx_1, ny_1, nx_1, ny_1, "T1");
+    Domain2DUniformMPI T2("T2");
+    T2.set_nx(nx_2);
+    T2.set_lx(nx_2);
     Domain2DUniformMPI T3("T3");
-    T3.set_ny(ny_3);
-    T3.set_ly(3.0);
+    T3.set_nx(nx_3);
+    T3.set_lx(nx_3);
+    Domain2DUniformMPI T4("T4");
+    T4.set_ny(ny_4);
+    T4.set_ly(ny_4);
+    Domain2DUniformMPI T5("T5");
+    T5.set_ny(ny_5);
+    T5.set_ly(ny_5);
+    Domain2DUniformMPI T6("T6");
+    T6.set_nx(nx_6);
+    T6.set_lx(nx_6);
 
-    geo_tee.add_domain({&T1, &T2, &T3});
+    geo_tee.add_domain({&T1, &T2, &T3, &T4, &T5, &T6});
 
-    geo_tee.connect(&T2, LocationType::Left, &T1);
-    geo_tee.connect(&T2, LocationType::Down, &T3);
+    geo_tee.connect(&T1, LocationType::Left, &T2);
+    geo_tee.connect(&T1, LocationType::Right, &T3);
+    geo_tee.connect(&T1, LocationType::Down, &T4);
+    geo_tee.connect(&T1, LocationType::Up, &T5);
+    geo_tee.connect(&T3, LocationType::Right, &T6);
 
     geo_tee.check();
     geo_tee.solve_prepare();
 
     Variable2DSlabX v("v");
     v.set_geometry(geo_tee);
-    field2 v_T1, v_T2, v_T3;
+    field2 v_T1, v_T2, v_T3, v_T4, v_T5, v_T6;
     v.set_center_field(&T1, v_T1);
     v.set_center_field(&T2, v_T2);
     v.set_center_field(&T3, v_T3);
+    v.set_center_field(&T4, v_T4);
+    v.set_center_field(&T5, v_T5);
+    v.set_center_field(&T6, v_T6);
 
     v.fill_boundary_type(PDEBoundaryType::Dirichlet);
 
-    fill(v_T1, &v, &T1);
-    fill(v_T2, &v, &T2);
-    fill(v_T3, &v, &T3);
+    for (auto kv : v.field_map)
+        fill(*kv.second, &v, static_cast<Domain2DUniformMPI*>(kv.first));
 
     auto print_field = [&](field2& f) {
         std::cout << "--------------------------" << std::endl;
-        std::cout << f.get_name() << std::endl;
         f.print();
     };
-    print_field(v_T1);
-    print_field(v_T2);
-    print_field(v_T3);
 
-    v.print_slab_info();
+    std::array<field2*, 6> v_to_print = {&v_T1, &v_T2, &v_T3, &v_T4, &v_T5, &v_T6};
+    for (auto f : v_to_print)
+        print_field(*f);
+
+    std::cout << "-----------solve---------------" << std::endl;
 
     ConcatPoissonSolver2DSlabX solver(&v, env_config);
     solver.solve();
 
-    if (mpi_rank == 0)
-        std::cout << "--------------------------" << std::endl;
-    print_mpi(v_T1, mpi_rank, mpi_size);
-    if (mpi_rank == 0)
-        std::cout << "--------------------------" << std::endl;
-    print_mpi(v_T2, mpi_rank, mpi_size);
-    if (mpi_rank == 0)
-        std::cout << "--------------------------" << std::endl;
-    print_mpi(v_T3, mpi_rank, mpi_size);
+    for (auto f : v_to_print)
+        print_field(*f);
 
     MPI_Finalize();
 

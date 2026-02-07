@@ -11,8 +11,12 @@
 
 #include <unistd.h> // for sleep
 
-void fill(field2& f, int disp)
+void fill(field2& f, Variable2DSlabX* var, Domain2DUniformMPI* domain)
 {
+    int disp = 0;
+    if (var->slab_parent_to_level.find(domain->get_uuid()) != var->slab_parent_to_level.end())
+        disp = var->hierarchical_slab_disps[var->slab_parent_to_level[domain->get_uuid()]];
+
     for (int i = 0; i < f.get_nx(); i++)
     {
         for (int j = 0; j < f.get_ny(); j++)
@@ -85,9 +89,29 @@ int main(int argc, char* argv[])
 
     v.fill_boundary_type(PDEBoundaryType::Dirichlet);
 
-    fill(v_T1, nx_1_disp);
-    fill(v_T2, nx_2_disp);
-    fill(v_T3, nx_2_disp);
+    fill(v_T1, &v, &T1);
+    fill(v_T2, &v, &T2);
+    fill(v_T3, &v, &T3);
+
+    auto print_field_mpi = [&](field2& f) {
+        if (mpi_rank == 0)
+        {
+            std::cout << "--------------------------" << std::endl;
+            std::cout << f.get_name() << std::endl;
+        }
+        for (int i = 0; i < mpi_size; i++)
+        {
+            if (i == mpi_rank)
+            {
+                std::cout << "rank " << mpi_rank << std::endl;
+                f.print();
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
+    };
+    print_field_mpi(v_T1);
+    print_field_mpi(v_T2);
+    print_field_mpi(v_T3);
 
     v.print_slab_info();
 

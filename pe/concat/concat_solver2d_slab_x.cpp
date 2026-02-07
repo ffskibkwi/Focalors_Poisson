@@ -204,10 +204,17 @@ void ConcatPoissonSolver2DSlabX::solve()
         Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
         local_level--;
 
-        if (env_config && env_config->showCurrentStep)
+        if (env_config && env_config->debug_concat)
         {
-            double s_pre = temp_fields[domain]->sum();
-            std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+            for (int i = 0; i < mpi_size; i++)
+            {
+                if (i == mpi_rank)
+                {
+                    std::cout << "before solve temp f " << domain->name << " rank " << mpi_rank << std::endl;
+                    temp_fields[domain]->print();
+                }
+                MPI_Barrier(MPI_COMM_WORLD);
+            }
         }
 
         if (track_detail_time)
@@ -226,13 +233,15 @@ void ConcatPoissonSolver2DSlabX::solve()
 
         if (env_config && env_config->debug_concat)
         {
-            std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
-            IO::write_csv(*temp_fields[domain], fname_Ainv);
-        }
-        if (env_config && env_config->showCurrentStep)
-        {
-            double s_post = temp_fields[domain]->sum();
-            std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+            for (int i = 0; i < mpi_size; i++)
+            {
+                if (i == mpi_rank)
+                {
+                    std::cout << "after solve temp f " << domain->name << " rank " << mpi_rank << std::endl;
+                    temp_fields[domain]->print();
+                }
+                MPI_Barrier(MPI_COMM_WORLD);
+            }
         }
     }
 

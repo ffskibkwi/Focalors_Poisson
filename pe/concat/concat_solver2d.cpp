@@ -132,10 +132,10 @@ void ConcatPoissonSolver2D::solve()
         }
         for (Domain2DUniform* domain : level)
         {
-            if (env_config && env_config->showCurrentStep)
+            if (env_config && env_config->debug_concat)
             {
-                double s_pre = temp_fields[domain]->sum();
-                std::cout << "[Concat] Domain " << domain->name << " temp sum before solve=" << s_pre << std::endl;
+                std::cout << "before solve temp f " << domain->name << std::endl;
+                temp_fields[domain]->print();
             }
 
             if (track_detail_time)
@@ -154,13 +154,8 @@ void ConcatPoissonSolver2D::solve()
 
             if (env_config && env_config->debug_concat)
             {
-                std::string fname_Ainv = env_config->debugOutputDir + "/Ainv_f_" + domain->name;
-                IO::write_csv(*temp_fields[domain], fname_Ainv);
-            }
-            if (env_config && env_config->showCurrentStep)
-            {
-                double s_post = temp_fields[domain]->sum();
-                std::cout << "[Concat] Domain " << domain->name << " temp sum after solve=" << s_post << std::endl;
+                std::cout << "after solve temp f " << domain->name << std::endl;
+                temp_fields[domain]->print();
             }
         }
     }

@@ -58,6 +58,15 @@ int main(int argc, char* argv[])
     fill(v_T2);
     fill(v_T3);
 
+    auto print_field = [&](field2& f) {
+        std::cout << "--------------------------" << std::endl;
+        std::cout << f.get_name() << std::endl;
+        f.print();
+    };
+    print_field(v_T1);
+    print_field(v_T2);
+    print_field(v_T3);
+
     ConcatPoissonSolver2D solver(&v, env_config);
     solver.solve();
 

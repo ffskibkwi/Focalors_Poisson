@@ -12,8 +12,9 @@ Variable2DSlabX::Variable2DSlabX(const std::string& in_name, MPI_Comm _communica
 
 Variable2DSlabX::~Variable2DSlabX()
 {
-    for (auto comm : hierarchical_slab_comms)
-        MPI_Comm_free(&comm);
+    // Usually we finalize mpi before we exit the process
+    // for (auto comm : hierarchical_slab_comms)
+    //     MPI_Comm_free(&comm);
 }
 
 /**

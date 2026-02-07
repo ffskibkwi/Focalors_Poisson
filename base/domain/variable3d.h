@@ -47,7 +47,4 @@ public:
     virtual void fill_boundary_value_from_func_global(std::function<double(double, double, double)> f);
 
     virtual void set_value_from_func_global(std::function<double(double, double, double)> func);
-
-private:
-    void cleanup_buffers();
 };

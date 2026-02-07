@@ -8,6 +8,18 @@ Variable2D::Variable2D(const std::string& in_name)
     : name(in_name)
 {}
 
+Variable2D::~Variable2D()
+{
+    for (auto kv : field_map)
+        delete kv.second;
+    for (auto kv : buffer_map)
+        for (auto kv2 : kv.second)
+            delete[] kv2.second;
+    for (auto kv : boundary_value_map)
+        for (auto kv2 : kv.second)
+            delete[] kv2.second;
+}
+
 /**
  * @brief Attach this variable to a geometry.
  * @param g Geometry to bind to this variable.

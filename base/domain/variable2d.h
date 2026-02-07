@@ -23,7 +23,7 @@ public:
 
     Variable2D() = default;
     Variable2D(const std::string& in_name);
-    virtual ~Variable2D() = default;
+    virtual ~Variable2D();
 
     VariablePositionType position_type = VariablePositionType::Null;
 

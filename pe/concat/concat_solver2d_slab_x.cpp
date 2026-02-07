@@ -19,6 +19,12 @@ ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_varia
     construct_solver_map();
 }
 
+ConcatPoissonSolver2DSlabX::~ConcatPoissonSolver2DSlabX()
+{
+    for (auto kv : buffer_map)
+        delete[] kv.second;
+}
+
 std::unordered_map<Domain2DUniform*, DomainSolver2D*>
 ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, bool is_local, MPI_Comm local_comm)
 {

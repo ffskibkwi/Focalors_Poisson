@@ -128,6 +128,9 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DUniformM
                 schur_total += t1 - t0;
             }
         }
+
+        for (auto kv : local_solver_map)
+            delete kv.second;
     }
     else
     {

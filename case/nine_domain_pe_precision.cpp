@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
         p.set_center_field(&T9, p_T9);
 
         long long total_mesh_size = 0;
-        for (auto kv : p.field_map)
-            total_mesh_size += kv.second->get_size_n();
+        for (auto domain : geo.domains)
+            total_mesh_size += domain->get_nx() * domain->get_ny();
         std::cout << "Total mesh size = " << total_mesh_size << std::endl;
 
         double k = 0.1;

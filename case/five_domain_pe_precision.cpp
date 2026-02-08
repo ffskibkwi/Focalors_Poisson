@@ -103,11 +103,8 @@ int main(int argc, char* argv[])
             return local_sum;
         };
 
-        total_l2_sq += calc_err(&p_T1, &T1);
-        total_l2_sq += calc_err(&p_T2, &T2);
-        total_l2_sq += calc_err(&p_T3, &T3);
-        total_l2_sq += calc_err(&p_T4, &T4);
-        total_l2_sq += calc_err(&p_T5, &T5);
+        for (auto kv : p.field_map)
+            total_l2_sq += calc_err(kv.second, kv.first);
 
         std::cout << "rank: " << rank << " L2 Error: " << std::sqrt(total_l2_sq) << std::endl;
     }

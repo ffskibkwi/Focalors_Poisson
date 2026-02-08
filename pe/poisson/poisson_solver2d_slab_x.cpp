@@ -1,9 +1,9 @@
 #include "poisson_solver2d_slab_x.h"
+
 #include "base/parallel/mpi/mpi_misc.h"
 #include "base/parallel/mpi/transpose_slab.h"
+#include "instrumentor/timer.h"
 #include "io/csv_writer_2d.h"
-
-#include <string>
 
 PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
                                            int             in_ny,
@@ -91,6 +91,9 @@ PoissonSolver2DSlabX::~PoissonSolver2DSlabX()
 void PoissonSolver2DSlabX::solve(field2& f)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    SCOPE_TIMER("PoissonSolver2DSlabX::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;

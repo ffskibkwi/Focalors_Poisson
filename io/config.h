@@ -14,11 +14,12 @@ public:
         return instance;
     }
 
-    bool showCurrentStep            = false; // Print current step
-    bool showGmresRes               = false; // Print residual history of GMRES
-    bool track_pe_construct_time    = false;
-    bool track_pe_solve_detail_time = false;
-    bool track_pe_solve_total_time  = false;
+    bool        showCurrentStep            = false; // Print current step
+    bool        showGmresRes               = false; // Print residual history of GMRES
+    bool        track_pe_construct_time    = false;
+    bool        track_pe_solve_detail_time = false;
+    bool        track_pe_solve_total_time  = false;
+    std::string pe_solve_total_name        = "pe_solve_total";
 
     // Debug Output Control
     bool        debug_gmres    = false;

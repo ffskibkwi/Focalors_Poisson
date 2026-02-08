@@ -1,5 +1,6 @@
 #include "gmres_solver2d_slab_x.h"
 #include "base/parallel/mpi/mpi_misc.h"
+#include "instrumentor/timer.h"
 #include "io/csv_writer_2d.h"
 
 GMRESSolver2DSlabX::GMRESSolver2DSlabX(Domain2DUniform* in_domain,
@@ -146,6 +147,9 @@ void GMRESSolver2DSlabX::maybe_print_res() const
 void GMRESSolver2DSlabX::solve(field2& b)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    SCOPE_TIMER("GMRESSolver2DSlabX::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;

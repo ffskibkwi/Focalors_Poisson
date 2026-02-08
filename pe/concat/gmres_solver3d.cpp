@@ -1,16 +1,15 @@
 #include "gmres_solver3d.h"
+#include "instrumentor/timer.h"
 
 namespace
 {
-    const char* safe_domain_name(const Domain3DUniform* domain) { return domain ? domain->name.c_str() : "unknown"; }
-
     void print_gmres_done(const Domain3DUniform* domain, const std::vector<double>& res_vec)
     {
         EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
         if (!env_cfg.showCurrentStep)
             return;
 
-        std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")";
+        std::cout << "[GMRES3D] solve: done (domain " << domain->name << ")";
         if (!res_vec.empty())
             std::cout << " iter=" << res_vec.size() << " final_res=" << res_vec.back();
         else
@@ -62,14 +61,14 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
     if (env_cfg.showCurrentStep)
-        std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain)
-                  << " neighbors=" << adjacency_key.size() << std::endl;
+        std::cout << "[GMRES3D] Schur construct: domain " << domain->name << " neighbors=" << adjacency_key.size()
+                  << std::endl;
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
         if (env_cfg.showCurrentStep)
         {
-            std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
-                      << safe_domain_name(neighbour_domain) << " at " << location << " start" << std::endl;
+            std::cout << "[GMRES3D] Schur construct: " << domain->name << " <-> " << neighbour_domain->name << " at "
+                      << location << " start" << std::endl;
         }
         // Construct the Schur matrix for each neighbour domain of main domain
         SchurMat3D* current = nullptr;
@@ -116,12 +115,12 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         }
         if (env_cfg.showCurrentStep)
         {
-            std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
-                      << safe_domain_name(neighbour_domain) << " at " << location << " done" << std::endl;
+            std::cout << "[GMRES3D] Schur construct: " << domain->name << " <-> " << neighbour_domain->name << " at "
+                      << location << " done" << std::endl;
         }
     }
     if (env_cfg.showCurrentStep)
-        std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain) << " done" << std::endl;
+        std::cout << "[GMRES3D] Schur construct: domain " << domain->name << " done" << std::endl;
 }
 
 field3& GMRESSolver3D::Afun(field3& x)
@@ -161,8 +160,11 @@ void GMRESSolver3D::solve(field3& b)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
+    SCOPE_TIMER("GMRESSolver3D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
+
     if (env_cfg.showCurrentStep)
-        std::cout << "[GMRES3D] solve: start (domain " << safe_domain_name(domain) << ")" << std::endl;
+        std::cout << "[GMRES3D] solve: start (domain " << domain->name << ")" << std::endl;
 
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);

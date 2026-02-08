@@ -51,5 +51,4 @@ private:
     std::unordered_map<Domain3DUniform*, std::pair<LocationType, Domain3DUniform*>>          parent_map;
 
     bool showGmresRes = false;
-    bool track_time   = false;
 };

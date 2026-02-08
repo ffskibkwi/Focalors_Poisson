@@ -1,5 +1,7 @@
 #include "poisson_solver3d.h"
 
+#include "instrumentor/timer.h"
+
 PoissonSolver3D::PoissonSolver3D(int             in_nx,
                                  int             in_ny,
                                  int             in_nz,
@@ -84,6 +86,9 @@ void PoissonSolver3D::init()
 void PoissonSolver3D::solve(field3& f)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    SCOPE_TIMER("PoissonSolver3D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start (domain " << domain_name << ")" << std::endl;

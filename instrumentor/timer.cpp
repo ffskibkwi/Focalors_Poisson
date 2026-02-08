@@ -1,32 +1,45 @@
 #include "timer.h"
 #include <cmath>
 
-void TimerSingleton::Upload(const std::string& name, std::chrono::microseconds time)
+void TimerSingleton::Upload(const std::string&        name,
+                            std::chrono::microseconds time,
+                            TimeRecordType            record_type,
+                            bool                      output)
 {
-    if (m_regs_stat.find(name) != m_regs_stat.end())
+    double time_s = static_cast<double>(time.count()) / 1000000.0;
+
+    if (record_type == TimeRecordType::List)
     {
-        if (m_history.find(name) != m_history.end())
+        if (m_history_list.find(name) != m_history_list.end())
         {
-            m_history[name].push_back(time);
+            m_history_list[name].push_back(time);
         }
         else
         {
-            m_history.insert({name, std::vector<std::chrono::microseconds> {time}});
+            m_history_list.insert({name, std::vector<std::chrono::microseconds> {time}});
+        }
+    }
+    else if (record_type == TimeRecordType::Accumulate)
+    {
+        if (m_history_acc.find(name) != m_history_acc.end())
+        {
+            m_history_acc[name] += time_s;
+        }
+        else
+        {
+            m_history_acc.insert({name, time_s});
         }
     }
 
-    if (m_regs_std_cout.find(name) != m_regs_std_cout.end() && mpi_rank == 0)
+    if (output && mpi_rank == 0)
     {
-        if (m_stdcout_enable)
-        {
-            std::cout << name << " " << static_cast<double>(time.count()) / 1000000.0 << "s" << std::endl;
-        }
+        std::cout << name << " " << time_s << "s" << std::endl;
     }
 }
 
 void TimerSingleton::GetStat(const std::string& name, int last_num, double& avg, double& std)
 {
-    if (m_regs_stat.find(name) == m_regs_stat.end())
+    if (m_history_list.find(name) == m_history_list.end())
     {
         avg = -1.0;
         std = -1.0;
@@ -34,7 +47,7 @@ void TimerSingleton::GetStat(const std::string& name, int last_num, double& avg,
         return;
     }
 
-    std::vector<std::chrono::microseconds>& time_arr = m_history[name];
+    std::vector<std::chrono::microseconds>& time_arr = m_history_list[name];
 
     // Calculate the average
     double sum = 0.0;
@@ -56,3 +69,13 @@ void TimerSingleton::GetStat(const std::string& name, int last_num, double& avg,
     }
     std = std::sqrt(variance_sum / count);
 }
+
+double TimerSingleton::GetAcc(const std::string& name)
+{
+    if (m_history_acc.find(name) != m_history_acc.end())
+        return m_history_acc[name];
+    else
+        return 0.0;
+}
+
+void TimerSingleton::clearAcc() { m_history_acc.clear(); }

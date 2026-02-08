@@ -51,7 +51,5 @@ protected:
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>>          parent_map;
 
-    bool                                      showGmresRes = false;
-    bool                                      track_time   = false;
-    std::chrono::duration<double, std::milli> schur_total; // should be clear at the beginning of construct_solver_map
+    bool showGmresRes = false;
 };

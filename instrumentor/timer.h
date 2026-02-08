@@ -4,6 +4,13 @@
 
 #include "func_sig.h"
 
+enum TimeRecordType : uint8_t
+{
+    None,
+    List,
+    Accumulate
+};
+
 class TimerSingleton
 {
 public:
@@ -16,15 +23,12 @@ public:
         return instance;
     }
 
-    void Upload(const std::string& name, std::chrono::microseconds time);
-
-    void RegisterStat(const std::string& name) { m_regs_stat.insert(name); }
-
-    void RegisterStdCout(const std::string& name) { m_regs_std_cout.insert(name); }
+    void Upload(const std::string& name, std::chrono::microseconds time, TimeRecordType record_type, bool output);
 
     void GetStat(const std::string& name, int last_num, double& avg, double& std);
 
-    void EnableStdCout(bool enable) { m_stdcout_enable = enable; }
+    double GetAcc(const std::string& name);
+    void   clearAcc();
 
 private:
     TimerSingleton()
@@ -38,20 +42,18 @@ private:
 
     int mpi_rank = 0, mpi_size = 1;
 
-    std::unordered_map<std::string, std::vector<std::chrono::microseconds>> m_history;
-
-    int m_stdcout_enable = false;
-
-    std::unordered_set<std::string> m_regs_stat;
-    std::unordered_set<std::string> m_regs_std_cout;
+    std::unordered_map<std::string, std::vector<std::chrono::microseconds>> m_history_list;
+    std::unordered_map<std::string, double>                                 m_history_acc;
 };
 
 class Timer
 {
 public:
-    Timer(const std::string& name)
+    Timer(const std::string& name, TimeRecordType record_type, bool output)
         : m_name(name)
         , m_stopped(false)
+        , m_record_type(record_type)
+        , m_output(output)
     {
         m_stopped = false;
 
@@ -77,7 +79,7 @@ public:
             std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch() -
             std::chrono::time_point_cast<std::chrono::microseconds>(m_start_timepoint).time_since_epoch();
 
-        TimerSingleton::Get().Upload(m_name, elapsed_time);
+        TimerSingleton::Get().Upload(m_name, elapsed_time, m_record_type, m_output);
         ProfilerSingleton::Get().Upload({m_name, high_res_start, elapsed_time, std::this_thread::get_id()});
 
         m_stopped = true;
@@ -87,9 +89,11 @@ private:
     std::string                                        m_name;
     std::chrono::time_point<std::chrono::steady_clock> m_start_timepoint;
     bool                                               m_stopped;
+    TimeRecordType                                     m_record_type;
+    bool                                               m_output = false;
 };
 
-#define SCOPE_TIMER_LINE(name, line)      Timer timer##line(name)
-#define SCOPE_TIMER_PASTELINE(name, line) SCOPE_TIMER_LINE(name, line)
-#define SCOPE_TIMER(name)                 SCOPE_TIMER_PASTELINE(name, __LINE__)
-#define FUNCTION_TIMER()                  SCOPE_TIMER(FUNC_SIG)
+#define SCOPE_TIMER_LINE(name, line, type, output)      Timer timer##line(name, type, output)
+#define SCOPE_TIMER_PASTELINE(name, line, type, output) SCOPE_TIMER_LINE(name, line, type, output)
+#define SCOPE_TIMER(name, type, output)                 SCOPE_TIMER_PASTELINE(name, __LINE__, type, output)
+#define FUNCTION_TIMER(type, output)                    SCOPE_TIMER(FUNC_SIG, type, output)

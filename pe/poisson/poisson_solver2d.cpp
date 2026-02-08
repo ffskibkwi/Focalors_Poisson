@@ -1,6 +1,7 @@
 #include "poisson_solver2d.h"
+
+#include "instrumentor/timer.h"
 #include "io/csv_writer_2d.h"
-#include <string>
 
 PoissonSolver2D::PoissonSolver2D(int             in_nx,
                                  int             in_ny,
@@ -64,6 +65,9 @@ void PoissonSolver2D::init()
 void PoissonSolver2D::solve(field2& f)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    SCOPE_TIMER("PoissonSolver2D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;

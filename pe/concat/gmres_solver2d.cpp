@@ -1,4 +1,5 @@
 #include "gmres_solver2d.h"
+#include "instrumentor/timer.h"
 #include "io/csv_writer_2d.h"
 
 GMRESSolver2D::GMRESSolver2D(Domain2DUniform* in_domain, int in_m, double in_tol, int in_maxIter)
@@ -132,6 +133,9 @@ void GMRESSolver2D::maybe_print_res() const
 void GMRESSolver2D::solve(field2& b)
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    SCOPE_TIMER("GMRESSolver2D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;

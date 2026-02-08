@@ -1,5 +1,6 @@
 #include "concat_solver2d.h"
 #include "gmres_solver2d.h"
+#include "instrumentor/timer.h"
 #include "io/csv_writer_2d.h"
 #include "pe/poisson/poisson_solver2d.h"
 
@@ -54,7 +55,6 @@ void ConcatPoissonSolver2D::init_before_constructing_solver(Variable2D* _variabl
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
     showGmresRes = env_cfg.showGmresRes;
-    track_time   = env_cfg.track_pe_construct_time;
 }
 
 void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)
@@ -64,18 +64,7 @@ void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* doma
         solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter);
         auto* gmres        = static_cast<GMRESSolver2D*>(solver_map[domain]);
         gmres->set_solver(new PoissonSolver2D(domain, variable));
-
-        std::chrono::steady_clock::time_point t0, t1;
-        if (track_time)
-            t0 = std::chrono::steady_clock::now();
-
         gmres->schur_mat_construct(tree_map[domain], solver_map);
-
-        if (track_time)
-        {
-            t1 = std::chrono::steady_clock::now();
-            schur_total += t1 - t0;
-        }
     }
     else
     {
@@ -85,25 +74,20 @@ void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* doma
 
 void ConcatPoissonSolver2D::construct_solver_map()
 {
-    if (track_time)
-        schur_total = std::chrono::duration<double, std::milli>(0.0);
+    SCOPE_TIMER("[Concat] Schur complement build total = ",
+                TimeRecordType::None,
+                EnvironmentConfig::Get().track_pe_construct_time);
 
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
         for (Domain2DUniform* domain : *it)
             construct_solver_map_at_domain(domain);
 
     construct_solver_map_at_domain(tree_root);
-
-    if (track_time)
-        std::cout << "[Concat] Schur complement build total=" << schur_total.count() << " ms" << std::endl;
 }
 
 void ConcatPoissonSolver2D::solve()
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
-
-    const bool track_detail_time = env_cfg.track_pe_solve_detail_time;
-    const bool track_total_time  = env_cfg.track_pe_solve_total_time;
 
     // Boundary
     boundary_assembly();
@@ -115,10 +99,6 @@ void ConcatPoissonSolver2D::solve()
         auto& f      = *kv.second;
         f *= domain->hx * domain->hx;
     }
-
-    auto solve_start = std::chrono::steady_clock::time_point();
-    if (track_total_time)
-        solve_start = std::chrono::steady_clock::now();
 
     // Righthand construction
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
@@ -134,70 +114,21 @@ void ConcatPoissonSolver2D::solve()
             }
         }
         for (Domain2DUniform* domain : level)
-        {
-            if (track_detail_time)
-            {
-                auto t0 = std::chrono::steady_clock::now();
-                solver_map[domain]->solve(*temp_fields[domain]);
-                auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Domain " << domain->name
-                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
-                          << std::endl;
-            }
-            else
-            {
-                solver_map[domain]->solve(*temp_fields[domain]);
-            }
-        }
+            solver_map[domain]->solve(*temp_fields[domain]);
     }
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
-
-    if (track_detail_time)
-    {
-        auto t0 = std::chrono::steady_clock::now();
-        solver_map[tree_root]->solve(*field_map[tree_root]);
-        auto t1 = std::chrono::steady_clock::now();
-        std::cout << "[Concat] Root domain " << tree_root->name
-                  << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms" << std::endl;
-    }
-    else
-    {
-        solver_map[tree_root]->solve(*field_map[tree_root]);
-    }
+    solver_map[tree_root]->solve(*field_map[tree_root]);
 
     // Branch equations
     for (auto level : hierarchical_solve_levels)
     {
         for (Domain2DUniform* domain : level)
-        {
             field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
-        }
         for (Domain2DUniform* domain : level)
-        {
-            if (track_detail_time)
-            {
-                auto t0 = std::chrono::steady_clock::now();
-                solver_map[domain]->solve(*field_map[domain]);
-                auto t1 = std::chrono::steady_clock::now();
-                std::cout << "[Concat] Branch domain " << domain->name
-                          << " solve time=" << std::chrono::duration<double, std::milli>(t1 - t0).count() << " ms"
-                          << std::endl;
-            }
-            else
-            {
-                solver_map[domain]->solve(*field_map[domain]);
-            }
-        }
-    }
-
-    if (track_total_time)
-    {
-        auto solve_end = std::chrono::steady_clock::now();
-        std::cout << "[Concat] Solve total (exclude boundary/scale)="
-                  << std::chrono::duration<double, std::milli>(solve_end - solve_start).count() << " ms" << std::endl;
+            solver_map[domain]->solve(*field_map[domain]);
     }
 }
 

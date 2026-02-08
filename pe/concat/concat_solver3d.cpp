@@ -1,5 +1,6 @@
 #include "concat_solver3d.h"
 #include "gmres_solver3d.h"
+#include "instrumentor/timer.h"
 #include "pe/poisson/poisson_solver3d.h"
 
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
@@ -52,7 +53,6 @@ void ConcatPoissonSolver3D::init_before_constructing_solver(Variable3D* _variabl
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
     showGmresRes = env_cfg.showGmresRes;
-    track_time   = env_cfg.track_pe_construct_time;
 }
 
 void ConcatPoissonSolver3D::construct_solver_map_at_domain(Domain3DUniform* domain)
@@ -72,6 +72,10 @@ void ConcatPoissonSolver3D::construct_solver_map_at_domain(Domain3DUniform* doma
 
 void ConcatPoissonSolver3D::construct_solver_map()
 {
+    SCOPE_TIMER("[Concat] Schur complement build total = ",
+                TimeRecordType::None,
+                EnvironmentConfig::Get().track_pe_construct_time);
+
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
         for (Domain3DUniform* domain : *it)
             construct_solver_map_at_domain(domain);

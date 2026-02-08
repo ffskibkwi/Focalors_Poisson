@@ -114,13 +114,19 @@ void ConcatPoissonSolver2D::solve()
             }
         }
         for (Domain2DUniform* domain : level)
+        {
+            SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
             solver_map[domain]->solve(*temp_fields[domain]);
+        }
     }
 
     // Root equation
     for (auto& [location, child_domain] : tree_map[tree_root])
         field_map[tree_root]->bond_add(location, -1., *temp_fields[child_domain]);
-    solver_map[tree_root]->solve(*field_map[tree_root]);
+    {
+        SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
+        solver_map[tree_root]->solve(*field_map[tree_root]);
+    }
 
     // Branch equations
     for (auto level : hierarchical_solve_levels)
@@ -128,7 +134,10 @@ void ConcatPoissonSolver2D::solve()
         for (Domain2DUniform* domain : level)
             field_map[domain]->bond_add(parent_map[domain].first, -1., *field_map[parent_map[domain].second]);
         for (Domain2DUniform* domain : level)
+        {
+            SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
             solver_map[domain]->solve(*field_map[domain]);
+        }
     }
 }
 

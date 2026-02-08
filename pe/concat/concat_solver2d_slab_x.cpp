@@ -140,6 +140,8 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map()
 
 void ConcatPoissonSolver2DSlabX::solve()
 {
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
     // Boundary
     boundary_assembly();
 
@@ -188,8 +190,10 @@ void ConcatPoissonSolver2DSlabX::solve()
 
         Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
         local_level--;
-
-        solver_map[domain]->solve(*temp_fields[domain]);
+        {
+            SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
+            solver_map[domain]->solve(*temp_fields[domain]);
+        }
     }
 
     // Root equation
@@ -205,8 +209,10 @@ void ConcatPoissonSolver2DSlabX::solve()
 
         bond_add_slab(child_domain, static_cast<Domain2DUniformMPI*>(tree_root), location, -1.0, f_temp_child, {f});
     }
-
-    solver_map[tree_root]->solve(*field_map[tree_root]);
+    {
+        SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
+        solver_map[tree_root]->solve(*field_map[tree_root]);
+    }
 
     // Branch equations
     local_level = 1;
@@ -230,7 +236,11 @@ void ConcatPoissonSolver2DSlabX::solve()
         Domain2DUniform* domain = variable->hierarchical_slab_parents[local_level];
         local_level++;
 
-        solver_map[domain]->solve(*field_map[domain]);
+        {
+
+            SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
+            solver_map[domain]->solve(*field_map[domain]);
+        }
     }
 }
 

@@ -161,7 +161,6 @@ void GMRESSolver3D::solve(field3& b)
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
     SCOPE_TIMER("GMRESSolver3D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
-    SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
 
     if (env_cfg.showCurrentStep)
         std::cout << "[GMRES3D] solve: start (domain " << domain->name << ")" << std::endl;

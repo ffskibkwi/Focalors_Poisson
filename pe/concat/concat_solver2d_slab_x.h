@@ -8,7 +8,7 @@ class ConcatPoissonSolver2DSlabX : public ConcatPoissonSolver2D
 public:
     Variable2DSlabX* variable = nullptr;
 
-    ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable);
     ~ConcatPoissonSolver2DSlabX();
 
     void solve();

@@ -7,13 +7,12 @@
 
 #include <string>
 
-ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable, EnvironmentConfig* in_env_config)
+ConcatPoissonSolver2DSlabX::ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable)
 {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
-    variable   = in_variable;
-    env_config = in_env_config;
+    variable = in_variable;
 
     init_before_constructing_solver(variable);
     construct_solver_map();
@@ -52,10 +51,8 @@ ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, 
             // filter process who belongs to current iterated domain
             if (is_local)
             {
-                adjacented_gmres_local =
-                    new GMRESSolver2DSlabX(adjacented_domain, m, tol, maxIter, env_config, local_comm);
-                adjacented_gmres_local->set_solver(
-                    new PoissonSolver2DSlabX(adjacented_domain, variable, env_config, local_comm));
+                adjacented_gmres_local = new GMRESSolver2DSlabX(adjacented_domain, m, tol, maxIter, local_comm);
+                adjacented_gmres_local->set_solver(new PoissonSolver2DSlabX(adjacented_domain, variable, local_comm));
             }
 
             // filter process who belongs to adjacented_domain
@@ -77,8 +74,7 @@ ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, 
         {
             // filter process who belongs to current iterated domain
             if (is_local)
-                local_solver_map[adjacented_domain] =
-                    new PoissonSolver2DSlabX(adjacented_domain, variable, env_config, local_comm);
+                local_solver_map[adjacented_domain] = new PoissonSolver2DSlabX(adjacented_domain, variable, local_comm);
         }
     }
 
@@ -105,9 +101,9 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DUniformM
         // filter process who belongs to current iterated domain
         if (is_local)
         {
-            solver_map[domain] = new GMRESSolver2DSlabX(domain, m, tol, maxIter, env_config, local_comm);
+            solver_map[domain] = new GMRESSolver2DSlabX(domain, m, tol, maxIter, local_comm);
             gmres              = static_cast<GMRESSolver2DSlabX*>(solver_map[domain]);
-            gmres->set_solver(new PoissonSolver2DSlabX(domain, variable, env_config, local_comm));
+            gmres->set_solver(new PoissonSolver2DSlabX(domain, variable, local_comm));
         }
 
         std::unordered_map<Domain2DUniform*, DomainSolver2D*> local_solver_map =
@@ -136,7 +132,7 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map_at_domain(Domain2DUniformM
     {
         // filter process who belongs to current iterated domain
         if (is_local)
-            solver_map[domain] = new PoissonSolver2DSlabX(domain, variable, env_config, local_comm);
+            solver_map[domain] = new PoissonSolver2DSlabX(domain, variable, local_comm);
     }
 }
 
@@ -157,8 +153,10 @@ void ConcatPoissonSolver2DSlabX::construct_solver_map()
 
 void ConcatPoissonSolver2DSlabX::solve()
 {
-    const bool track_detail_time = env_config && env_config->track_pe_solve_detail_time;
-    const bool track_total_time  = env_config && env_config->track_pe_solve_total_time;
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    const bool track_detail_time = env_cfg.track_pe_solve_detail_time;
+    const bool track_total_time  = env_cfg.track_pe_solve_total_time;
 
     // Boundary
     boundary_assembly();

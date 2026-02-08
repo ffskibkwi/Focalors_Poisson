@@ -21,7 +21,7 @@ public:
     Variable2D* variable = nullptr;
 
     ConcatPoissonSolver2D() {}
-    ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ConcatPoissonSolver2D(Variable2D* in_variable);
     ~ConcatPoissonSolver2D();
 
     void set_parameter(int in_m, double in_tol, int in_maxIter);
@@ -52,7 +52,6 @@ protected:
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>>          parent_map;
 
     bool                                      showGmresRes = false;
-    EnvironmentConfig*                        env_config;
-    bool                                      track_time = false;
+    bool                                      track_time   = false;
     std::chrono::duration<double, std::milli> schur_total; // should be clear at the beginning of construct_solver_map
 };

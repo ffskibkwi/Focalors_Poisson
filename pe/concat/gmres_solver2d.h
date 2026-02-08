@@ -12,11 +12,7 @@
 class GMRESSolver2D : public DomainSolver2D
 {
 public:
-    GMRESSolver2D(Domain2DUniform*   in_domain,
-                  int                in_m,
-                  double             in_tol,
-                  int                in_maxIter,
-                  EnvironmentConfig* in_env_config = nullptr);
+    GMRESSolver2D(Domain2DUniform* in_domain, int in_m, double in_tol, int in_maxIter);
     ~GMRESSolver2D();
 
     void set_solver(DomainSolver2D* _solver) { pe_solver = _solver; }
@@ -53,8 +49,6 @@ private:
     field2 afun_buf;
 
     field2* x0_override = nullptr;
-
-    EnvironmentConfig* env_config = nullptr;
 
     field2& Afun(field2& x);
 

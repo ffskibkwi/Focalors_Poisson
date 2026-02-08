@@ -50,8 +50,7 @@ void test(LocationType neighbor_loc)
     double tol     = 1e-3;
     int    maxIter = 2;
 
-    Geometry2D         geo_tee;
-    EnvironmentConfig* env_config = new EnvironmentConfig();
+    Geometry2D geo_tee;
 
     int nx_slab          = MPIUtils::get_slab_length(nx, mpi_rank, mpi_size);
     int nx_disp          = MPIUtils::get_slab_displacement(nx, mpi_rank, mpi_size);
@@ -61,7 +60,7 @@ void test(LocationType neighbor_loc)
     Domain2DUniform neighbor(neighbor_nx, neighbor_ny, "neighbor");
     field2          p_root(nx_slab, ny, "p_root");
 
-    GMRESSolver2DSlabX  gmres(&root, m, tol, maxIter, env_config);
+    GMRESSolver2DSlabX  gmres(&root, m, tol, maxIter);
     DomainSolver2DTest* test_solver_root     = new DomainSolver2DTest(nx_disp);
     DomainSolver2DTest* test_solver_neighbor = new DomainSolver2DTest(neighbor_nx_disp);
     gmres.set_solver(test_solver_root);
@@ -95,7 +94,6 @@ void test(LocationType neighbor_loc)
         MPI_Barrier(MPI_COMM_WORLD);
     }
 
-    delete env_config;
     delete test_solver_neighbor;
 }
 

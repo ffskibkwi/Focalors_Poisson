@@ -12,11 +12,7 @@
 class GMRESSolver3D : public DomainSolver3D
 {
 public:
-    GMRESSolver3D(Domain3DUniform*   in_domain,
-                  int                in_m,
-                  double             in_tol,
-                  int                in_maxIter,
-                  EnvironmentConfig* in_env_config = nullptr);
+    GMRESSolver3D(Domain3DUniform* in_domain, int in_m, double in_tol, int in_maxIter);
     ~GMRESSolver3D();
 
     void set_solver(DomainSolver3D* _solver) { pe_solver = _solver; }
@@ -54,8 +50,6 @@ private:
     field3 afun_buf;
 
     field3* x0_override = nullptr;
-
-    EnvironmentConfig* env_config = nullptr;
 
     field3& Afun(field3& x);
 

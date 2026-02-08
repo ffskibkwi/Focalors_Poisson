@@ -5,6 +5,15 @@
 class EnvironmentConfig
 {
 public:
+    EnvironmentConfig(const EnvironmentConfig&) = delete;
+    EnvironmentConfig(EnvironmentConfig&&)      = delete;
+
+    static EnvironmentConfig& Get()
+    {
+        static EnvironmentConfig instance;
+        return instance;
+    }
+
     bool showCurrentStep            = false; // Print current step
     bool showGmresRes               = false; // Print residual history of GMRES
     bool track_pe_construct_time    = false;
@@ -17,26 +26,48 @@ public:
     bool        debug_concat   = false;
     std::string debugOutputDir = "./debug_output/";
 
+private:
     EnvironmentConfig() = default;
 };
 
 class TimeAdvancingConfig
 {
 public:
+    TimeAdvancingConfig(const TimeAdvancingConfig&) = delete;
+    TimeAdvancingConfig(TimeAdvancingConfig&&)      = delete;
+
+    static TimeAdvancingConfig& Get()
+    {
+        static TimeAdvancingConfig instance;
+        return instance;
+    }
+
     double dt             = 0.0; // Time step
     double t_max          = 0.0; // Max time
     int    num_iterations = 0;   // Total number of time iterations
     int    corr_iter      = 1;   // Number of correction iterations per time step
-    TimeAdvancingConfig() {};
+
     void set_dt(double in_dt);
     void set_t_max(double in_t_max);
     void set_num_iterations(int in_num_iterations);
     void set_corr_iter(int in_corr_iter);
+
+private:
+    TimeAdvancingConfig() = default;
 };
 
 class PhysicsConfig
 {
 public:
+    PhysicsConfig(const PhysicsConfig&) = delete;
+    PhysicsConfig(PhysicsConfig&&)      = delete;
+
+    static PhysicsConfig& Get()
+    {
+        static PhysicsConfig instance;
+        return instance;
+    }
+
     double nu = 0.0;
     double Re = 0.0;
 
@@ -65,7 +96,6 @@ public:
     double Bz         = 0.0;   // Magnetic field Z component
     double Ha         = 0.0;   // Hartmann number
 
-    PhysicsConfig() {}
     void set_nu(double in_nu);
     void set_Re(double in_Re);
 
@@ -95,4 +125,7 @@ public:
     void set_enable_mhd(bool in_enable_mhd);
     void set_magnetic_field(double in_Bx, double in_By, double in_Bz);
     void set_Ha(double in_Ha);
+
+private:
+    PhysicsConfig() = default;
 };

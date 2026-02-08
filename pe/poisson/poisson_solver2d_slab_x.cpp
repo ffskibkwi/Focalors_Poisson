@@ -27,10 +27,9 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
     init();
 }
 
-PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
-                                           Variable2D*        in_variable,
-                                           EnvironmentConfig* in_env_config,
-                                           MPI_Comm           in_communicator)
+PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform* in_domain,
+                                           Variable2D*      in_variable,
+                                           MPI_Comm         in_communicator)
     : PoissonSolver2DBase(in_domain->nx,
                           in_domain->ny,
                           in_domain->hx,
@@ -40,7 +39,6 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
                           in_variable->boundary_type_map[in_domain][LocationType::Down],
                           in_variable->boundary_type_map[in_domain][LocationType::Up])
     , domain_name(in_domain->name)
-    , env_config(in_env_config)
     , communicator(in_communicator)
 {
     init();
@@ -92,13 +90,14 @@ PoissonSolver2DSlabX::~PoissonSolver2DSlabX()
 
 void PoissonSolver2DSlabX::solve(field2& f)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
 
-    if (env_config && env_config->debug_poisson)
+    if (env_cfg.debug_poisson)
     {
-        std::string fname_rhs =
-            env_config->debugOutputDir + "/rhs_" + domain_name + "_" + std::to_string(solve_call_count);
+        std::string fname_rhs = env_cfg.debugOutputDir + "/rhs_" + domain_name + "_" + std::to_string(solve_call_count);
         IO::write_csv(f, fname_rhs);
     }
 
@@ -112,15 +111,14 @@ void PoissonSolver2DSlabX::solve(field2& f)
 
     poisson_fft_y->transform_transpose(p_hat, f);
 
-    if (env_config && env_config->debug_poisson)
+    if (env_cfg.debug_poisson)
     {
-        std::string fname_sol =
-            env_config->debugOutputDir + "/sol_" + domain_name + "_" + std::to_string(solve_call_count);
+        std::string fname_sol = env_cfg.debugOutputDir + "/sol_" + domain_name + "_" + std::to_string(solve_call_count);
         IO::write_csv(f, fname_sol);
     }
 
     solve_call_count++;
-    if (env_config && env_config->showCurrentStep)
+    if (env_cfg.showCurrentStep)
     {
         double s_f = f.sum();
         std::cout << "[Poisson] solve: done, f.sum=" << s_f << std::endl;

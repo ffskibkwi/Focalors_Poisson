@@ -23,7 +23,7 @@ public:
                     PDEBoundaryType in_boundary_type_back,
                     PDEBoundaryType in_boundary_type_down,
                     PDEBoundaryType in_boundary_type_up);
-    PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable = nullptr);
 
     void solve(field3& f) override;
 

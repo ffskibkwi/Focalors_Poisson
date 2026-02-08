@@ -20,7 +20,7 @@ class ConcatPoissonSolver3D
 public:
     Variable3D* variable = nullptr;
 
-    ConcatPoissonSolver3D(Variable3D* in_variable, EnvironmentConfig* in_env_config = nullptr);
+    ConcatPoissonSolver3D(Variable3D* in_variable);
     ~ConcatPoissonSolver3D();
 
     void set_parameter(int in_m, double in_tol, int in_maxIter);
@@ -50,7 +50,6 @@ private:
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, Domain3DUniform*>> tree_map;
     std::unordered_map<Domain3DUniform*, std::pair<LocationType, Domain3DUniform*>>          parent_map;
 
-    EnvironmentConfig* env_config;
-    bool               showGmresRes = false;
-    bool               track_time   = false;
+    bool showGmresRes = false;
+    bool track_time   = false;
 };

@@ -28,7 +28,7 @@ PoissonSolver3D::PoissonSolver3D(int             in_nx,
     init();
 }
 
-PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable, EnvironmentConfig* in_env_config)
+PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable)
     : PoissonSolver3DBase(in_domain->nx,
                           in_domain->ny,
                           in_domain->nz,
@@ -42,7 +42,6 @@ PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_vari
                           in_variable->boundary_type_map[in_domain][LocationType::Down],
                           in_variable->boundary_type_map[in_domain][LocationType::Up])
     , domain_name(in_domain->name)
-    , env_config(in_env_config)
 {
     init();
 }
@@ -84,7 +83,9 @@ void PoissonSolver3D::init()
 
 void PoissonSolver3D::solve(field3& f)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start (domain " << domain_name << ")" << std::endl;
 
     buffer.set_size(nx, ny, nz);
@@ -115,6 +116,6 @@ void PoissonSolver3D::solve(field3& f)
     poisson_fft_z->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
-    if (env_config && env_config->showCurrentStep)
+    if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: done (domain " << domain_name << ")" << std::endl;
 }

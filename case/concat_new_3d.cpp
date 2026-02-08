@@ -14,9 +14,9 @@
 int main(int argc, char* argv[])
 {
     Geometry3D         geo_tee;
-    EnvironmentConfig* env_config = new EnvironmentConfig();
-    env_config->showGmresRes      = true;
-    env_config->showCurrentStep   = true;
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+    env_cfg.showGmresRes       = true;
+    env_cfg.showCurrentStep    = true;
 
     // Grid parameters - 3D T型域
     // T2: 中心域 (x-y平面中心，z方向延伸)
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    ConcatPoissonSolver3D solver(&v, env_config);
+    ConcatPoissonSolver3D solver(&v);
     solver.solve();
 
     IO::write_csv(v_T1, "result/concat_new_3d/v_T1");

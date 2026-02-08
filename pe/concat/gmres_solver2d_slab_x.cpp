@@ -2,23 +2,17 @@
 #include "base/parallel/mpi/mpi_misc.h"
 #include "io/csv_writer_2d.h"
 
-GMRESSolver2DSlabX::GMRESSolver2DSlabX(Domain2DUniform*   in_domain,
-                                       int                in_m,
-                                       double             in_tol,
-                                       int                in_maxIter,
-                                       EnvironmentConfig* in_env_config,
-                                       MPI_Comm           _communicator)
+GMRESSolver2DSlabX::GMRESSolver2DSlabX(Domain2DUniform* in_domain,
+                                       int              in_m,
+                                       double           in_tol,
+                                       int              in_maxIter,
+                                       MPI_Comm         _communicator)
     : domain(in_domain)
     , m(in_m)
     , tol(in_tol)
     , maxIter(in_maxIter)
     , communicator(_communicator)
 {
-    env_config = in_env_config;
-    // 内部 Poisson 的配置：关闭 showCurrentStep，保持 showGmresRes 同步
-    inner_env_config = EnvironmentConfig {};
-    if (env_config)
-        inner_env_config.showGmresRes = env_config->showGmresRes;
     // 预分配 field2 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
@@ -57,7 +51,9 @@ GMRESSolver2DSlabX::~GMRESSolver2DSlabX()
 void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationType, Domain2DUniform*>&    adjacency_key,
                                              const std::unordered_map<Domain2DUniform*, DomainSolver2D*>& solver_map)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] Schur construct: start" << std::endl;
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
@@ -72,8 +68,8 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_left(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debug_gmres)
-                    current->write_csv(env_config->debugOutputDir);
+                if (env_cfg.debug_gmres)
+                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -81,8 +77,8 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_right(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debug_gmres)
-                    current->write_csv(env_config->debugOutputDir);
+                if (env_cfg.debug_gmres)
+                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -90,8 +86,8 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_up(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debug_gmres)
-                    current->write_csv(env_config->debugOutputDir);
+                if (env_cfg.debug_gmres)
+                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -99,8 +95,8 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_down(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_config && env_config->debug_gmres)
-                    current->write_csv(env_config->debugOutputDir);
+                if (env_cfg.debug_gmres)
+                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -108,7 +104,7 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 throw std::invalid_argument("Invalid location type");
         }
     }
-    if (env_config && env_config->showCurrentStep)
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] Schur construct: done" << std::endl;
 }
 field2& GMRESSolver2DSlabX::Afun(field2& x)
@@ -129,7 +125,9 @@ field2& GMRESSolver2DSlabX::Afun(field2& x)
 
 void GMRESSolver2DSlabX::maybe_print_res() const
 {
-    if (env_config && env_config->showGmresRes)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showGmresRes)
     {
         if (mpi_rank == 0)
         {
@@ -147,13 +145,15 @@ void GMRESSolver2DSlabX::maybe_print_res() const
 
 void GMRESSolver2DSlabX::solve(field2& b)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;
 
-    if (env_config && env_config->debug_gmres)
+    if (env_cfg.debug_gmres)
     {
         std::string fname_rhs =
-            env_config->debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
+            env_cfg.debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::write_csv(b, fname_rhs);
     }
 
@@ -282,15 +282,15 @@ void GMRESSolver2DSlabX::solve(field2& b)
     b = x_buf;
     maybe_print_res();
 
-    if (env_config && env_config->debug_gmres)
+    if (env_cfg.debug_gmres)
     {
         std::string fname_sol =
-            env_config->debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
+            env_cfg.debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
         IO::write_csv(b, fname_sol);
     }
     solve_call_count++;
 
-    if (env_config && env_config->showCurrentStep)
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] solve: done" << std::endl;
 }
 

@@ -4,10 +4,10 @@ namespace
 {
     const char* safe_domain_name(const Domain3DUniform* domain) { return domain ? domain->name.c_str() : "unknown"; }
 
-    void
-    print_gmres_done(const EnvironmentConfig* env, const Domain3DUniform* domain, const std::vector<double>& res_vec)
+    void print_gmres_done(const Domain3DUniform* domain, const std::vector<double>& res_vec)
     {
-        if (!env || !env->showCurrentStep)
+        EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+        if (!env_cfg.showCurrentStep)
             return;
 
         std::cout << "[GMRES3D] solve: done (domain " << safe_domain_name(domain) << ")";
@@ -19,18 +19,12 @@ namespace
     }
 } // namespace
 
-GMRESSolver3D::GMRESSolver3D(Domain3DUniform*   in_domain,
-                             int                in_m,
-                             double             in_tol,
-                             int                in_maxIter,
-                             EnvironmentConfig* in_env_config)
+GMRESSolver3D::GMRESSolver3D(Domain3DUniform* in_domain, int in_m, double in_tol, int in_maxIter)
     : domain(in_domain)
     , m(in_m)
     , tol(in_tol)
     , maxIter(in_maxIter)
 {
-    env_config = in_env_config;
-
     // 预分配 field3 缓冲与 Krylov 基
     int nx = domain->nx;
     int ny = domain->ny;
@@ -65,12 +59,14 @@ GMRESSolver3D::~GMRESSolver3D()
 void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, Domain3DUniform*>&    adjacency_key,
                                         const std::unordered_map<Domain3DUniform*, DomainSolver3D*>& solver_map)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain)
                   << " neighbors=" << adjacency_key.size() << std::endl;
     for (auto& [location, neighbour_domain] : adjacency_key)
     {
-        if (env_config && env_config->showCurrentStep)
+        if (env_cfg.showCurrentStep)
         {
             std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
                       << safe_domain_name(neighbour_domain) << " at " << location << " start" << std::endl;
@@ -118,13 +114,13 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
             default:
                 throw std::invalid_argument("Invalid location type");
         }
-        if (env_config && env_config->showCurrentStep)
+        if (env_cfg.showCurrentStep)
         {
             std::cout << "[GMRES3D] Schur construct: " << safe_domain_name(domain) << " <-> "
                       << safe_domain_name(neighbour_domain) << " at " << location << " done" << std::endl;
         }
     }
-    if (env_config && env_config->showCurrentStep)
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES3D] Schur construct: domain " << safe_domain_name(domain) << " done" << std::endl;
 }
 
@@ -146,7 +142,9 @@ field3& GMRESSolver3D::Afun(field3& x)
 
 void GMRESSolver3D::maybe_print_res() const
 {
-    if (env_config && env_config->showGmresRes)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showGmresRes)
     {
         std::cout << "GMRES3D resVec: [";
         for (size_t i = 0; i < resVec.size(); ++i)
@@ -161,7 +159,9 @@ void GMRESSolver3D::maybe_print_res() const
 
 void GMRESSolver3D::solve(field3& b)
 {
-    if (env_config && env_config->showCurrentStep)
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    if (env_cfg.showCurrentStep)
         std::cout << "[GMRES3D] solve: start (domain " << safe_domain_name(domain) << ")" << std::endl;
 
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
@@ -199,7 +199,7 @@ void GMRESSolver3D::solve(field3& b)
             {
                 b = x_buf; // 直接覆盖 b
                 maybe_print_res();
-                print_gmres_done(env_config, domain, resVec);
+                print_gmres_done(domain, resVec);
                 return;
             }
         }
@@ -300,5 +300,5 @@ void GMRESSolver3D::solve(field3& b)
     // 达到最大迭代，返回当前近似解
     b = x_buf;
     maybe_print_res();
-    print_gmres_done(env_config, domain, resVec);
+    print_gmres_done(domain, resVec);
 }

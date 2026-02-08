@@ -15,12 +15,11 @@
 class GMRESSolver2DSlabX : public DomainSolver2D
 {
 public:
-    GMRESSolver2DSlabX(Domain2DUniform*   in_domain,
-                       int                in_m,
-                       double             in_tol,
-                       int                in_maxIter,
-                       EnvironmentConfig* in_env_config = nullptr,
-                       MPI_Comm           _communicator = MPI_COMM_WORLD);
+    GMRESSolver2DSlabX(Domain2DUniform* in_domain,
+                       int              in_m,
+                       double           in_tol,
+                       int              in_maxIter,
+                       MPI_Comm         _communicator = MPI_COMM_WORLD);
     ~GMRESSolver2DSlabX();
 
     void set_solver(DomainSolver2D* _solver) { pe_solver = _solver; }
@@ -57,9 +56,6 @@ private:
     field2 afun_buf;
 
     field2* x0_override = nullptr;
-
-    EnvironmentConfig* env_config = nullptr;
-    EnvironmentConfig  inner_env_config; // 用于内部 Poisson（关闭 showCurrentStep）
 
     field2& Afun(field2& x);
 

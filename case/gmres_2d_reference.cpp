@@ -39,14 +39,13 @@ void test(const std::string& label, LocationType neighbor_loc)
     double tol     = 1e-3;
     int    maxIter = 2;
 
-    Geometry2D         geo_tee;
-    EnvironmentConfig* env_config = new EnvironmentConfig();
+    Geometry2D geo_tee;
 
     Domain2DUniform root(nx, ny, "root");
     Domain2DUniform neighbor(neighbor_nx, neighbor_ny, "neighbor");
     field2          p_root(nx, ny, "p_root");
 
-    GMRESSolver2D       gmres(&root, m, tol, maxIter, env_config);
+    GMRESSolver2D       gmres(&root, m, tol, maxIter);
     DomainSolver2DTest* test_solver = new DomainSolver2DTest();
     gmres.set_solver(test_solver);
 
@@ -70,8 +69,6 @@ void test(const std::string& label, LocationType neighbor_loc)
     gmres.solve(p_root);
 
     p_root.print();
-
-    delete env_config;
 }
 
 int main()

@@ -12,9 +12,8 @@ void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIte
     maxIter = in_maxIter;
 }
 
-ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable, EnvironmentConfig* in_env_config)
+ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable)
     : variable(in_variable)
-    , env_config(in_env_config)
 {
     init_before_constructing_solver(variable);
     construct_solver_map();
@@ -52,17 +51,19 @@ void ConcatPoissonSolver2D::init_before_constructing_solver(Variable2D* _variabl
             temp_fields[domain] = new field2(field->get_nx(), field->get_ny(), field->get_name() + "_temp");
     }
 
-    showGmresRes = env_config && env_config->showGmresRes;
-    track_time   = env_config && env_config->track_pe_construct_time;
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    showGmresRes = env_cfg.showGmresRes;
+    track_time   = env_cfg.track_pe_construct_time;
 }
 
 void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)
 {
     if (tree_map[domain].size() > 0)
     {
-        solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter, env_config);
+        solver_map[domain] = new GMRESSolver2D(domain, m, tol, maxIter);
         auto* gmres        = static_cast<GMRESSolver2D*>(solver_map[domain]);
-        gmres->set_solver(new PoissonSolver2D(domain, variable, env_config));
+        gmres->set_solver(new PoissonSolver2D(domain, variable));
 
         std::chrono::steady_clock::time_point t0, t1;
         if (track_time)
@@ -78,7 +79,7 @@ void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* doma
     }
     else
     {
-        solver_map[domain] = new PoissonSolver2D(domain, variable, env_config);
+        solver_map[domain] = new PoissonSolver2D(domain, variable);
     }
 }
 
@@ -99,8 +100,10 @@ void ConcatPoissonSolver2D::construct_solver_map()
 
 void ConcatPoissonSolver2D::solve()
 {
-    const bool track_detail_time = env_config && env_config->track_pe_solve_detail_time;
-    const bool track_total_time  = env_config && env_config->track_pe_solve_total_time;
+    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
+
+    const bool track_detail_time = env_cfg.track_pe_solve_detail_time;
+    const bool track_total_time  = env_cfg.track_pe_solve_total_time;
 
     // Boundary
     boundary_assembly();

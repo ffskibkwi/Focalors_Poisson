@@ -61,8 +61,7 @@ int main(int argc, char* argv[])
     // while (ii == 0)
     //     sleep(1);
 
-    Geometry2D         geo_tee;
-    EnvironmentConfig* env_config = new EnvironmentConfig();
+    Geometry2D geo_tee;
 
     int nx_1 = 8;
     int ny_1 = 7;
@@ -126,7 +125,7 @@ int main(int argc, char* argv[])
 
     std::cout << "-----------solve---------------" << std::endl;
 
-    ConcatPoissonSolver2DSlabX solver(&v, env_config);
+    ConcatPoissonSolver2DSlabX solver(&v);
     solver.solve();
 
     for (auto f : v_to_print)

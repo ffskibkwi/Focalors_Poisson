@@ -22,10 +22,9 @@ public:
                          PDEBoundaryType in_boundary_type_down,
                          PDEBoundaryType in_boundary_type_up,
                          MPI_Comm        in_communicator = MPI_COMM_WORLD);
-    PoissonSolver2DSlabX(Domain2DUniform*   in_domain,
-                         Variable2D*        in_variable,
-                         EnvironmentConfig* in_env_config   = nullptr,
-                         MPI_Comm           in_communicator = MPI_COMM_WORLD);
+    PoissonSolver2DSlabX(Domain2DUniform* in_domain,
+                         Variable2D*      in_variable,
+                         MPI_Comm         in_communicator = MPI_COMM_WORLD);
     ~PoissonSolver2DSlabX();
 
     void solve(field2& f) override;

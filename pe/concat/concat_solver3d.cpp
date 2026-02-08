@@ -145,16 +145,17 @@ void ConcatPoissonSolver3D::solve()
 void ConcatPoissonSolver3D::boundary_assembly()
 {
     // Apply boundary conditions to all domains in the geometry
-    for (auto& domain : variable->geometry->domains)
+    for (auto kv : field_map)
     {
+        Domain3DUniform* domain = kv.first;
+        field3&          f      = *kv.second;
+
         if (variable->has_boundary_value_map.find(domain) == variable->has_boundary_value_map.end())
             continue;
 
         auto& var_has_map   = variable->has_boundary_value_map[domain];
         auto& var_value_map = variable->boundary_value_map[domain];
         auto& var_type_map  = variable->boundary_type_map[domain];
-
-        field3& f = *field_map[domain];
 
         int    nx = domain->get_nx();
         int    ny = domain->get_ny();

@@ -406,8 +406,10 @@ void Variable3D::fill_boundary_value_from_func_global(std::function<double(doubl
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
 
-    for (auto* domain : geometry->domains)
+    for (auto kv : field_map)
     {
+        Domain3DUniform* domain = kv.first;
+
         auto& type_map = boundary_type_map[domain];
         auto& has_map  = has_boundary_value_map[domain];
         for (LocationType loc : kBoundaryLocations3D)

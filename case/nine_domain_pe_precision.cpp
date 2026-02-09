@@ -97,25 +97,29 @@ int main(int argc, char* argv[])
         IO::matlab_read_var(p, out_base + "_read.m");
 
         double total_l2_sq = 0.0;
-        auto   calc_err    = [&](field2* f, Domain2DUniform* s) {
+        for (auto kv : p.field_map)
+        {
+            Domain2DUniform* domain = kv.first;
+            field2&          f      = *kv.second;
+
             double local_sum = 0;
-            double offx      = s->get_offset_x();
-            double offy      = s->get_offset_y();
+            double offx      = domain->get_offset_x();
+            double offy      = domain->get_offset_y();
 
             OPENMP_PARALLEL_FOR(reduction(+ : local_sum))
-            for (int i = 0; i < f->get_nx(); ++i)
+            for (int i = 0; i < f.get_nx(); ++i)
             {
-                for (int j = 0; j < f->get_ny(); ++j)
+                for (int j = 0; j < f.get_ny(); ++j)
                 {
-                    double diff = (*f)(i, j) - p_analy(offx + (0.5 + i) * H, offy + (0.5 + j) * H);
+                    double x    = offx + (0.5 + i) * H;
+                    double y    = offy + (0.5 + j) * H;
+                    double diff = f(i, j) - p_analy(x, y);
                     local_sum += H * H * diff * diff;
                 }
             }
-            return local_sum;
-        };
 
-        for (auto kv : p.field_map)
-            total_l2_sq += calc_err(kv.second, kv.first);
+            total_l2_sq += local_sum;
+        }
 
         std::cout << "rank: " << rank << " L2 Error: " << std::sqrt(total_l2_sq) << std::endl;
     }

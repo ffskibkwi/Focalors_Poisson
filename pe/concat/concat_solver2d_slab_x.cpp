@@ -224,10 +224,12 @@ void ConcatPoissonSolver2DSlabX::solve()
             LocationType        location = parent_map[domain].first;
             Domain2DUniformMPI* parent   = static_cast<Domain2DUniformMPI*>(parent_map[domain].second);
 
+            bool is_local =
+                variable->slab_parent_to_level.find(domain->get_uuid()) != variable->slab_parent_to_level.end();
             bool is_parent =
                 variable->slab_parent_to_level.find(parent->get_uuid()) != variable->slab_parent_to_level.end();
 
-            field2* f        = field_map[domain];
+            field2* f        = is_local ? field_map[domain] : nullptr;
             field2* f_parent = is_parent ? field_map[parent] : nullptr;
 
             bond_add_slab(parent, domain, location, -1.0, f_parent, {f});
@@ -237,7 +239,6 @@ void ConcatPoissonSolver2DSlabX::solve()
         local_level++;
 
         {
-
             SCOPE_TIMER(env_cfg.pe_solve_total_name, TimeRecordType::Accumulate, false);
             solver_map[domain]->solve(*field_map[domain]);
         }

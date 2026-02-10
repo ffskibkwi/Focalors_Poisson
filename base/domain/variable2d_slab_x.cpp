@@ -184,6 +184,31 @@ void Variable2DSlabX::set_corner_field(Domain2DUniformMPI* s, field2& f)
     position_type = VariablePositionType::Corner;
 }
 
+void Variable2DSlabX::set_inner_field(Domain2DUniformMPI* s, field2& f)
+{
+    check_geometry(s);
+
+    int level = 0;
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
+    else
+        return;
+
+    int snx = hierarchical_slab_nxs[level];
+    int ny  = s->ny;
+
+    f.init(snx, ny, name + "_" + s->name);
+
+    field_map[s] = &f;
+
+    buffer_map[s][LocationType::Left]  = new double[ny];
+    buffer_map[s][LocationType::Right] = new double[ny];
+    buffer_map[s][LocationType::Down]  = new double[snx];
+    buffer_map[s][LocationType::Up]    = new double[snx];
+
+    position_type = VariablePositionType::Center;
+}
+
 void Variable2DSlabX::set_boundary_value(Domain2DUniformMPI* s, LocationType loc, double in_value)
 {
     check_geometry(s);

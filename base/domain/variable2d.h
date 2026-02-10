@@ -35,6 +35,7 @@ public:
     virtual void set_x_edge_field(Domain2DUniform* s, field2& f);
     virtual void set_y_edge_field(Domain2DUniform* s, field2& f);
     virtual void set_corner_field(Domain2DUniform* s, field2& f);
+    virtual void set_inner_field(Domain2DUniform* s, field2& f);
 
     virtual void set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type);
     virtual void set_boundary_type(Domain2DUniform*                                                s,

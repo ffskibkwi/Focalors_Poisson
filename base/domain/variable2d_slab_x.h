@@ -18,6 +18,7 @@ public:
     void set_x_edge_field(Domain2DUniformMPI* s, field2& f);
     void set_y_edge_field(Domain2DUniformMPI* s, field2& f);
     void set_corner_field(Domain2DUniformMPI* s, field2& f);
+    void set_inner_field(Domain2DUniformMPI* s, field2& f);
 
     void set_boundary_value(Domain2DUniformMPI* s, LocationType loc, double in_value);
     void set_boundary_value_from_func_global(Domain2DUniformMPI*                   s,

@@ -131,6 +131,23 @@ void Variable2D::set_corner_field(Domain2DUniform* s, field2& f)
     position_type = VariablePositionType::Corner;
 }
 
+void Variable2D::set_inner_field(Domain2DUniform* s, field2& f)
+{
+    check_geometry(s);
+
+    f.init(s->nx, s->ny, name + "_" + s->name);
+
+    field_map[s] = &f;
+
+    // Inner field owns four-side buffers (lengths for inner-grid indexing).
+    buffer_map[s][LocationType::Left]  = new double[s->ny];
+    buffer_map[s][LocationType::Right] = new double[s->ny];
+    buffer_map[s][LocationType::Down]  = new double[s->nx];
+    buffer_map[s][LocationType::Up]    = new double[s->nx];
+
+    position_type = VariablePositionType::Center;
+}
+
 void Variable2D::set_boundary_type(Domain2DUniform* s, LocationType loc, PDEBoundaryType type)
 {
     check_geometry(s);

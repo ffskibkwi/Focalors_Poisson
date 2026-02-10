@@ -2,9 +2,9 @@
 
 #include "base/pch.h"
 
+#include "base/config.h"
 #include "base/domain/domain3d.h"
 #include "base/domain/variable3d.h"
-#include "io/config.h"
 #include "poisson_solver3d_base.h"
 
 class PoissonSolver3D : public PoissonSolver3DBase

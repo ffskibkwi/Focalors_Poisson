@@ -73,7 +73,6 @@ public:
     virtual field2 operator*(const field2& root) = 0;
 
     void set_name(const std::string& name) { value.set_name(name); }
-    void write_csv(const std::string& directory);
 
     // Migrate from src to dest
     // The src pointer is only valid in src communicator

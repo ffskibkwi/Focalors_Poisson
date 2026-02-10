@@ -2,13 +2,13 @@
 
 #include "base/pch.h"
 
+#include "base/config.h"
 #include "base/domain/domain2d.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"
 #include "base/domain/variable2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
-#include "io/config.h"
 #include "schur_mat2d.h"
 
 #include <chrono>

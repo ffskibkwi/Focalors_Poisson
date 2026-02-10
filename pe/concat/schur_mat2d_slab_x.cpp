@@ -2,9 +2,6 @@
 
 #include "base/parallel/mpi/distribute_slab.h"
 #include "domain_solver.h"
-#include "io/csv_writer_2d.h"
-
-void SchurMat2DSlabX::write_csv(const std::string& directory) { IO::write_csv(value, directory); }
 
 void migrate_from(SchurMat2DSlabX* src, SchurMat2DSlabX* dest)
 {

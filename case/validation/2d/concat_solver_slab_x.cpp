@@ -1,3 +1,4 @@
+#include "base/config.h"
 #include "base/domain/domain2d_mpi.h"
 #include "base/domain/geometry2d.h"
 #include "base/domain/geometry_tree.hpp"
@@ -5,8 +6,6 @@
 #include "base/field/field2.h"
 #include "base/location_boundary.h"
 #include "base/parallel/mpi/mpi_misc.h"
-#include "io/config.h"
-#include "io/csv_writer_2d.h"
 #include "pe/concat/concat_solver2d_slab_x.h"
 
 #include <unistd.h> // for sleep

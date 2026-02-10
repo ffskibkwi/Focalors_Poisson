@@ -1,8 +1,5 @@
 #include "poisson_solver2d.h"
 
-#include "instrumentor/timer.h"
-#include "io/csv_writer_2d.h"
-
 PoissonSolver2D::PoissonSolver2D(int             in_nx,
                                  int             in_ny,
                                  double          in_hx,
@@ -71,12 +68,6 @@ void PoissonSolver2D::solve(field2& f)
     if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
 
-    if (env_cfg.debug_poisson)
-    {
-        std::string fname_rhs = env_cfg.debugOutputDir + "/rhs_" + domain_name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(f, fname_rhs);
-    }
-
     buffer.set_size(nx, ny);
     poisson_fft_y->transform(f, buffer);
 
@@ -89,12 +80,6 @@ void PoissonSolver2D::solve(field2& f)
     poisson_fft_y->transform_transpose(f, buffer);
 
     std::swap(f, buffer);
-
-    if (env_cfg.debug_poisson)
-    {
-        std::string fname_sol = env_cfg.debugOutputDir + "/sol_" + domain_name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(f, fname_sol);
-    }
 
     solve_call_count++;
     if (env_cfg.showCurrentStep)

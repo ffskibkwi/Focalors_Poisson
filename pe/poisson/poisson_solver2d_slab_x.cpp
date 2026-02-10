@@ -2,8 +2,6 @@
 
 #include "base/parallel/mpi/mpi_misc.h"
 #include "base/parallel/mpi/transpose_slab.h"
-#include "instrumentor/timer.h"
-#include "io/csv_writer_2d.h"
 
 PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
                                            int             in_ny,
@@ -97,12 +95,6 @@ void PoissonSolver2DSlabX::solve(field2& f)
     if (env_cfg.showCurrentStep)
         std::cout << "[Poisson] solve: start" << std::endl;
 
-    if (env_cfg.debug_poisson)
-    {
-        std::string fname_rhs = env_cfg.debugOutputDir + "/rhs_" + domain_name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(f, fname_rhs);
-    }
-
     poisson_fft_y->transform(f, f_hat);
 
     MPIUtils::transpose_2d_slab_sync(f_hat, buf_slab_x, f_hat_T, buf_slab_y, communicator);
@@ -112,12 +104,6 @@ void PoissonSolver2DSlabX::solve(field2& f)
     MPIUtils::transpose_2d_slab_sync(p_hat_T, buf_slab_y, p_hat, buf_slab_x, communicator);
 
     poisson_fft_y->transform_transpose(p_hat, f);
-
-    if (env_cfg.debug_poisson)
-    {
-        std::string fname_sol = env_cfg.debugOutputDir + "/sol_" + domain_name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(f, fname_sol);
-    }
 
     solve_call_count++;
     if (env_cfg.showCurrentStep)

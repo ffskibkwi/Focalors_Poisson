@@ -1,5 +1,4 @@
 #include "gmres_solver3d.h"
-#include "instrumentor/timer.h"
 
 namespace
 {

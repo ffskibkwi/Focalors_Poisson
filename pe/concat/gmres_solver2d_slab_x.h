@@ -2,10 +2,10 @@
 
 #include "base/pch.h"
 
+#include "base/config.h"
 #include "base/domain/domain2d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
-#include "io/config.h"
 #include "pe/poisson/poisson_solver2d.h"
 #include "schur_mat2d_slab_x.h"
 

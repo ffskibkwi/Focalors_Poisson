@@ -1,7 +1,5 @@
 #include "concat_solver2d.h"
 #include "gmres_solver2d.h"
-#include "instrumentor/timer.h"
-#include "io/csv_writer_2d.h"
 #include "pe/poisson/poisson_solver2d.h"
 
 #include <string>

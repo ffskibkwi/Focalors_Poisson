@@ -2,10 +2,10 @@
 
 #include "base/pch.h"
 
+#include "base/config.h"
 #include "base/domain/domain3d.h"
 #include "base/location_boundary.h"
 #include "domain_solver.h"
-#include "io/config.h"
 #include "schur_mat3d.h"
 #include <unordered_map>
 

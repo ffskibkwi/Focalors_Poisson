@@ -26,7 +26,6 @@ public:
     virtual field2 operator*(const field2& root)            = 0;
 
     void set_name(const std::string& name) { value.set_name(name); }
-    void write_csv(const std::string& directory);
 };
 
 class SchurMat2D_left : public SchurMat2D

@@ -1,6 +1,5 @@
 #include "concat_solver3d.h"
 #include "gmres_solver3d.h"
-#include "instrumentor/timer.h"
 #include "pe/poisson/poisson_solver3d.h"
 
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)

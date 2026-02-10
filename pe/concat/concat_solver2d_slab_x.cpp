@@ -2,8 +2,6 @@
 #include "base/domain/domain2d_mpi.h"
 #include "base/parallel/mpi/distribute_slab.h"
 #include "gmres_solver2d_slab_x.h"
-#include "instrumentor/timer.h"
-#include "io/csv_writer_2d.h"
 #include "pe/poisson/poisson_solver2d_slab_x.h"
 
 #include <string>

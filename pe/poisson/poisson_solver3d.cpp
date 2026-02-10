@@ -1,7 +1,5 @@
 #include "poisson_solver3d.h"
 
-#include "instrumentor/timer.h"
-
 PoissonSolver3D::PoissonSolver3D(int             in_nx,
                                  int             in_ny,
                                  int             in_nz,

@@ -1,7 +1,5 @@
 #include "gmres_solver2d_slab_x.h"
 #include "base/parallel/mpi/mpi_misc.h"
-#include "instrumentor/timer.h"
-#include "io/csv_writer_2d.h"
 
 GMRESSolver2DSlabX::GMRESSolver2DSlabX(Domain2DUniform* in_domain,
                                        int              in_m,
@@ -69,8 +67,6 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_left(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_cfg.debug_gmres)
-                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -78,8 +74,6 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_right(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_cfg.debug_gmres)
-                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -87,8 +81,6 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_up(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_cfg.debug_gmres)
-                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -96,8 +88,6 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
                 current = new SchurMat2DSlabX_down(neighbour_domain, communicator);
                 current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
                 current->construct(branch_solver);
-                if (env_cfg.debug_gmres)
-                    current->write_csv(env_cfg.debugOutputDir);
                 S_params.push_back(current);
             }
             break;
@@ -152,13 +142,6 @@ void GMRESSolver2DSlabX::solve(field2& b)
 
     if (env_cfg.showCurrentStep)
         std::cout << "[GMRES] solve: start" << std::endl;
-
-    if (env_cfg.debug_gmres)
-    {
-        std::string fname_rhs =
-            env_cfg.debugOutputDir + "/rhs_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(b, fname_rhs);
-    }
 
     // Actually the solver is for the equation (I-{A^-1}S)x={A^-1}b
     pe_solver->solve(b);
@@ -285,12 +268,6 @@ void GMRESSolver2DSlabX::solve(field2& b)
     b = x_buf;
     maybe_print_res();
 
-    if (env_cfg.debug_gmres)
-    {
-        std::string fname_sol =
-            env_cfg.debugOutputDir + "/sol_" + domain->name + "_" + std::to_string(solve_call_count);
-        IO::write_csv(b, fname_sol);
-    }
     solve_call_count++;
 
     if (env_cfg.showCurrentStep)

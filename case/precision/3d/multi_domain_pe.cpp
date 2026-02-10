@@ -31,21 +31,21 @@ int main(int argc, char* argv[])
         Domain3DUniform T2(m1, n2, l1, "T2");
         Domain3DUniform T3(m3, n2, l1, "T3");
         Domain3DUniform T4(m3, n4, l1, "T4");
-        // Domain3DUniform T5(m5, n2, l1, "T5");
-        // Domain3DUniform T6(m6, n2, l1, "T6");
-        // Domain3DUniform T7(m6, n7, l1, "T7");
-        // Domain3DUniform T8(m8, n2, l1, "T8");
-        // Domain3DUniform T9(m8, n9, l1, "T9");
+        Domain3DUniform T5(m5, n2, l1, "T5");
+        Domain3DUniform T6(m6, n2, l1, "T6");
+        Domain3DUniform T7(m6, n7, l1, "T7");
+        Domain3DUniform T8(m8, n2, l1, "T8");
+        Domain3DUniform T9(m8, n9, l1, "T9");
 
         Geometry3D geo;
         geo.connect(&T1, LocationType::Up, &T2);
         geo.connect(&T2, LocationType::Right, &T3);
         geo.connect(&T3, LocationType::Up, &T4);
-        // geo.connect(&T3, LocationType::Right, &T5);
-        // geo.connect(&T5, LocationType::Right, &T6);
-        // geo.connect(&T6, LocationType::Down, &T7);
-        // geo.connect(&T6, LocationType::Right, &T8);
-        // geo.connect(&T8, LocationType::Up, &T9);
+        geo.connect(&T3, LocationType::Right, &T5);
+        geo.connect(&T5, LocationType::Right, &T6);
+        geo.connect(&T6, LocationType::Down, &T7);
+        geo.connect(&T6, LocationType::Right, &T8);
+        geo.connect(&T8, LocationType::Up, &T9);
 
         geo.set_global_spatial_step(H, H, H);
 
@@ -57,11 +57,11 @@ int main(int argc, char* argv[])
         p.set_center_field(&T2, p_T2);
         p.set_center_field(&T3, p_T3);
         p.set_center_field(&T4, p_T4);
-        // p.set_center_field(&T5, p_T5);
-        // p.set_center_field(&T6, p_T6);
-        // p.set_center_field(&T7, p_T7);
-        // p.set_center_field(&T8, p_T8);
-        // p.set_center_field(&T9, p_T9);
+        p.set_center_field(&T5, p_T5);
+        p.set_center_field(&T6, p_T6);
+        p.set_center_field(&T7, p_T7);
+        p.set_center_field(&T8, p_T8);
+        p.set_center_field(&T9, p_T9);
 
         double k = 0.1;
 

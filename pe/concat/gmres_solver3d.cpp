@@ -60,6 +60,8 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
+    SCOPE_TIMER("GMRESSolver3D::schur_mat_construct", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+
     if (env_cfg.showCurrentStep)
         std::cout << "[GMRES3D] Schur construct: domain " << domain->name << " neighbors=" << adjacency_key.size()
                   << std::endl;

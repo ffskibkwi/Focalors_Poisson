@@ -89,6 +89,8 @@ void ConcatPoissonSolver2D::solve()
 {
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 
+    SCOPE_TIMER("ConcatPoissonSolver2D::solve", TimeRecordType::None, env_cfg.track_pe_solve_detail_time);
+
     // Boundary
     boundary_assembly();
 

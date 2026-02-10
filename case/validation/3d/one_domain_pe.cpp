@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 
+// 单纯为了输出一个求解结果和 IBM 对比，没有 MMS
 int main(int argc, char* argv[])
 {
     Geometry3D geo;

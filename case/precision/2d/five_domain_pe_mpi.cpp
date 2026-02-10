@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     EnvironmentConfig& env_cfg        = EnvironmentConfig::Get();
     env_cfg.track_pe_solve_total_time = true;
 
-    std::vector<double> acc_ranks = {64};
+    std::vector<double> acc_ranks = {4};
 
     // // debug
     // volatile int ii = 0; // use volatile to avoid compiler optimatize out variable

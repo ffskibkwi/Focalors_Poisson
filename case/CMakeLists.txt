@@ -1,11 +1,30 @@
-function(add_cases FOLDER_NAME)
-  file(GLOB SOURCES "${FOLDER_NAME}/*.cpp")
-  file(GLOB HEADERS "${FOLDER_NAME}/*.h" "${FOLDER_NAME}/*.hpp")
-  foreach(SOURCE_FILE IN LISTS SOURCES)
-    get_filename_component(TARGET_NAME ${SOURCE_FILE} NAME_WE)
-    add_executable(${TARGET_NAME} ${SOURCE_FILE} ${HEADERS})
+function(add_cases_recursive)
+  # Recursively find all .cpp files relative to the current source directory
+  file(GLOB_RECURSE SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
+  
+  foreach(SOURCE_REL_PATH IN LISTS SOURCES)
+    # Construct the full path to the source file
+    set(SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_REL_PATH}")
+    
+    # Split the relative path into directory and filename components
+    get_filename_component(SOURCE_DIR "${SOURCE_REL_PATH}" DIRECTORY)
+    get_filename_component(SOURCE_NAME_WE "${SOURCE_REL_PATH}" NAME_WE)  # Removes .cpp extension
+    
+    # Generate a unique target name by replacing path separators with underscores
+    # Example: tests/math/example.cpp -> tests_math_example (without _cpp suffix)
+    if(SOURCE_DIR STREQUAL "")
+      set(TARGET_NAME "${SOURCE_NAME_WE}")
+    else()
+      string(REPLACE "/" "_" DIR_NAME "${SOURCE_DIR}")
+      set(TARGET_NAME "${DIR_NAME}_${SOURCE_NAME_WE}")
+    endif()
+    
+    # Create an executable target for this source file
+    add_executable(${TARGET_NAME} ${SOURCE_PATH} ${HEADERS_IN_DIR})
     target_link_libraries(${TARGET_NAME} PUBLIC Solver)
+    target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR})
   endforeach()
 endfunction()
 
-add_cases(.)
+# Invoke the function to process the current directory and all subdirectories
+add_cases_recursive()

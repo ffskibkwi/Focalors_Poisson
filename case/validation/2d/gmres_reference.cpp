@@ -39,7 +39,7 @@ void test(const std::string& label, LocationType neighbor_loc)
     double tol     = 1e-3;
     int    maxIter = 2;
 
-    Geometry2D geo_tee;
+    Geometry2D geo;
 
     Domain2DUniform root(nx, ny, "root");
     Domain2DUniform neighbor(neighbor_nx, neighbor_ny, "neighbor");

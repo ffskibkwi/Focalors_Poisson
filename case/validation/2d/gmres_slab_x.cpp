@@ -50,7 +50,7 @@ void test(LocationType neighbor_loc)
     double tol     = 1e-3;
     int    maxIter = 2;
 
-    Geometry2D geo_tee;
+    Geometry2D geo;
 
     int nx_slab          = MPIUtils::get_slab_length(nx, mpi_rank, mpi_size);
     int nx_disp          = MPIUtils::get_slab_displacement(nx, mpi_rank, mpi_size);

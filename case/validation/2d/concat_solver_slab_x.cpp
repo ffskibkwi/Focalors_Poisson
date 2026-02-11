@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
     // while (ii == 0)
     //     sleep(1);
 
-    Geometry2D geo_tee;
+    Geometry2D geo;
 
     int nx_1 = 8;
     int ny_1 = 7;
@@ -87,19 +87,19 @@ int main(int argc, char* argv[])
     T6.set_nx(nx_6);
     T6.set_lx(nx_6);
 
-    geo_tee.add_domain({&T1, &T2, &T3, &T4, &T5, &T6});
+    geo.add_domain({&T1, &T2, &T3, &T4, &T5, &T6});
 
-    geo_tee.connect(&T1, LocationType::Left, &T2);
-    geo_tee.connect(&T1, LocationType::Right, &T3);
-    geo_tee.connect(&T1, LocationType::Down, &T4);
-    geo_tee.connect(&T1, LocationType::Up, &T5);
-    geo_tee.connect(&T3, LocationType::Right, &T6);
+    geo.connect(&T1, LocationType::Left, &T2);
+    geo.connect(&T1, LocationType::Right, &T3);
+    geo.connect(&T1, LocationType::Down, &T4);
+    geo.connect(&T1, LocationType::Up, &T5);
+    geo.connect(&T3, LocationType::Right, &T6);
 
-    geo_tee.check();
-    geo_tee.solve_prepare();
+    geo.check();
+    geo.solve_prepare();
 
     Variable2DSlabX v("v");
-    v.set_geometry(geo_tee);
+    v.set_geometry(geo);
     field2 v_T1, v_T2, v_T3, v_T4, v_T5, v_T6;
     v.set_center_field(&T1, v_T1);
     v.set_center_field(&T2, v_T2);

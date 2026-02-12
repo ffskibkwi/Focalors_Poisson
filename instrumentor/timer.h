@@ -96,4 +96,8 @@ private:
 #define SCOPE_TIMER_LINE(name, line, type, output)      Timer timer##line(name, type, output)
 #define SCOPE_TIMER_PASTELINE(name, line, type, output) SCOPE_TIMER_LINE(name, line, type, output)
 #define SCOPE_TIMER(name, type, output)                 SCOPE_TIMER_PASTELINE(name, __LINE__, type, output)
-#define FUNCTION_TIMER(type, output)                    SCOPE_TIMER(FUNC_SIG, type, output)
+
+#define FUNCTION_TIMER(type, output) SCOPE_TIMER(FUNC_SIG, type, output)
+
+#define TIMER_BEGIN(suffix, name, type, output) Timer timer##suffix(name, type, output)
+#define TIMER_END(suffix)                       timer##suffix.Stop()

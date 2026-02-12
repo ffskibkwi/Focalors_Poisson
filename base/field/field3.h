@@ -47,6 +47,8 @@ public:
     // Computes the sum of elements in a yz-plane at a given x-index.
     double sum_at_yz_plane(int i);
 
+    double squared_sum();
+
     double mean();
     // Computes the mean of elements in a xy-plane at a given z-index.
     double mean_at_xy_plane(int k);

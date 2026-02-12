@@ -163,6 +163,14 @@ double field3::sum()
     return sum;
 }
 
+double field3::squared_sum()
+{
+    double sum = 0.;
+    for (size_t i = 0; i < size_n; ++i)
+        sum += value[i] * value[i];
+    return sum;
+}
+
 double field3::sum_at_xy_plane(int k)
 {
     double sum = 0.;

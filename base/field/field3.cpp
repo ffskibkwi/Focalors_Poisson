@@ -471,6 +471,30 @@ void field3::clear(double clear_value)
     }
 }
 
+void field3::print() const
+{
+    for (int i = 0; i < nx; i++)
+    {
+        for (int j = 0; j < ny; j++)
+        {
+            for (int k = 0; k < nz; k++)
+            {
+                std::cout << this->operator()(i, j, k);
+                if (k == nz - 1)
+                {
+                    std::cout << '\n';
+                }
+                else
+                {
+                    std::cout << ',';
+                }
+            }
+        }
+        if (i != nx - 1)
+            std::cout << std::endl;
+    }
+}
+
 void swap(field3& lhs, field3& rhs)
 {
     using std::swap;

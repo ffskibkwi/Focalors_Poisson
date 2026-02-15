@@ -140,6 +140,8 @@ public:
      */
     friend void swap(field3& lhs, field3& rhs);
 
+    void print() const;
+
 protected:
     int         nx = 0, ny = 0, nz = 0;
     int         size_n = 0;

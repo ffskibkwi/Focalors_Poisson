@@ -324,9 +324,21 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(j_size, k_size);
 
-        // Determine i index (ghost node or boundary node)
-        // Left: i = -1. Right: i = nx.
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx;
+        switch (position_type)
+        {
+            case VariablePositionType::XFace:
+            case VariablePositionType::Corner:
+                i_idx = (loc == LocationType::Left) ? 0 : s->nx;
+                break;
+            case VariablePositionType::Center:
+            case VariablePositionType::YFace:
+            case VariablePositionType::ZFace:
+                i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+                break;
+            default:
+                break;
+        }
 
         for (int j = 0; j < j_size; j++)
         {
@@ -355,8 +367,21 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, k_size);
 
-        // Front: j = -1. Back: j = ny.
-        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+        int j_idx;
+        switch (position_type)
+        {
+            case VariablePositionType::YFace:
+            case VariablePositionType::Corner:
+                j_idx = (loc == LocationType::Front) ? 0 : s->ny;
+                break;
+            case VariablePositionType::Center:
+            case VariablePositionType::XFace:
+            case VariablePositionType::ZFace:
+                j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+                break;
+            default:
+                break;
+        }
 
         for (int i = 0; i < i_size; i++)
         {
@@ -385,8 +410,21 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, j_size);
 
-        // Down: j = -1. Up: j = ny.
-        int k_idx = (loc == LocationType::Down) ? -1 : s->nz;
+        int k_idx;
+        switch (position_type)
+        {
+            case VariablePositionType::ZFace:
+            case VariablePositionType::Corner:
+                k_idx = (loc == LocationType::Down) ? 0 : s->nz;
+                break;
+            case VariablePositionType::Center:
+            case VariablePositionType::XFace:
+            case VariablePositionType::YFace:
+                k_idx = (loc == LocationType::Down) ? -1 : s->nz;
+                break;
+            default:
+                break;
+        }
 
         for (int i = 0; i < i_size; i++)
         {

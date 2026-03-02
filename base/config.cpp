@@ -138,6 +138,44 @@ void PhysicsConfig::set_carreau_dimensionless(double in_mu_0,
         mu_max = 100.0 * mu_ref;
 }
 
+void PhysicsConfig::set_casson(double in_casson_mu, double in_casson_tau0, double in_mu_min, double in_mu_max)
+{
+    casson_mu   = in_casson_mu;
+    casson_tau0 = in_casson_tau0;
+
+    if (in_mu_min >= 0.0)
+        mu_min = in_mu_min;
+
+    if (in_mu_max >= 0.0)
+        mu_max = in_mu_max;
+}
+
+void PhysicsConfig::set_casson_dimensionless(double in_casson_mu,
+                                             double in_casson_tau0,
+                                             double in_re,
+                                             double in_mu_ref,
+                                             bool   in_use_dimensionless_viscosity,
+                                             double in_mu_min,
+                                             double in_mu_max)
+{
+    casson_mu                  = in_casson_mu;
+    casson_tau0                = in_casson_tau0;
+    Re                         = in_re;
+    mu_ref                     = in_mu_ref;
+    use_dimensionless_viscosity = in_use_dimensionless_viscosity;
+
+    // Default limits are based on mu_ref
+    if (in_mu_min >= 0.0)
+        mu_min = in_mu_min;
+    else
+        mu_min = 0.01 * mu_ref;
+
+    if (in_mu_max >= 0.0)
+        mu_max = in_mu_max;
+    else
+        mu_max = 100.0 * mu_ref;
+}
+
 // MHD parameter setters
 void PhysicsConfig::set_enable_mhd(bool in_enable_mhd) { enable_mhd = in_enable_mhd; }
 

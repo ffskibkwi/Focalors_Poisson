@@ -466,6 +466,210 @@ void Variable3D::fill_boundary_value_from_func_global(std::function<double(doubl
     }
 }
 
+void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*                              s,
+                                                   LocationType                                  loc,
+                                                   std::function<double(double, double, double)> f)
+{
+    check_geometry(s);
+
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+    double shift_z = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            shift_z = 0.5;
+            break;
+        case VariablePositionType::XFace:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            shift_z = 0.5;
+            break;
+        case VariablePositionType::YFace:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            shift_z = 0.5;
+            break;
+        case VariablePositionType::ZFace:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            shift_z = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            shift_z = 0.0;
+            break;
+        default:
+            break;
+    }
+
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        int j_size, k_size;
+        if (position_type == VariablePositionType::Corner)
+        {
+            j_size = s->ny + 1;
+            k_size = s->nz + 1;
+        }
+        else
+        {
+            j_size = s->ny;
+            k_size = s->nz;
+        }
+
+        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+
+        for (int j = 0; j < j_size; j++)
+        {
+            for (int k = 0; k < k_size; k++)
+            {
+                double gx                   = s->get_offset_x() + (shift_x + i_idx) * s->get_hx();
+                double gy                   = s->get_offset_y() + (shift_y + j) * s->get_hy();
+                double gz                   = s->get_offset_z() + (shift_z + k) * s->get_hz();
+                (*buffer_map[s][loc])(j, k) = f(gx, gy, gz);
+            }
+        }
+    }
+    else if (loc == LocationType::Front || loc == LocationType::Back)
+    {
+        int i_size, k_size;
+        if (position_type == VariablePositionType::Corner)
+        {
+            i_size = s->nx + 1;
+            k_size = s->nz + 1;
+        }
+        else
+        {
+            i_size = s->nx;
+            k_size = s->nz;
+        }
+
+        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            for (int k = 0; k < k_size; k++)
+            {
+                double gx                   = s->get_offset_x() + (shift_x + i) * s->get_hx();
+                double gy                   = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
+                double gz                   = s->get_offset_z() + (shift_z + k) * s->get_hz();
+                (*buffer_map[s][loc])(i, k) = f(gx, gy, gz);
+            }
+        }
+    }
+    else if (loc == LocationType::Down || loc == LocationType::Up)
+    {
+        int i_size, j_size;
+        if (position_type == VariablePositionType::Corner)
+        {
+            i_size = s->nx + 1;
+            j_size = s->ny + 1;
+        }
+        else
+        {
+            i_size = s->nx;
+            j_size = s->ny;
+        }
+
+        int k_idx = (loc == LocationType::Down) ? -1 : s->nz;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            for (int j = 0; j < j_size; j++)
+            {
+                double gx                   = s->get_offset_x() + (shift_x + i) * s->get_hx();
+                double gy                   = s->get_offset_y() + (shift_y + j) * s->get_hy();
+                double gz                   = s->get_offset_z() + (shift_z + k_idx) * s->get_hz();
+                (*buffer_map[s][loc])(i, j) = f(gx, gy, gz);
+            }
+        }
+    }
+}
+
+void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::function<double(double, double, double)> f)
+{
+    check_geometry(s);
+
+    if (position_type == VariablePositionType::XFace)
+    {
+        {
+            double x = s->nx * s->hx;
+            double z = -0.5 * s->hz;
+            for (int j = 0; j < s->ny; j++)
+                corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
+        }
+        {
+            double x = s->nx * s->hx;
+            double y = -0.5 * s->hy;
+            for (int k = 0; k < s->nz; k++)
+                corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
+        }
+    }
+    else if (position_type == VariablePositionType::YFace)
+    {
+        {
+            double y = s->ny * s->hy;
+            double z = -0.5 * s->hz;
+            for (int i = 0; i < s->nx; i++)
+                corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
+        }
+        {
+            double x = -0.5 * s->hx;
+            double y = s->ny * s->hy;
+            for (int k = 0; k < s->nz; k++)
+                corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
+        }
+    }
+    else if (position_type == VariablePositionType::ZFace)
+    {
+        {
+            double y = -0.5 * s->hy;
+            double z = s->nz * s->hz;
+            for (int i = 0; i < s->nx; i++)
+                corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
+        }
+        {
+            double x = -0.5 * s->hx;
+            double z = s->nz * s->hz;
+            for (int j = 0; j < s->ny; j++)
+                corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
+        }
+    }
+}
+
+void Variable3D::fill_buffer_value_from_func_global(std::function<double(double, double, double)> f)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable2D has no geometry set");
+
+    for (auto kv : field_map)
+    {
+        Domain3DUniform* domain = kv.first;
+
+        auto& type_map = boundary_type_map[domain];
+        for (LocationType loc : kBoundaryLocations3D)
+        {
+            auto type_it = type_map.find(loc);
+            if (type_it == type_map.end())
+                continue;
+            if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
+                continue;
+
+            set_buffer_value_from_func_global(domain, loc, f);
+        }
+    }
+}
+
+void Variable3D::fill_corner_value_from_func_global(std::function<double(double, double, double)> f)
+{
+    for (auto kv : field_map)
+        set_corner_value_from_func_global(kv.first, f);
+}
+
 void Variable3D::set_value_from_func_global(std::function<double(double, double, double)> func)
 {
     double shift_x = 0.5;

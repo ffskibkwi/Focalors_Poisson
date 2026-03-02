@@ -46,5 +46,15 @@ public:
                                                      std::function<double(double, double, double)> f);
     virtual void fill_boundary_value_from_func_global(std::function<double(double, double, double)> f);
 
+    virtual void set_buffer_value_from_func_global(Domain3DUniform*                              s,
+                                                   LocationType                                  loc,
+                                                   std::function<double(double, double, double)> f);
+    virtual void set_corner_value_from_func_global(Domain3DUniform* s, std::function<double(double, double, double)> f);
+
+    // usually buffer is set by ns solver, at this case, filling buffer manually is no needed
+    // only in special case, such as calcuate at the begining and correct buffer is needed
+    virtual void fill_buffer_value_from_func_global(std::function<double(double, double, double)> f);
+    virtual void fill_corner_value_from_func_global(std::function<double(double, double, double)> f);
+
     virtual void set_value_from_func_global(std::function<double(double, double, double)> func);
 };

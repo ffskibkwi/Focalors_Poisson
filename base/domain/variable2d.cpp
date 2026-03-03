@@ -261,8 +261,8 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
         case LocationType::Right:
             shift_x = 0.0;
             break;
-        case LocationType::Front:
-        case LocationType::Back:
+        case LocationType::Down:
+        case LocationType::Up:
             shift_y = 0.0;
             break;
         default:
@@ -292,7 +292,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
             boundary_value_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::Down || loc == LocationType::Up)
     {
         int i_size;
         if (position_type == VariablePositionType::Corner)
@@ -306,7 +306,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
 
         boundary_value_map[s][loc] = new double[i_size];
 
-        int j_idx = (loc == LocationType::Front) ? 0 : s->ny;
+        int j_idx = (loc == LocationType::Down) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -396,7 +396,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             buffer_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::Down || loc == LocationType::Up)
     {
         int i_size;
         if (position_type == VariablePositionType::Corner)
@@ -408,7 +408,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             i_size = s->nx;
         }
 
-        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {

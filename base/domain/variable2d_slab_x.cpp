@@ -231,7 +231,7 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
             boundary_value_map[s][loc][j] = in_value;
 
         if (loc == LocationType::XNegative)
-            xneg_ypos_corner_value_map[s] = in_value;
+            xneg_ypos_corner_map[s] = in_value;
     }
     else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
@@ -240,13 +240,11 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
             boundary_value_map[s][loc][i] = in_value;
 
         if (loc == LocationType::YNegative)
-            xpos_yneg_corner_value_map[s] = in_value;
+            xpos_yneg_corner_map[s] = in_value;
     }
 }
 
-void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*                      _s,
-                                                          LocationType                          loc,
-                                                          std::function<double(double, double)> f)
+void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, std::function<double(double, double)> f)
 {
     Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
     check_geometry(s);
@@ -345,9 +343,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
     }
 }
 
-void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*                      _s,
-                                                        LocationType                          loc,
-                                                        std::function<double(double, double)> f)
+void Variable2DSlabX::set_buffer_value(Domain2DUniform* _s, LocationType loc, std::function<double(double, double)> f)
 {
     Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
     check_geometry(s);
@@ -430,7 +426,7 @@ void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*        
     }
 }
 
-void Variable2DSlabX::set_corner_value_from_func_global(Domain2DUniform* _s, std::function<double(double, double)> f)
+void Variable2DSlabX::set_corner(Domain2DUniform* _s, std::function<double(double, double)> f)
 {
     Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
     check_geometry(s);
@@ -449,18 +445,18 @@ void Variable2DSlabX::set_corner_value_from_func_global(Domain2DUniform* _s, std
         double x = s->get_offset_x() + (nx_slab + nx_disp) * s->hx;
         double y = s->get_offset_y() - 0.5 * s->hy;
 
-        xpos_yneg_corner_value_map[s] = f(x, y);
+        xpos_yneg_corner_map[s] = f(x, y);
     }
     else if (position_type == VariablePositionType::YFace)
     {
         double x = s->get_offset_x() - 0.5 * s->hx + nx_disp * s->hx;
         double y = s->get_offset_y() + s->ny * s->hy;
 
-        xneg_ypos_corner_value_map[s] = f(x, y);
+        xneg_ypos_corner_map[s] = f(x, y);
     }
 }
 
-void Variable2DSlabX::set_value_from_func_global(std::function<double(double, double)> func)
+void Variable2DSlabX::set_value(std::function<double(double, double)> func)
 {
     double shift_x = 0.5;
     double shift_y = 0.5;

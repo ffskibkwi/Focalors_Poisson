@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     v.set_center_field(&T5, v_T5);
     v.set_center_field(&T6, v_T6);
 
-    v.fill_boundary_type(PDEBoundaryType::Dirichlet);
+    v.set_boundary_type(PDEBoundaryType::Dirichlet);
 
     for (auto kv : v.field_map)
         fill(*kv.second, &v, static_cast<Domain2DUniformMPI*>(kv.first));

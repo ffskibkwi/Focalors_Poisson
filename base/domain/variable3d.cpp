@@ -30,23 +30,23 @@ Variable3D::~Variable3D()
 
     if (position_type == VariablePositionType::XFace)
     {
-        for (auto& pair : corner_value_map_y)
+        for (auto& pair : corner_y_map)
             delete[] pair.second;
-        for (auto& pair : corner_value_map_z)
+        for (auto& pair : corner_z_map)
             delete[] pair.second;
     }
     else if (position_type == VariablePositionType::YFace)
     {
-        for (auto& pair : corner_value_map_x)
+        for (auto& pair : corner_x_map)
             delete[] pair.second;
-        for (auto& pair : corner_value_map_z)
+        for (auto& pair : corner_z_map)
             delete[] pair.second;
     }
     else if (position_type == VariablePositionType::ZFace)
     {
-        for (auto& pair : corner_value_map_x)
+        for (auto& pair : corner_x_map)
             delete[] pair.second;
-        for (auto& pair : corner_value_map_y)
+        for (auto& pair : corner_y_map)
             delete[] pair.second;
     }
 }
@@ -130,8 +130,8 @@ void Variable3D::set_x_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_value_map_y[s] = new double[s->ny];
-    corner_value_map_z[s] = new double[s->nz];
+    corner_y_map[s] = new double[s->ny];
+    corner_z_map[s] = new double[s->nz];
 
     position_type = VariablePositionType::XFace;
 }
@@ -155,8 +155,8 @@ void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_value_map_x[s] = new double[s->nx];
-    corner_value_map_z[s] = new double[s->nz];
+    corner_x_map[s] = new double[s->nx];
+    corner_z_map[s] = new double[s->nz];
 
     position_type = VariablePositionType::YFace;
 }
@@ -180,8 +180,8 @@ void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_value_map_x[s] = new double[s->nx];
-    corner_value_map_y[s] = new double[s->ny];
+    corner_x_map[s] = new double[s->nx];
+    corner_y_map[s] = new double[s->ny];
 
     position_type = VariablePositionType::ZFace;
 }
@@ -219,7 +219,7 @@ void Variable3D::set_boundary_type(Domain3DUniform*                             
     }
 }
 
-void Variable3D::fill_boundary_type(PDEBoundaryType type)
+void Variable3D::set_boundary_type(PDEBoundaryType type)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -262,9 +262,9 @@ void Variable3D::set_boundary_value(Domain3DUniform* s, LocationType loc, double
     }
 }
 
-void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*                              s,
-                                                     LocationType                                  loc,
-                                                     std::function<double(double, double, double)> f)
+void Variable3D::set_boundary_value(Domain3DUniform*                              s,
+                                    LocationType                                  loc,
+                                    std::function<double(double, double, double)> f)
 {
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
@@ -411,7 +411,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
     }
 }
 
-void Variable3D::fill_boundary_value_from_func_global(std::function<double(double, double, double)> f)
+void Variable3D::set_boundary(std::function<double(double, double, double)> f)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -433,14 +433,12 @@ void Variable3D::fill_boundary_value_from_func_global(std::function<double(doubl
             if (has_it != has_map.end() && has_it->second)
                 continue;
 
-            set_boundary_value_from_func_global(domain, loc, f);
+            set_boundary_value(domain, loc, f);
         }
     }
 }
 
-void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*                              s,
-                                                   LocationType                                  loc,
-                                                   std::function<double(double, double, double)> f)
+void Variable3D::set_buffer_value(Domain3DUniform* s, LocationType loc, std::function<double(double, double, double)> f)
 {
     check_geometry(s);
 
@@ -562,7 +560,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
     }
 }
 
-void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::function<double(double, double, double)> f)
+void Variable3D::set_corner(Domain3DUniform* s, std::function<double(double, double, double)> f)
 {
     check_geometry(s);
 
@@ -572,13 +570,13 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
             double x = s->get_offset_x() + s->nx * s->hx;
             double z = s->get_offset_z() - 0.5 * s->hz;
             for (int j = 0; j < s->ny; j++)
-                corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
+                corner_y_map[s][j] = f(x, (j + 0.5) * s->hy, z);
         }
         {
             double x = s->get_offset_x() + s->nx * s->hx;
             double y = s->get_offset_y() - 0.5 * s->hy;
             for (int k = 0; k < s->nz; k++)
-                corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
+                corner_z_map[s][k] = f(x, y, (k + 0.5) * s->hz);
         }
     }
     else if (position_type == VariablePositionType::YFace)
@@ -587,13 +585,13 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
             double y = s->get_offset_y() + s->ny * s->hy;
             double z = s->get_offset_z() - 0.5 * s->hz;
             for (int i = 0; i < s->nx; i++)
-                corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
+                corner_x_map[s][i] = f((i + 0.5) * s->hx, y, z);
         }
         {
             double x = s->get_offset_x() - 0.5 * s->hx;
             double y = s->get_offset_y() + s->ny * s->hy;
             for (int k = 0; k < s->nz; k++)
-                corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
+                corner_z_map[s][k] = f(x, y, (k + 0.5) * s->hz);
         }
     }
     else if (position_type == VariablePositionType::ZFace)
@@ -602,18 +600,18 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
             double y = s->get_offset_y() - 0.5 * s->hy;
             double z = s->get_offset_z() + s->nz * s->hz;
             for (int i = 0; i < s->nx; i++)
-                corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
+                corner_x_map[s][i] = f((i + 0.5) * s->hx, y, z);
         }
         {
             double x = s->get_offset_x() - 0.5 * s->hx;
             double z = s->get_offset_z() + s->nz * s->hz;
             for (int j = 0; j < s->ny; j++)
-                corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
+                corner_y_map[s][j] = f(x, (j + 0.5) * s->hy, z);
         }
     }
 }
 
-void Variable3D::fill_buffer_value_from_func_global(std::function<double(double, double, double)> f)
+void Variable3D::set_buffer(std::function<double(double, double, double)> f)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -631,18 +629,18 @@ void Variable3D::fill_buffer_value_from_func_global(std::function<double(double,
             if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
                 continue;
 
-            set_buffer_value_from_func_global(domain, loc, f);
+            set_buffer_value(domain, loc, f);
         }
     }
 }
 
-void Variable3D::fill_corner_value_from_func_global(std::function<double(double, double, double)> f)
+void Variable3D::set_corner(std::function<double(double, double, double)> f)
 {
     for (auto kv : field_map)
-        set_corner_value_from_func_global(kv.first, f);
+        set_corner(kv.first, f);
 }
 
-void Variable3D::set_value_from_func_global(std::function<double(double, double, double)> func)
+void Variable3D::set_value(std::function<double(double, double, double)> func)
 {
     double shift_x = 0.5;
     double shift_y = 0.5;

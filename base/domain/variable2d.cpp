@@ -39,8 +39,8 @@ void Variable2D::set_geometry(Geometry2D& g)
     // So we initial the corner boundary map here
     for (auto& domain : geometry->domains)
     {
-        xneg_ypos_corner_value_map[domain] = 0.0;
-        xpos_yneg_corner_value_map[domain] = 0.0;
+        xneg_ypos_corner_map[domain] = 0.0;
+        xpos_yneg_corner_map[domain] = 0.0;
     }
 }
 
@@ -182,7 +182,7 @@ void Variable2D::set_boundary_type(Domain2DUniform*                             
     }
 }
 
-void Variable2D::fill_boundary_type(PDEBoundaryType type)
+void Variable2D::set_boundary_type(PDEBoundaryType type)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -210,7 +210,7 @@ void Variable2D::set_boundary_value(Domain2DUniform* s, LocationType loc, double
             boundary_value_map[s][loc][j] = in_value;
 
         if (loc == LocationType::XNegative)
-            xneg_ypos_corner_value_map[s] = in_value;
+            xneg_ypos_corner_map[s] = in_value;
     }
     else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
@@ -219,13 +219,11 @@ void Variable2D::set_boundary_value(Domain2DUniform* s, LocationType loc, double
             boundary_value_map[s][loc][i] = in_value;
 
         if (loc == LocationType::YNegative)
-            xpos_yneg_corner_value_map[s] = in_value;
+            xpos_yneg_corner_map[s] = in_value;
     }
 }
 
-void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*                      s,
-                                                     LocationType                          loc,
-                                                     std::function<double(double, double)> f)
+void Variable2D::set_boundary_value(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f)
 {
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
@@ -317,7 +315,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
     }
 }
 
-void Variable2D::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
+void Variable2D::set_boundary(std::function<double(double, double)> f)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -339,14 +337,12 @@ void Variable2D::fill_boundary_value_from_func_global(std::function<double(doubl
             if (has_it != has_map.end() && has_it->second)
                 continue;
 
-            set_boundary_value_from_func_global(domain, loc, f);
+            set_boundary_value(domain, loc, f);
         }
     }
 }
 
-void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*                      s,
-                                                   LocationType                          loc,
-                                                   std::function<double(double, double)> f)
+void Variable2D::set_buffer_value(Domain2DUniform* s, LocationType loc, std::function<double(double, double)> f)
 {
     check_geometry(s);
 
@@ -419,7 +415,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
     }
 }
 
-void Variable2D::set_corner_value_from_func_global(Domain2DUniform* s, std::function<double(double, double)> f)
+void Variable2D::set_corner(Domain2DUniform* s, std::function<double(double, double)> f)
 {
     check_geometry(s);
 
@@ -428,18 +424,18 @@ void Variable2D::set_corner_value_from_func_global(Domain2DUniform* s, std::func
         double x = s->get_offset_x() + s->nx * s->hx;
         double y = s->get_offset_y() - 0.5 * s->hy;
 
-        xpos_yneg_corner_value_map[s] = f(x, y);
+        xpos_yneg_corner_map[s] = f(x, y);
     }
     else if (position_type == VariablePositionType::YFace)
     {
         double x = s->get_offset_x() - 0.5 * s->hx;
         double y = s->get_offset_y() + s->ny * s->hy;
 
-        xneg_ypos_corner_value_map[s] = f(x, y);
+        xneg_ypos_corner_map[s] = f(x, y);
     }
 }
 
-void Variable2D::fill_buffer_value_from_func_global(std::function<double(double, double)> f)
+void Variable2D::set_buffer(std::function<double(double, double)> f)
 {
     if (geometry == nullptr)
         throw std::runtime_error("Variable2D has no geometry set");
@@ -457,18 +453,18 @@ void Variable2D::fill_buffer_value_from_func_global(std::function<double(double,
             if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
                 continue;
 
-            set_buffer_value_from_func_global(domain, loc, f);
+            set_buffer_value(domain, loc, f);
         }
     }
 }
 
-void Variable2D::fill_corner_value_from_func_global(std::function<double(double, double)> f)
+void Variable2D::set_corner(std::function<double(double, double)> f)
 {
     for (auto kv : field_map)
-        set_corner_value_from_func_global(kv.first, f);
+        set_corner(kv.first, f);
 }
 
-void Variable2D::set_value_from_func_global(std::function<double(double, double)> func)
+void Variable2D::set_value(std::function<double(double, double)> func)
 {
     double shift_x = 0.5;
     double shift_y = 0.5;

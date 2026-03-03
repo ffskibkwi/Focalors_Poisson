@@ -14,7 +14,7 @@ public:
     Geometry3D*                                                                     geometry = nullptr;
     std::unordered_map<Domain3DUniform*, field3*>                                   field_map;
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, field2*>> buffer_map;
-    std::unordered_map<Domain3DUniform*, double*> corner_value_map_x, corner_value_map_y, corner_value_map_z;
+    std::unordered_map<Domain3DUniform*, double*> corner_x_map, corner_y_map, corner_z_map;
 
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;
@@ -38,21 +38,19 @@ public:
     virtual void set_boundary_type(Domain3DUniform* s, LocationType loc, PDEBoundaryType type);
     virtual void set_boundary_type(Domain3DUniform*                                                s,
                                    std::initializer_list<std::pair<LocationType, PDEBoundaryType>> list);
-    virtual void fill_boundary_type(PDEBoundaryType type);
+    virtual void set_boundary_type(PDEBoundaryType type);
 
     virtual void set_boundary_value(Domain3DUniform* s, LocationType loc, double in_value);
-    virtual void set_boundary_value_from_func_global(Domain3DUniform*                              s,
-                                                     LocationType                                  loc,
-                                                     std::function<double(double, double, double)> f);
-    virtual void fill_boundary_value_from_func_global(std::function<double(double, double, double)> f);
+    virtual void
+    set_boundary_value(Domain3DUniform* s, LocationType loc, std::function<double(double, double, double)> f);
+    virtual void set_boundary(std::function<double(double, double, double)> f);
 
-    virtual void set_buffer_value_from_func_global(Domain3DUniform*                              s,
-                                                   LocationType                                  loc,
-                                                   std::function<double(double, double, double)> f);
-    virtual void set_corner_value_from_func_global(Domain3DUniform* s, std::function<double(double, double, double)> f);
+    virtual void
+    set_buffer_value(Domain3DUniform* s, LocationType loc, std::function<double(double, double, double)> f);
+    virtual void set_corner(Domain3DUniform* s, std::function<double(double, double, double)> f);
 
-    virtual void fill_buffer_value_from_func_global(std::function<double(double, double, double)> f);
-    virtual void fill_corner_value_from_func_global(std::function<double(double, double, double)> f);
+    virtual void set_buffer(std::function<double(double, double, double)> f);
+    virtual void set_corner(std::function<double(double, double, double)> f);
 
-    virtual void set_value_from_func_global(std::function<double(double, double, double)> func);
+    virtual void set_value(std::function<double(double, double, double)> func);
 };

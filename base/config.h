@@ -73,7 +73,7 @@ public:
     double Re = 0.0;
 
     // Non-Newtonian parameters
-    // 0: Newtonian, 1: Power Law, 2: Carreau
+    // 0: Newtonian, 1: Power Law, 2: Carreau, 3: Casson
     int model_type = 0;
 
     // Power Law
@@ -84,6 +84,10 @@ public:
     double mu_inf = 0.0; // Infinite shear viscosity
     double a      = 2.0; // Carreau parameter a
     double lambda = 0.0; // Relaxation time
+
+    // Casson
+    double casson_mu   = 0.0; // Casson viscosity parameter (Pa·s)
+    double casson_tau0 = 0.0; // Casson yield stress parameter (Pa)
 
     // Common
     double n      = 1.0;  // Power law index
@@ -139,6 +143,21 @@ public:
                                    bool   in_use_dimensionless_viscosity,
                                    double in_mu_min = -1.0,
                                    double in_mu_max = -1.0);
+
+    // Casson model setter: eta = (sqrt(mu) + sqrt(tau0/gamma_dot))^2
+    void set_casson(double in_casson_mu,
+                    double in_casson_tau0,
+                    double in_mu_min = -1.0,
+                    double in_mu_max = -1.0);
+
+    // Casson model setter with dimensionless scaling controls
+    void set_casson_dimensionless(double in_casson_mu,
+                                  double in_casson_tau0,
+                                  double in_re,
+                                  double in_mu_ref,
+                                  bool   in_use_dimensionless_viscosity,
+                                  double in_mu_min = -1.0,
+                                  double in_mu_max = -1.0);
 
     // MHD parameter setters
     void set_enable_mhd(bool in_enable_mhd);

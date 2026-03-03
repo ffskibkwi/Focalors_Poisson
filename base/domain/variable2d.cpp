@@ -76,9 +76,10 @@ void Variable2D::set_center_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    // Center variable only need left and down buffer
-    buffer_map[s][LocationType::Left] = new double[s->ny];
-    buffer_map[s][LocationType::Down] = new double[s->nx];
+    buffer_map[s][LocationType::Left]  = new double[s->ny];
+    buffer_map[s][LocationType::Right] = new double[s->ny];
+    buffer_map[s][LocationType::Down]  = new double[s->nx];
+    buffer_map[s][LocationType::Up]    = new double[s->nx];
 
     position_type = VariablePositionType::Center;
 }
@@ -254,19 +255,35 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
             break;
     }
 
+    switch (loc)
+    {
+        case LocationType::Left:
+        case LocationType::Right:
+            shift_x = 0.0;
+            break;
+        case LocationType::Front:
+        case LocationType::Back:
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
+
     if (loc == LocationType::Left || loc == LocationType::Right)
     {
         int j_size;
         if (position_type == VariablePositionType::Corner)
+        {
             j_size = s->ny + 1;
+        }
         else
+        {
             j_size = s->ny;
+        }
 
         boundary_value_map[s][loc] = new double[j_size];
 
-        // Determine i index (ghost node or boundary node)
-        // Left: i = -1. Right: i = nx.
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -275,18 +292,21 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
             boundary_value_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::Front || loc == LocationType::Back)
     {
         int i_size;
         if (position_type == VariablePositionType::Corner)
+        {
             i_size = s->nx + 1;
+        }
         else
+        {
             i_size = s->nx;
+        }
 
         boundary_value_map[s][loc] = new double[i_size];
 
-        // Down: j = -1. Up: j = ny.
-        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::Front) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -322,6 +342,130 @@ void Variable2D::fill_boundary_value_from_func_global(std::function<double(doubl
             set_boundary_value_from_func_global(domain, loc, f);
         }
     }
+}
+
+void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*                      s,
+                                                   LocationType                          loc,
+                                                   std::function<double(double, double)> f)
+{
+    check_geometry(s);
+
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
+    {
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XFace:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YFace:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
+
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        int j_size;
+        if (position_type == VariablePositionType::Corner)
+        {
+            j_size = s->ny + 1;
+        }
+        else
+        {
+            j_size = s->ny;
+        }
+
+        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+
+        for (int j = 0; j < j_size; j++)
+        {
+            double gx             = s->get_offset_x() + (shift_x + i_idx) * s->get_hx();
+            double gy             = s->get_offset_y() + (shift_y + j) * s->get_hy();
+            buffer_map[s][loc][j] = f(gx, gy);
+        }
+    }
+    else if (loc == LocationType::Front || loc == LocationType::Back)
+    {
+        int i_size;
+        if (position_type == VariablePositionType::Corner)
+        {
+            i_size = s->nx + 1;
+        }
+        else
+        {
+            i_size = s->nx;
+        }
+
+        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            double gx             = s->get_offset_x() + (shift_x + i) * s->get_hx();
+            double gy             = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
+            buffer_map[s][loc][i] = f(gx, gy);
+        }
+    }
+}
+
+void Variable2D::set_corner_value_from_func_global(Domain2DUniform* s, std::function<double(double, double)> f)
+{
+    check_geometry(s);
+
+    if (position_type == VariablePositionType::XFace)
+    {
+        double x = s->get_offset_x() + s->nx * s->hx;
+        double y = s->get_offset_y() - 0.5 * s->hy;
+
+        right_down_corner_value_map[s] = f(x, y);
+    }
+    else if (position_type == VariablePositionType::YFace)
+    {
+        double x = s->get_offset_x() - 0.5 * s->hx;
+        double y = s->get_offset_y() + s->ny * s->hy;
+
+        left_up_corner_value_map[s] = f(x, y);
+    }
+}
+
+void Variable2D::fill_buffer_value_from_func_global(std::function<double(double, double)> f)
+{
+    if (geometry == nullptr)
+        throw std::runtime_error("Variable2D has no geometry set");
+
+    for (auto kv : field_map)
+    {
+        Domain2DUniform* domain = kv.first;
+
+        auto& type_map = boundary_type_map[domain];
+        for (LocationType loc : kBoundaryLocations2D)
+        {
+            auto type_it = type_map.find(loc);
+            if (type_it == type_map.end())
+                continue;
+            if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
+                continue;
+
+            set_buffer_value_from_func_global(domain, loc, f);
+        }
+    }
+}
+
+void Variable2D::fill_corner_value_from_func_global(std::function<double(double, double)> f)
+{
+    for (auto kv : field_map)
+        set_corner_value_from_func_global(kv.first, f);
 }
 
 void Variable2D::set_value_from_func_global(std::function<double(double, double)> func)

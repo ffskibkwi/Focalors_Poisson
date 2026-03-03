@@ -101,16 +101,12 @@ void Variable3D::set_center_field(Domain3DUniform* s, field3& f)
 
     field_map[s] = &f;
 
-    // Center variable in 3D needs buffers for Left, Right, Front, Back, Down, Up
-    // Left/Right: y-z plane (ny * nz)
     buffer_map[s][LocationType::Left]  = new field2(s->ny, s->nz);
     buffer_map[s][LocationType::Right] = new field2(s->ny, s->nz);
-    // Front/Back: x-z plane (nx * nz)
     buffer_map[s][LocationType::Front] = new field2(s->nx, s->nz);
     buffer_map[s][LocationType::Back]  = new field2(s->nx, s->nz);
-    // Down/Up: x-y plane (nx * ny)
-    buffer_map[s][LocationType::Down] = new field2(s->nx, s->ny);
-    buffer_map[s][LocationType::Up]   = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::Down]  = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::Up]    = new field2(s->nx, s->ny);
 
     position_type = VariablePositionType::Center;
 }
@@ -308,6 +304,24 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
             break;
     }
 
+    switch (loc)
+    {
+        case LocationType::Left:
+        case LocationType::Right:
+            shift_x = 0.0;
+            break;
+        case LocationType::Front:
+        case LocationType::Back:
+            shift_y = 0.0;
+            break;
+        case LocationType::Down:
+        case LocationType::Up:
+            shift_z = 0.0;
+            break;
+        default:
+            break;
+    }
+
     if (loc == LocationType::Left || loc == LocationType::Right)
     {
         int j_size, k_size;
@@ -324,21 +338,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(j_size, k_size);
 
-        int i_idx;
-        switch (position_type)
-        {
-            case VariablePositionType::XFace:
-            case VariablePositionType::Corner:
-                i_idx = (loc == LocationType::Left) ? 0 : s->nx;
-                break;
-            case VariablePositionType::Center:
-            case VariablePositionType::YFace:
-            case VariablePositionType::ZFace:
-                i_idx = (loc == LocationType::Left) ? -1 : s->nx;
-                break;
-            default:
-                break;
-        }
+        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -367,21 +367,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, k_size);
 
-        int j_idx;
-        switch (position_type)
-        {
-            case VariablePositionType::YFace:
-            case VariablePositionType::Corner:
-                j_idx = (loc == LocationType::Front) ? 0 : s->ny;
-                break;
-            case VariablePositionType::Center:
-            case VariablePositionType::XFace:
-            case VariablePositionType::ZFace:
-                j_idx = (loc == LocationType::Front) ? -1 : s->ny;
-                break;
-            default:
-                break;
-        }
+        int j_idx = (loc == LocationType::Front) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -410,21 +396,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, j_size);
 
-        int k_idx;
-        switch (position_type)
-        {
-            case VariablePositionType::ZFace:
-            case VariablePositionType::Corner:
-                k_idx = (loc == LocationType::Down) ? 0 : s->nz;
-                break;
-            case VariablePositionType::Center:
-            case VariablePositionType::XFace:
-            case VariablePositionType::YFace:
-                k_idx = (loc == LocationType::Down) ? -1 : s->nz;
-                break;
-            default:
-                break;
-        }
+        int k_idx = (loc == LocationType::Down) ? 0 : s->nz;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -597,14 +569,14 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
     if (position_type == VariablePositionType::XFace)
     {
         {
-            double x = s->nx * s->hx;
-            double z = -0.5 * s->hz;
+            double x = s->get_offset_x() + s->nx * s->hx;
+            double z = s->get_offset_z() - 0.5 * s->hz;
             for (int j = 0; j < s->ny; j++)
                 corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
         }
         {
-            double x = s->nx * s->hx;
-            double y = -0.5 * s->hy;
+            double x = s->get_offset_x() + s->nx * s->hx;
+            double y = s->get_offset_y() - 0.5 * s->hy;
             for (int k = 0; k < s->nz; k++)
                 corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
         }
@@ -612,14 +584,14 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
     else if (position_type == VariablePositionType::YFace)
     {
         {
-            double y = s->ny * s->hy;
-            double z = -0.5 * s->hz;
+            double y = s->get_offset_y() + s->ny * s->hy;
+            double z = s->get_offset_z() - 0.5 * s->hz;
             for (int i = 0; i < s->nx; i++)
                 corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
         }
         {
-            double x = -0.5 * s->hx;
-            double y = s->ny * s->hy;
+            double x = s->get_offset_x() - 0.5 * s->hx;
+            double y = s->get_offset_y() + s->ny * s->hy;
             for (int k = 0; k < s->nz; k++)
                 corner_value_map_z[s][k] = f(x, y, (k + 0.5) * s->hz);
         }
@@ -627,14 +599,14 @@ void Variable3D::set_corner_value_from_func_global(Domain3DUniform* s, std::func
     else if (position_type == VariablePositionType::ZFace)
     {
         {
-            double y = -0.5 * s->hy;
-            double z = s->nz * s->hz;
+            double y = s->get_offset_y() - 0.5 * s->hy;
+            double z = s->get_offset_z() + s->nz * s->hz;
             for (int i = 0; i < s->nx; i++)
                 corner_value_map_x[s][i] = f((i + 0.5) * s->hx, y, z);
         }
         {
-            double x = -0.5 * s->hx;
-            double z = s->nz * s->hz;
+            double x = s->get_offset_x() - 0.5 * s->hx;
+            double z = s->get_offset_z() + s->nz * s->hz;
             for (int j = 0; j < s->ny; j++)
                 corner_value_map_y[s][j] = f(x, (j + 0.5) * s->hy, z);
         }

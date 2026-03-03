@@ -20,11 +20,13 @@ public:
     void set_corner_field(Domain2DUniformMPI* s, field2& f);
     void set_inner_field(Domain2DUniformMPI* s, field2& f);
 
-    void set_boundary_value(Domain2DUniformMPI* s, LocationType loc, double in_value);
-    void set_boundary_value_from_func_global(Domain2DUniformMPI*                   s,
-                                             LocationType                          loc,
-                                             std::function<double(double, double)> f);
-    void fill_boundary_value_from_func_global(std::function<double(double, double)> f);
+    void set_boundary_value(Domain2DUniform* _s, LocationType loc, double in_value);
+    void
+    set_boundary_value_from_func_global(Domain2DUniform* _s, LocationType loc, std::function<double(double, double)> f);
+
+    void
+    set_buffer_value_from_func_global(Domain2DUniform* _s, LocationType loc, std::function<double(double, double)> f);
+    void set_corner_value_from_func_global(Domain2DUniform* _s, std::function<double(double, double)> f);
 
     void set_value_from_func_global(std::function<double(double, double)> func);
 

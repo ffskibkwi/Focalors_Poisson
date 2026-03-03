@@ -209,8 +209,9 @@ void Variable2DSlabX::set_inner_field(Domain2DUniformMPI* s, field2& f)
     position_type = VariablePositionType::Center;
 }
 
-void Variable2DSlabX::set_boundary_value(Domain2DUniformMPI* s, LocationType loc, double in_value)
+void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, double in_value)
 {
+    Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
     check_geometry(s);
 
     int level = 0;
@@ -243,10 +244,11 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniformMPI* s, LocationType loc
     }
 }
 
-void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniformMPI*                   s,
+void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*                      _s,
                                                           LocationType                          loc,
                                                           std::function<double(double, double)> f)
 {
+    Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
     check_geometry(s);
 
     int level = 0;
@@ -293,6 +295,20 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniformMPI*   
             break;
     }
 
+    switch (loc)
+    {
+        case LocationType::Left:
+        case LocationType::Right:
+            shift_x = 0.0;
+            break;
+        case LocationType::Front:
+        case LocationType::Back:
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
+
     if (loc == LocationType::Left || loc == LocationType::Right)
     {
         int j_size;
@@ -303,9 +319,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniformMPI*   
 
         boundary_value_map[s][loc] = new double[j_size];
 
-        // Determine i index (ghost node or boundary node)
-        // Left: i = -1. Right: i = nx.
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -320,8 +334,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniformMPI*   
 
         boundary_value_map[s][loc] = new double[i_size];
 
-        // Down: j = -1. Up: j = ny.
-        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::Down) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -332,30 +345,118 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniformMPI*   
     }
 }
 
-void Variable2DSlabX::fill_boundary_value_from_func_global(std::function<double(double, double)> f)
+void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*                      _s,
+                                                        LocationType                          loc,
+                                                        std::function<double(double, double)> f)
 {
-    if (geometry == nullptr)
-        throw std::runtime_error("Variable2DSlabX has no geometry set");
+    Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
+    check_geometry(s);
 
-    for (auto kv : field_map)
+    int level = 0;
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
+    else
+        return;
+
+    int slab_rank = hierarchical_slab_ranks[level];
+    int slab_size = hierarchical_slab_sizes[level];
+
+    // Left bound at rank=0, Right bound at rank=size-1
+    if (loc == LocationType::Left || loc == LocationType::Right)
+        if (slab_rank != 0 && slab_rank != slab_size - 1)
+            return;
+
+    int nx_slab = hierarchical_slab_nxs[level];
+    int nx_disp = hierarchical_slab_disps[level];
+
+    double shift_x = 0.5;
+    double shift_y = 0.5;
+
+    switch (position_type)
     {
-        Domain2DUniform* domain = kv.first;
+        case VariablePositionType::Center:
+            shift_x = 0.5;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::XFace:
+            shift_x = 0.0;
+            shift_y = 0.5;
+            break;
+        case VariablePositionType::YFace:
+            shift_x = 0.5;
+            shift_y = 0.0;
+            break;
+        case VariablePositionType::Corner:
+            shift_x = 0.0;
+            shift_y = 0.0;
+            break;
+        default:
+            break;
+    }
 
-        auto& type_map = boundary_type_map[domain];
-        auto& has_map  = has_boundary_value_map[domain];
-        for (LocationType loc : kBoundaryLocations2D)
+    if (loc == LocationType::Left || loc == LocationType::Right)
+    {
+        int j_size;
+        if (position_type == VariablePositionType::Corner)
         {
-            auto type_it = type_map.find(loc);
-            if (type_it == type_map.end())
-                continue;
-            if (type_it->second == PDEBoundaryType::Adjacented || type_it->second == PDEBoundaryType::Null)
-                continue;
-            auto has_it = has_map.find(loc);
-            if (has_it != has_map.end() && has_it->second)
-                continue;
-
-            set_boundary_value_from_func_global(static_cast<Domain2DUniformMPI*>(domain), loc, f);
+            j_size = s->ny + 1;
         }
+        else
+        {
+            j_size = s->ny;
+        }
+
+        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+
+        for (int j = 0; j < j_size; j++)
+        {
+            double gx             = s->get_offset_x() + (shift_x + i_idx) * s->get_hx();
+            double gy             = s->get_offset_y() + (shift_y + j) * s->get_hy();
+            buffer_map[s][loc][j] = f(gx, gy);
+        }
+    }
+    else if (loc == LocationType::Front || loc == LocationType::Back)
+    {
+        int i_size = nx_slab;
+
+        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+
+        for (int i = 0; i < i_size; i++)
+        {
+            double gx             = s->get_offset_x() + (shift_x + (i + nx_disp)) * s->get_hx();
+            double gy             = s->get_offset_y() + (shift_y + j_idx) * s->get_hy();
+            buffer_map[s][loc][i] = f(gx, gy);
+        }
+    }
+}
+
+void Variable2DSlabX::set_corner_value_from_func_global(Domain2DUniform* _s, std::function<double(double, double)> f)
+{
+    Domain2DUniformMPI* s = static_cast<Domain2DUniformMPI*>(_s);
+    check_geometry(s);
+
+    int level = 0;
+    if (slab_parent_to_level.find(s->get_uuid()) != slab_parent_to_level.end())
+        level = slab_parent_to_level[s->get_uuid()];
+    else
+        return;
+
+    int nx_slab = hierarchical_slab_nxs[level];
+    int nx_disp = hierarchical_slab_disps[level];
+
+    if (position_type == VariablePositionType::XFace)
+    {
+        double x = s->get_offset_x() + (nx_slab + nx_disp) * s->hx;
+        double y = s->get_offset_y() - 0.5 * s->hy;
+
+        right_down_corner_value_map[s] = f(x, y);
+    }
+    else if (position_type == VariablePositionType::YFace)
+    {
+        double x = s->get_offset_x() - 0.5 * s->hx + nx_disp * s->hx;
+        double y = s->get_offset_y() + s->ny * s->hy;
+
+        left_up_corner_value_map[s] = f(x, y);
     }
 }
 

@@ -149,11 +149,7 @@ void ConcatPoissonSolver2D::boundary_assembly()
         Domain2DUniform* domain = kv.first;
         field2&          f      = *kv.second;
 
-        if (variable->has_boundary_value_map.find(domain) == variable->has_boundary_value_map.end())
-            continue;
-
-        auto& var_has_map   = variable->has_boundary_value_map[domain];
-        auto& var_value_map = variable->boundary_value_map[domain];
+        auto& var_value_map = variable->buffer_map[domain];
         auto& var_type_map  = variable->boundary_type_map[domain];
 
         int    nx = domain->get_nx();
@@ -166,44 +162,44 @@ void ConcatPoissonSolver2D::boundary_assembly()
         PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
         PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
 
-        if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
+        if (boundary_type_left == PDEBoundaryType::Dirichlet)
         {
             double* boundary_value = var_value_map[LocationType::Left];
             f.left_bond_add(-1.0 / hx / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
+        if (boundary_type_right == PDEBoundaryType::Dirichlet)
         {
             double* boundary_value = var_value_map[LocationType::Right];
             f.right_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
-        if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
+        if (boundary_type_down == PDEBoundaryType::Dirichlet)
         {
             double* boundary_value = var_value_map[LocationType::Down];
             f.down_bond_add(-1.0 / hy / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
+        if (boundary_type_up == PDEBoundaryType::Dirichlet)
         {
             double* boundary_value = var_value_map[LocationType::Up];
             f.up_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
-        if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
+        if (boundary_type_left == PDEBoundaryType::Neumann)
         {
             double* boundary_value = var_value_map[LocationType::Left];
             f.left_bond_add(1.0 / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
+        if (boundary_type_right == PDEBoundaryType::Neumann)
         {
             double* boundary_value = var_value_map[LocationType::Right];
             f.right_bond_add(-1.0 / hx, boundary_value);
         }
-        if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
+        if (boundary_type_down == PDEBoundaryType::Neumann)
         {
             double* boundary_value = var_value_map[LocationType::Down];
             f.down_bond_add(1.0 / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
+        if (boundary_type_up == PDEBoundaryType::Neumann)
         {
             double* boundary_value = var_value_map[LocationType::Up];
             f.up_bond_add(-1.0 / hy, boundary_value);

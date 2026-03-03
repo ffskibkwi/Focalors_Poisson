@@ -151,11 +151,7 @@ void ConcatPoissonSolver3D::boundary_assembly()
         Domain3DUniform* domain = kv.first;
         field3&          f      = *kv.second;
 
-        if (variable->has_boundary_value_map.find(domain) == variable->has_boundary_value_map.end())
-            continue;
-
-        auto& var_has_map   = variable->has_boundary_value_map[domain];
-        auto& var_value_map = variable->boundary_value_map[domain];
+        auto& var_value_map = variable->buffer_map[domain];
         auto& var_type_map  = variable->boundary_type_map[domain];
 
         int    nx = domain->get_nx();
@@ -172,65 +168,65 @@ void ConcatPoissonSolver3D::boundary_assembly()
         PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
         PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
 
-        if (boundary_type_left == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Left])
+        if (boundary_type_left == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Left];
             f.left_bond_add(-1.0 / hx / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Right])
+        if (boundary_type_right == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Right];
             f.right_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
-        if (boundary_type_front == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Front])
+        if (boundary_type_front == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Front];
             f.front_bond_add(-1.0 / hy / hy, boundary_value);
         }
-        if (boundary_type_back == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Back])
+        if (boundary_type_back == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Back];
             f.back_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
-        if (boundary_type_down == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Down])
+        if (boundary_type_down == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Down];
             f.down_bond_add(-1.0 / hz / hz, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Dirichlet && var_has_map[LocationType::Up])
+        if (boundary_type_up == PDEBoundaryType::Dirichlet)
         {
             field2& boundary_value = *var_value_map[LocationType::Up];
             f.up_bond_add(-1.0 / hz / hz, boundary_value);
         }
 
-        if (boundary_type_left == PDEBoundaryType::Neumann && var_has_map[LocationType::Left])
+        if (boundary_type_left == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Left];
             f.left_bond_add(1.0 / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Neumann && var_has_map[LocationType::Right])
+        if (boundary_type_right == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Right];
             f.right_bond_add(-1.0 / hx, boundary_value);
         }
-        if (boundary_type_front == PDEBoundaryType::Neumann && var_has_map[LocationType::Front])
+        if (boundary_type_front == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Front];
             f.front_bond_add(1.0 / hy, boundary_value);
         }
-        if (boundary_type_back == PDEBoundaryType::Neumann && var_has_map[LocationType::Back])
+        if (boundary_type_back == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Back];
             f.back_bond_add(-1.0 / hy, boundary_value);
         }
-        if (boundary_type_down == PDEBoundaryType::Neumann && var_has_map[LocationType::Down])
+        if (boundary_type_down == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Down];
             f.down_bond_add(1.0 / hz, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Neumann && var_has_map[LocationType::Up])
+        if (boundary_type_up == PDEBoundaryType::Neumann)
         {
             field2& boundary_value = *var_value_map[LocationType::Up];
             f.up_bond_add(-1.0 / hz, boundary_value);

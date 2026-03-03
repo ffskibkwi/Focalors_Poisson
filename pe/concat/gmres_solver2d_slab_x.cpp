@@ -63,30 +63,30 @@ void GMRESSolver2DSlabX::schur_mat_construct(const std::unordered_map<LocationTy
 
         switch (location)
         {
-            case LocationType::Left: {
-                current = new SchurMat2DSlabX_left(neighbour_domain, communicator);
-                current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
+            case LocationType::XNegative: {
+                current = new SchurMat2DSlabX_xneg(neighbour_domain, communicator);
+                current->set_name("S_" + domain->name + "_XNegative_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Right: {
-                current = new SchurMat2DSlabX_right(neighbour_domain, communicator);
-                current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
+            case LocationType::XPositive: {
+                current = new SchurMat2DSlabX_xpos(neighbour_domain, communicator);
+                current->set_name("S_" + domain->name + "_XPositive_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Up: {
-                current = new SchurMat2DSlabX_up(neighbour_domain, communicator);
-                current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
+            case LocationType::YPositive: {
+                current = new SchurMat2DSlabX_ypos(neighbour_domain, communicator);
+                current->set_name("S_" + domain->name + "_YPositive_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Down: {
-                current = new SchurMat2DSlabX_down(neighbour_domain, communicator);
-                current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
+            case LocationType::YNegative: {
+                current = new SchurMat2DSlabX_yneg(neighbour_domain, communicator);
+                current->set_name("S_" + domain->name + "_YNegative_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
@@ -310,17 +310,17 @@ void migrate_from(GMRESSolver2DSlabX* src, GMRESSolver2DSlabX* dest)
             MPI_Comm         communicator = dest->communicator;
             switch (static_cast<LocationType>(loc_src[i]))
             {
-                case LocationType::Left:
-                    S_dest = new SchurMat2DSlabX_left(domain, communicator);
+                case LocationType::XNegative:
+                    S_dest = new SchurMat2DSlabX_xneg(domain, communicator);
                     break;
-                case LocationType::Right:
-                    S_dest = new SchurMat2DSlabX_right(domain, communicator);
+                case LocationType::XPositive:
+                    S_dest = new SchurMat2DSlabX_xpos(domain, communicator);
                     break;
-                case LocationType::Down:
-                    S_dest = new SchurMat2DSlabX_down(domain, communicator);
+                case LocationType::YNegative:
+                    S_dest = new SchurMat2DSlabX_yneg(domain, communicator);
                     break;
-                case LocationType::Up:
-                    S_dest = new SchurMat2DSlabX_up(domain, communicator);
+                case LocationType::YPositive:
+                    S_dest = new SchurMat2DSlabX_ypos(domain, communicator);
                     break;
                 default:
                     std::cerr << "Unkown LocationType in GMRESSolver2DSlabX::migrate_from" << std::endl;

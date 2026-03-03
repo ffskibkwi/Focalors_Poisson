@@ -41,9 +41,9 @@ void test(LocationType neighbor_loc)
     int ny          = 5;
     int neighbor_n  = 4;
     int neighbor_nx = nx, neighbor_ny = ny;
-    if (neighbor_loc == LocationType::Left || neighbor_loc == LocationType::Right)
+    if (neighbor_loc == LocationType::XNegative || neighbor_loc == LocationType::XPositive)
         neighbor_nx = neighbor_n;
-    else if (neighbor_loc == LocationType::Down || neighbor_loc == LocationType::Up)
+    else if (neighbor_loc == LocationType::YNegative || neighbor_loc == LocationType::YPositive)
         neighbor_ny = neighbor_n;
 
     int    m       = 2;
@@ -101,10 +101,10 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    test(LocationType::Left);
-    test(LocationType::Right);
-    test(LocationType::Down);
-    test(LocationType::Up);
+    test(LocationType::XNegative);
+    test(LocationType::XPositive);
+    test(LocationType::YNegative);
+    test(LocationType::YPositive);
 
     MPI_Finalize();
 

@@ -6,24 +6,24 @@ PoissonSolver3DBase::PoissonSolver3DBase(int             in_nx,
                                          double          in_hx,
                                          double          in_hy,
                                          double          in_hz,
-                                         PDEBoundaryType in_boundary_type_left,
-                                         PDEBoundaryType in_boundary_type_right,
-                                         PDEBoundaryType in_boundary_type_front,
-                                         PDEBoundaryType in_boundary_type_back,
-                                         PDEBoundaryType in_boundary_type_down,
-                                         PDEBoundaryType in_boundary_type_up)
+                                         PDEBoundaryType in_boundary_type_xneg,
+                                         PDEBoundaryType in_boundary_type_xpos,
+                                         PDEBoundaryType in_boundary_type_yneg,
+                                         PDEBoundaryType in_boundary_type_ypos,
+                                         PDEBoundaryType in_boundary_type_zneg,
+                                         PDEBoundaryType in_boundary_type_zpos)
     : nx(in_nx)
     , ny(in_ny)
     , nz(in_nz)
     , hx(in_hx)
     , hy(in_hy)
     , hz(in_hz)
-    , boundary_type_left(in_boundary_type_left)
-    , boundary_type_right(in_boundary_type_right)
-    , boundary_type_front(in_boundary_type_front)
-    , boundary_type_back(in_boundary_type_back)
-    , boundary_type_down(in_boundary_type_down)
-    , boundary_type_up(in_boundary_type_up)
+    , boundary_type_xneg(in_boundary_type_xneg)
+    , boundary_type_xpos(in_boundary_type_xpos)
+    , boundary_type_yneg(in_boundary_type_yneg)
+    , boundary_type_ypos(in_boundary_type_ypos)
+    , boundary_type_zneg(in_boundary_type_zneg)
+    , boundary_type_zpos(in_boundary_type_zpos)
 {}
 
 PoissonSolver3DBase::~PoissonSolver3DBase()

@@ -28,40 +28,40 @@ public:
     void set_name(const std::string& name) { value.set_name(name); }
 };
 
-class SchurMat2D_left : public SchurMat2D
+class SchurMat2D_xneg : public SchurMat2D
 {
 public:
-    SchurMat2D_left(const Domain2DUniform* domain)
+    SchurMat2D_xneg(const Domain2DUniform* domain)
         : SchurMat2D(domain, domain->get_ny())
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2D_right : public SchurMat2D
+class SchurMat2D_xpos : public SchurMat2D
 {
 public:
-    SchurMat2D_right(const Domain2DUniform* domain)
+    SchurMat2D_xpos(const Domain2DUniform* domain)
         : SchurMat2D(domain, domain->get_ny())
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2D_up : public SchurMat2D
+class SchurMat2D_ypos : public SchurMat2D
 {
 public:
-    SchurMat2D_up(const Domain2DUniform* domain)
+    SchurMat2D_ypos(const Domain2DUniform* domain)
         : SchurMat2D(domain, domain->get_nx())
     {}
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2D_down : public SchurMat2D
+class SchurMat2D_yneg : public SchurMat2D
 {
 public:
-    SchurMat2D_down(const Domain2DUniform* domain)
+    SchurMat2D_yneg(const Domain2DUniform* domain)
         : SchurMat2D(domain, domain->get_nx())
     {}
     void   construct(DomainSolver2D* branch_solver) override;

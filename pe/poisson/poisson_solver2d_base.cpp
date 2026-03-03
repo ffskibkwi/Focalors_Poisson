@@ -4,18 +4,18 @@ PoissonSolver2DBase::PoissonSolver2DBase(int             in_nx,
                                          int             in_ny,
                                          double          in_hx,
                                          double          in_hy,
-                                         PDEBoundaryType in_boundary_type_left,
-                                         PDEBoundaryType in_boundary_type_right,
-                                         PDEBoundaryType in_boundary_type_down,
-                                         PDEBoundaryType in_boundary_type_up)
+                                         PDEBoundaryType in_boundary_type_xneg,
+                                         PDEBoundaryType in_boundary_type_xpos,
+                                         PDEBoundaryType in_boundary_type_yneg,
+                                         PDEBoundaryType in_boundary_type_ypos)
     : nx(in_nx)
     , ny(in_ny)
     , hx(in_hx)
     , hy(in_hy)
-    , boundary_type_left(in_boundary_type_left)
-    , boundary_type_right(in_boundary_type_right)
-    , boundary_type_down(in_boundary_type_down)
-    , boundary_type_up(in_boundary_type_up)
+    , boundary_type_xneg(in_boundary_type_xneg)
+    , boundary_type_xpos(in_boundary_type_xpos)
+    , boundary_type_yneg(in_boundary_type_yneg)
+    , boundary_type_ypos(in_boundary_type_ypos)
 {}
 
 PoissonSolver2DBase::~PoissonSolver2DBase()

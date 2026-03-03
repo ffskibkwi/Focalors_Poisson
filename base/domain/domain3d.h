@@ -23,7 +23,7 @@ public:
     double hy = 0.0;
     double hz = 0.0;
 
-    // Basic position (the position of the left-down corner)
+    // Basic position (the position of the xneg-zneg corner)
     double pos_x, pos_y, pos_z;
 
     // Global offset
@@ -35,12 +35,12 @@ public:
     Geometry3D* parent = nullptr;
 
     // Boundary conditions (four directions) and setting flags
-    PDEBoundaryType boundary_type_left  = PDEBoundaryType::Null; // Left
-    PDEBoundaryType boundary_type_right = PDEBoundaryType::Null; // Right
-    PDEBoundaryType boundary_type_front = PDEBoundaryType::Null; // Front
-    PDEBoundaryType boundary_type_back  = PDEBoundaryType::Null; // Back
-    PDEBoundaryType boundary_type_down  = PDEBoundaryType::Null; // Down
-    PDEBoundaryType boundary_type_up    = PDEBoundaryType::Null; // Up
+    PDEBoundaryType boundary_type_xneg = PDEBoundaryType::Null; // XNegative
+    PDEBoundaryType boundary_type_xpos = PDEBoundaryType::Null; // XPositive
+    PDEBoundaryType boundary_type_yneg = PDEBoundaryType::Null; // YNegative
+    PDEBoundaryType boundary_type_ypos = PDEBoundaryType::Null; // YPositive
+    PDEBoundaryType boundary_type_zneg = PDEBoundaryType::Null; // ZNegative
+    PDEBoundaryType boundary_type_zpos = PDEBoundaryType::Null; // ZPositive
 
     Domain3DUniform();
     Domain3DUniform(const std::string& in_name);

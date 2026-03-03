@@ -209,19 +209,19 @@ double field2::mean_at_y_axis(int j)
     return sum / nx;
 }
 
-void field2::left_bond_add(const double a, double* bound)
+void field2::xneg_bond_add(const double a, double* bound)
 {
     for (int j = 0; j < ny; j++)
         this->operator()(0, j) += a * bound[j];
 }
 
-void field2::right_bond_add(const double a, double* bound)
+void field2::xpos_bond_add(const double a, double* bound)
 {
     for (int j = 0; j < ny; j++)
         this->operator()(nx - 1, j) += a * bound[j];
 }
 
-void field2::down_bond_add(const double a, double* bound)
+void field2::yneg_bond_add(const double a, double* bound)
 {
     for (int i = 0; i < nx; i++)
         this->operator()(i, 0) += a * bound[i];
@@ -237,16 +237,16 @@ void field2::bond_add(LocationType location, const double a, double* bound)
 {
     switch (location)
     {
-        case LocationType::Left:
-            left_bond_add(a, bound);
+        case LocationType::XNegative:
+            xneg_bond_add(a, bound);
             break;
-        case LocationType::Right:
-            right_bond_add(a, bound);
+        case LocationType::XPositive:
+            xpos_bond_add(a, bound);
             break;
-        case LocationType::Down:
-            down_bond_add(a, bound);
+        case LocationType::YNegative:
+            yneg_bond_add(a, bound);
             break;
-        case LocationType::Up:
+        case LocationType::YPositive:
             up_bond_add(a, bound);
             break;
         default:
@@ -254,20 +254,20 @@ void field2::bond_add(LocationType location, const double a, double* bound)
     }
 }
 
-void field2::left_bond_add(const double a, const field2& neighbour)
+void field2::xneg_bond_add(const double a, const field2& neighbour)
 {
     int neighbour_nx = neighbour.get_nx();
     for (int j = 0; j < ny; j++)
         this->operator()(0, j) += a * neighbour(neighbour_nx - 1, j);
 }
 
-void field2::right_bond_add(const double a, const field2& neighbour)
+void field2::xpos_bond_add(const double a, const field2& neighbour)
 {
     for (int j = 0; j < ny; j++)
         this->operator()(nx - 1, j) += a * neighbour(0, j);
 }
 
-void field2::down_bond_add(const double a, const field2& neighbour)
+void field2::yneg_bond_add(const double a, const field2& neighbour)
 {
     int neighbour_ny = neighbour.get_ny();
     for (int i = 0; i < nx; i++)
@@ -284,16 +284,16 @@ void field2::bond_add(LocationType location, const double a, const field2& neigh
 {
     switch (location)
     {
-        case LocationType::Left:
-            left_bond_add(a, neighbour);
+        case LocationType::XNegative:
+            xneg_bond_add(a, neighbour);
             break;
-        case LocationType::Right:
-            right_bond_add(a, neighbour);
+        case LocationType::XPositive:
+            xpos_bond_add(a, neighbour);
             break;
-        case LocationType::Down:
-            down_bond_add(a, neighbour);
+        case LocationType::YNegative:
+            yneg_bond_add(a, neighbour);
             break;
-        case LocationType::Up:
+        case LocationType::YPositive:
             up_bond_add(a, neighbour);
             break;
         default:

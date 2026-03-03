@@ -35,21 +35,21 @@ void Geometry3D::connect(Domain3DUniform* a, LocationType dir, Domain3DUniform* 
 
     // Set the size
     // In this function, b is decided by a
-    if (dir == LocationType::Left || dir == LocationType::Right)
+    if (dir == LocationType::XNegative || dir == LocationType::XPositive)
     {
         b->set_ly(a->ly);
         b->set_ny(a->ny);
         b->set_lz(a->lz);
         b->set_nz(a->nz);
     }
-    else if (dir == LocationType::Front || dir == LocationType::Back)
+    else if (dir == LocationType::YNegative || dir == LocationType::YPositive)
     {
         b->set_lx(a->lx);
         b->set_nx(a->nx);
         b->set_lz(a->lz);
         b->set_nz(a->nz);
     }
-    else if (dir == LocationType::Down || dir == LocationType::Up)
+    else if (dir == LocationType::ZNegative || dir == LocationType::ZPositive)
     {
         b->set_lx(a->lx);
         b->set_nx(a->nx);
@@ -189,33 +189,33 @@ void Geometry3D::axis(Domain3DUniform* d, LocationType loc)
         throw std::runtime_error("axis: Domain is not in geometry");
 
     // Check direction type to decide if we are setting X or Y
-    bool is_x_axis = (loc == LocationType::Left || loc == LocationType::Right);
-    bool is_y_axis = (loc == LocationType::Front || loc == LocationType::Back);
+    bool is_x_axis = (loc == LocationType::XNegative || loc == LocationType::XPositive);
+    bool is_y_axis = (loc == LocationType::YNegative || loc == LocationType::YPositive);
 
     // Initialize offset for the starting domain
     if (is_x_axis)
     {
-        if (loc == LocationType::Left)
+        if (loc == LocationType::XNegative)
             d->set_offset_x(0.0);
-        else // Right
+        else // XPositive
             d->set_offset_x(-d->get_lx());
 
         update_offset_x(d);
     }
     else if (is_y_axis)
     {
-        if (loc == LocationType::Front)
+        if (loc == LocationType::YNegative)
             d->set_offset_y(0.0);
-        else if (loc == LocationType::Back)
+        else if (loc == LocationType::YPositive)
             d->set_offset_y(-d->get_ly());
 
         update_offset_y(d);
     }
     else
     {
-        if (loc == LocationType::Down)
+        if (loc == LocationType::ZNegative)
             d->set_offset_z(0.0);
-        else if (loc == LocationType::Up)
+        else if (loc == LocationType::ZPositive)
             d->set_offset_z(-d->get_lz());
 
         update_offset_z(d);
@@ -249,11 +249,11 @@ void Geometry3D::update_offset_x(Domain3DUniform* d)
 
             double current_x = u->get_offset_x();
             double new_x     = current_x;
-            if (dir == LocationType::Right)
+            if (dir == LocationType::XPositive)
                 new_x = current_x + u->get_lx();
-            else if (dir == LocationType::Left)
+            else if (dir == LocationType::XNegative)
                 new_x = current_x - v->get_lx();
-            // For Up/Down, X offset is propagated unchanged (assuming alignment)
+            // For ZPositive/ZNegative, X offset is propagated unchanged (assuming alignment)
             v->set_offset_x(new_x);
 
             visited.insert(v);
@@ -289,11 +289,11 @@ void Geometry3D::update_offset_y(Domain3DUniform* d)
 
             double current_y = u->get_offset_y();
             double new_y     = current_y;
-            if (dir == LocationType::Back)
+            if (dir == LocationType::YPositive)
                 new_y = current_y + u->get_ly();
-            else if (dir == LocationType::Front)
+            else if (dir == LocationType::YNegative)
                 new_y = current_y - v->get_ly();
-            // For Left/Right, Y offset is propagated unchanged
+            // For XNegative/XPositive, Y offset is propagated unchanged
             v->set_offset_y(new_y);
 
             visited.insert(v);
@@ -329,11 +329,11 @@ void Geometry3D::update_offset_z(Domain3DUniform* d)
 
             double current_z = u->get_offset_z();
             double new_z     = current_z;
-            if (dir == LocationType::Up)
+            if (dir == LocationType::ZPositive)
                 new_z = current_z + u->get_lz();
-            else if (dir == LocationType::Down)
+            else if (dir == LocationType::ZNegative)
                 new_z = current_z - v->get_lz();
-            // For Left/Right, Y offset is propagated unchanged
+            // For XNegative/XPositive, Y offset is propagated unchanged
             v->set_offset_z(new_z);
 
             visited.insert(v);

@@ -17,12 +17,12 @@ public:
                         double          in_hx,
                         double          in_hy,
                         double          in_hz,
-                        PDEBoundaryType in_boundary_type_left,
-                        PDEBoundaryType in_boundary_type_right,
-                        PDEBoundaryType in_boundary_type_front,
-                        PDEBoundaryType in_boundary_type_back,
-                        PDEBoundaryType in_boundary_type_down,
-                        PDEBoundaryType in_boundary_type_up);
+                        PDEBoundaryType in_boundary_type_xneg,
+                        PDEBoundaryType in_boundary_type_xpos,
+                        PDEBoundaryType in_boundary_type_yneg,
+                        PDEBoundaryType in_boundary_type_ypos,
+                        PDEBoundaryType in_boundary_type_zneg,
+                        PDEBoundaryType in_boundary_type_zpos);
     ~PoissonSolver3DBase();
 
     virtual void solve(field3& f) {}
@@ -31,12 +31,12 @@ protected:
     int    nx, ny, nz;
     double hx, hy, hz;
 
-    PDEBoundaryType boundary_type_left;
-    PDEBoundaryType boundary_type_right;
-    PDEBoundaryType boundary_type_front;
-    PDEBoundaryType boundary_type_back;
-    PDEBoundaryType boundary_type_down;
-    PDEBoundaryType boundary_type_up;
+    PDEBoundaryType boundary_type_xneg;
+    PDEBoundaryType boundary_type_xpos;
+    PDEBoundaryType boundary_type_yneg;
+    PDEBoundaryType boundary_type_ypos;
+    PDEBoundaryType boundary_type_zneg;
+    PDEBoundaryType boundary_type_zpos;
 
     double** x_diag; // The diagonal elements of the x direction subequation
 

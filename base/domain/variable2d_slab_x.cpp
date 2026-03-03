@@ -35,7 +35,7 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
             nx_sum += domain->get_nx();
 
         int color = 0;
-        int right = 0;
+        int xpos  = 0;
         for (int i = 0; i < level.size() - 1; i++)
         {
             auto domain = level[i];
@@ -43,9 +43,9 @@ void Variable2DSlabX::set_geometry(Geometry2D& g)
             int comm_size = (double)domain->get_nx() / nx_sum * mpi_size;
             if (comm_size == 0)
                 comm_size = 1;
-            right += comm_size;
+            xpos += comm_size;
 
-            if (mpi_rank >= right)
+            if (mpi_rank >= xpos)
                 color++;
         }
 
@@ -102,9 +102,9 @@ void Variable2DSlabX::set_center_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    // Center variable only need left and down buffer
-    buffer_map[s][LocationType::Left] = new double[ny];
-    buffer_map[s][LocationType::Down] = new double[snx];
+    // Center variable only need xneg and yneg buffer
+    buffer_map[s][LocationType::XNegative] = new double[ny];
+    buffer_map[s][LocationType::YNegative] = new double[snx];
 
     position_type = VariablePositionType::Center;
 }
@@ -126,10 +126,10 @@ void Variable2DSlabX::set_x_edge_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[ny];
-    buffer_map[s][LocationType::Right] = new double[ny];
-    buffer_map[s][LocationType::Down]  = new double[snx];
-    buffer_map[s][LocationType::Up]    = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[ny];
+    buffer_map[s][LocationType::XPositive] = new double[ny];
+    buffer_map[s][LocationType::YNegative] = new double[snx];
+    buffer_map[s][LocationType::YPositive] = new double[snx];
 
     position_type = VariablePositionType::XFace;
 }
@@ -151,10 +151,10 @@ void Variable2DSlabX::set_y_edge_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[ny];
-    buffer_map[s][LocationType::Right] = new double[ny];
-    buffer_map[s][LocationType::Down]  = new double[snx];
-    buffer_map[s][LocationType::Up]    = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[ny];
+    buffer_map[s][LocationType::XPositive] = new double[ny];
+    buffer_map[s][LocationType::YNegative] = new double[snx];
+    buffer_map[s][LocationType::YPositive] = new double[snx];
 
     position_type = VariablePositionType::YFace;
 }
@@ -176,10 +176,10 @@ void Variable2DSlabX::set_corner_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[ny];
-    buffer_map[s][LocationType::Right] = new double[ny];
-    buffer_map[s][LocationType::Down]  = new double[snx];
-    buffer_map[s][LocationType::Up]    = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[ny];
+    buffer_map[s][LocationType::XPositive] = new double[ny];
+    buffer_map[s][LocationType::YNegative] = new double[snx];
+    buffer_map[s][LocationType::YPositive] = new double[snx];
 
     position_type = VariablePositionType::Corner;
 }
@@ -201,10 +201,10 @@ void Variable2DSlabX::set_inner_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[ny];
-    buffer_map[s][LocationType::Right] = new double[ny];
-    buffer_map[s][LocationType::Down]  = new double[snx];
-    buffer_map[s][LocationType::Up]    = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[ny];
+    buffer_map[s][LocationType::XPositive] = new double[ny];
+    buffer_map[s][LocationType::YNegative] = new double[snx];
+    buffer_map[s][LocationType::YPositive] = new double[snx];
 
     position_type = VariablePositionType::Center;
 }
@@ -224,23 +224,23 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
     int ny  = s->ny;
 
     has_boundary_value_map[s][loc] = true;
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         boundary_value_map[s][loc] = new double[ny];
         for (int j = 0; j < ny; j++)
             boundary_value_map[s][loc][j] = in_value;
 
-        if (loc == LocationType::Left)
-            left_up_corner_value_map[s] = in_value;
+        if (loc == LocationType::XNegative)
+            xneg_ypos_corner_value_map[s] = in_value;
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         boundary_value_map[s][loc] = new double[snx];
         for (int i = 0; i < snx; i++)
             boundary_value_map[s][loc][i] = in_value;
 
-        if (loc == LocationType::Down)
-            right_down_corner_value_map[s] = in_value;
+        if (loc == LocationType::YNegative)
+            xpos_yneg_corner_value_map[s] = in_value;
     }
 }
 
@@ -260,8 +260,8 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
     int slab_rank = hierarchical_slab_ranks[level];
     int slab_size = hierarchical_slab_sizes[level];
 
-    // Left bound at rank=0, Right bound at rank=size-1
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    // XNegative bound at rank=0, XPositive bound at rank=size-1
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
         if (slab_rank != 0 && slab_rank != slab_size - 1)
             return;
 
@@ -297,19 +297,19 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
 
     switch (loc)
     {
-        case LocationType::Left:
-        case LocationType::Right:
+        case LocationType::XNegative:
+        case LocationType::XPositive:
             shift_x = 0.0;
             break;
-        case LocationType::Front:
-        case LocationType::Back:
+        case LocationType::YNegative:
+        case LocationType::YPositive:
             shift_y = 0.0;
             break;
         default:
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size;
         if (position_type == VariablePositionType::Corner)
@@ -319,7 +319,7 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
 
         boundary_value_map[s][loc] = new double[j_size];
 
-        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -328,13 +328,13 @@ void Variable2DSlabX::set_boundary_value_from_func_global(Domain2DUniform*      
             boundary_value_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size = nx_slab;
 
         boundary_value_map[s][loc] = new double[i_size];
 
-        int j_idx = (loc == LocationType::Down) ? 0 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -361,8 +361,8 @@ void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*        
     int slab_rank = hierarchical_slab_ranks[level];
     int slab_size = hierarchical_slab_sizes[level];
 
-    // Left bound at rank=0, Right bound at rank=size-1
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    // XNegative bound at rank=0, XPositive bound at rank=size-1
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
         if (slab_rank != 0 && slab_rank != slab_size - 1)
             return;
 
@@ -394,7 +394,7 @@ void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*        
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size;
         if (position_type == VariablePositionType::Corner)
@@ -406,7 +406,7 @@ void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*        
             j_size = s->ny;
         }
 
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? -1 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -415,11 +415,11 @@ void Variable2DSlabX::set_buffer_value_from_func_global(Domain2DUniform*        
             buffer_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size = nx_slab;
 
-        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? -1 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -449,14 +449,14 @@ void Variable2DSlabX::set_corner_value_from_func_global(Domain2DUniform* _s, std
         double x = s->get_offset_x() + (nx_slab + nx_disp) * s->hx;
         double y = s->get_offset_y() - 0.5 * s->hy;
 
-        right_down_corner_value_map[s] = f(x, y);
+        xpos_yneg_corner_value_map[s] = f(x, y);
     }
     else if (position_type == VariablePositionType::YFace)
     {
         double x = s->get_offset_x() - 0.5 * s->hx + nx_disp * s->hx;
         double y = s->get_offset_y() + s->ny * s->hy;
 
-        left_up_corner_value_map[s] = f(x, y);
+        xneg_ypos_corner_value_map[s] = f(x, y);
     }
 }
 

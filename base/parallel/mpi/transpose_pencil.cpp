@@ -2,11 +2,11 @@
 
 namespace MPIUtils
 {
-    void transpose_3d_pencil_shift_right_sync(field3&  matrix,
-                                              double*  send_buffer,
-                                              field3&  matrix_T,
-                                              double*  recv_buffer,
-                                              MPI_Comm communicator)
+    void transpose_3d_pencil_shift_xpos_sync(field3&  matrix,
+                                             double*  send_buffer,
+                                             field3&  matrix_T,
+                                             double*  recv_buffer,
+                                             MPI_Comm communicator)
     {
         int mpi_size = 1;
         MPI_Comm_size(communicator, &mpi_size);
@@ -57,11 +57,11 @@ namespace MPIUtils
         }
     }
 
-    void transpose_3d_pencil_shift_right_async_begin(field3&      matrix,
-                                                     double*      send_buffer,
-                                                     double*      recv_buffer,
-                                                     MPI_Comm     communicator,
-                                                     MPI_Request* request)
+    void transpose_3d_pencil_shift_xpos_async_begin(field3&      matrix,
+                                                    double*      send_buffer,
+                                                    double*      recv_buffer,
+                                                    MPI_Comm     communicator,
+                                                    MPI_Request* request)
     {
         int mpi_size = 1;
         MPI_Comm_size(communicator, &mpi_size);
@@ -96,10 +96,10 @@ namespace MPIUtils
                       request);
     }
 
-    void transpose_3d_pencil_shift_right_async_end(field3&      matrix_T,
-                                                   double*      recv_buffer,
-                                                   MPI_Comm     communicator,
-                                                   MPI_Request* request)
+    void transpose_3d_pencil_shift_xpos_async_end(field3&      matrix_T,
+                                                  double*      recv_buffer,
+                                                  MPI_Comm     communicator,
+                                                  MPI_Request* request)
     {
         int mpi_size = 1;
         MPI_Comm_size(communicator, &mpi_size);
@@ -131,7 +131,7 @@ namespace MPIUtils
         }
     }
 
-    void transpose_3d_pencil_shift_left_sync(field3&  matrix,
+    void transpose_3d_pencil_shift_xneg_sync(field3&  matrix,
                                              double*  send_buffer,
                                              field3&  matrix_T,
                                              double*  recv_buffer,
@@ -186,7 +186,7 @@ namespace MPIUtils
         }
     }
 
-    void transpose_3d_pencil_shift_left_async_begin(field3&      matrix,
+    void transpose_3d_pencil_shift_xneg_async_begin(field3&      matrix,
                                                     double*      send_buffer,
                                                     double*      recv_buffer,
                                                     MPI_Comm     communicator,
@@ -225,7 +225,7 @@ namespace MPIUtils
                       request);
     }
 
-    void transpose_3d_pencil_shift_left_async_end(field3&      matrix_T,
+    void transpose_3d_pencil_shift_xneg_async_end(field3&      matrix_T,
                                                   double*      recv_buffer,
                                                   MPI_Comm     communicator,
                                                   MPI_Request* request)

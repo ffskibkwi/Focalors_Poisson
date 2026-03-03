@@ -39,8 +39,8 @@ void Variable2D::set_geometry(Geometry2D& g)
     // So we initial the corner boundary map here
     for (auto& domain : geometry->domains)
     {
-        left_up_corner_value_map[domain]    = 0.0;
-        right_down_corner_value_map[domain] = 0.0;
+        xneg_ypos_corner_value_map[domain] = 0.0;
+        xpos_yneg_corner_value_map[domain] = 0.0;
     }
 }
 
@@ -76,10 +76,10 @@ void Variable2D::set_center_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::XNegative] = new double[s->ny];
+    buffer_map[s][LocationType::XPositive] = new double[s->ny];
+    buffer_map[s][LocationType::YNegative] = new double[s->nx];
+    buffer_map[s][LocationType::YPositive] = new double[s->nx];
 
     position_type = VariablePositionType::Center;
 }
@@ -92,10 +92,10 @@ void Variable2D::set_x_edge_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::XNegative] = new double[s->ny];
+    buffer_map[s][LocationType::XPositive] = new double[s->ny];
+    buffer_map[s][LocationType::YNegative] = new double[s->nx];
+    buffer_map[s][LocationType::YPositive] = new double[s->nx];
 
     position_type = VariablePositionType::XFace;
 }
@@ -108,10 +108,10 @@ void Variable2D::set_y_edge_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::XNegative] = new double[s->ny];
+    buffer_map[s][LocationType::XPositive] = new double[s->ny];
+    buffer_map[s][LocationType::YNegative] = new double[s->nx];
+    buffer_map[s][LocationType::YPositive] = new double[s->nx];
 
     position_type = VariablePositionType::YFace;
 }
@@ -124,10 +124,10 @@ void Variable2D::set_corner_field(Domain2DUniform* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new double[s->ny + 1];
-    buffer_map[s][LocationType::Right] = new double[s->ny + 1];
-    buffer_map[s][LocationType::Down]  = new double[s->nx + 1];
-    buffer_map[s][LocationType::Up]    = new double[s->nx + 1];
+    buffer_map[s][LocationType::XNegative] = new double[s->ny + 1];
+    buffer_map[s][LocationType::XPositive] = new double[s->ny + 1];
+    buffer_map[s][LocationType::YNegative] = new double[s->nx + 1];
+    buffer_map[s][LocationType::YPositive] = new double[s->nx + 1];
 
     position_type = VariablePositionType::Corner;
 }
@@ -141,10 +141,10 @@ void Variable2D::set_inner_field(Domain2DUniform* s, field2& f)
     field_map[s] = &f;
 
     // Inner field owns four-side buffers (lengths for inner-grid indexing).
-    buffer_map[s][LocationType::Left]  = new double[s->ny];
-    buffer_map[s][LocationType::Right] = new double[s->ny];
-    buffer_map[s][LocationType::Down]  = new double[s->nx];
-    buffer_map[s][LocationType::Up]    = new double[s->nx];
+    buffer_map[s][LocationType::XNegative] = new double[s->ny];
+    buffer_map[s][LocationType::XPositive] = new double[s->ny];
+    buffer_map[s][LocationType::YNegative] = new double[s->nx];
+    buffer_map[s][LocationType::YPositive] = new double[s->nx];
 
     position_type = VariablePositionType::Center;
 }
@@ -203,23 +203,23 @@ void Variable2D::set_boundary_value(Domain2DUniform* s, LocationType loc, double
 {
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         boundary_value_map[s][loc] = new double[s->ny];
         for (int j = 0; j < s->ny; j++)
             boundary_value_map[s][loc][j] = in_value;
 
-        if (loc == LocationType::Left)
-            left_up_corner_value_map[s] = in_value;
+        if (loc == LocationType::XNegative)
+            xneg_ypos_corner_value_map[s] = in_value;
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         boundary_value_map[s][loc] = new double[s->nx];
         for (int i = 0; i < s->nx; i++)
             boundary_value_map[s][loc][i] = in_value;
 
-        if (loc == LocationType::Down)
-            right_down_corner_value_map[s] = in_value;
+        if (loc == LocationType::YNegative)
+            xpos_yneg_corner_value_map[s] = in_value;
     }
 }
 
@@ -257,19 +257,19 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
 
     switch (loc)
     {
-        case LocationType::Left:
-        case LocationType::Right:
+        case LocationType::XNegative:
+        case LocationType::XPositive:
             shift_x = 0.0;
             break;
-        case LocationType::Down:
-        case LocationType::Up:
+        case LocationType::YNegative:
+        case LocationType::YPositive:
             shift_y = 0.0;
             break;
         default:
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size;
         if (position_type == VariablePositionType::Corner)
@@ -283,7 +283,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
 
         boundary_value_map[s][loc] = new double[j_size];
 
-        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -292,7 +292,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
             boundary_value_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size;
         if (position_type == VariablePositionType::Corner)
@@ -306,7 +306,7 @@ void Variable2D::set_boundary_value_from_func_global(Domain2DUniform*           
 
         boundary_value_map[s][loc] = new double[i_size];
 
-        int j_idx = (loc == LocationType::Down) ? 0 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -375,7 +375,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size;
         if (position_type == VariablePositionType::Corner)
@@ -387,7 +387,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             j_size = s->ny;
         }
 
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? -1 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -396,7 +396,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             buffer_map[s][loc][j] = f(gx, gy);
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size;
         if (position_type == VariablePositionType::Corner)
@@ -408,7 +408,7 @@ void Variable2D::set_buffer_value_from_func_global(Domain2DUniform*             
             i_size = s->nx;
         }
 
-        int j_idx = (loc == LocationType::Down) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? -1 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -428,14 +428,14 @@ void Variable2D::set_corner_value_from_func_global(Domain2DUniform* s, std::func
         double x = s->get_offset_x() + s->nx * s->hx;
         double y = s->get_offset_y() - 0.5 * s->hy;
 
-        right_down_corner_value_map[s] = f(x, y);
+        xpos_yneg_corner_value_map[s] = f(x, y);
     }
     else if (position_type == VariablePositionType::YFace)
     {
         double x = s->get_offset_x() - 0.5 * s->hx;
         double y = s->get_offset_y() + s->ny * s->hy;
 
-        left_up_corner_value_map[s] = f(x, y);
+        xneg_ypos_corner_value_map[s] = f(x, y);
     }
 }
 

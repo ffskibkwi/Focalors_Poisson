@@ -7,28 +7,28 @@
 
 enum class LocationType : std::uint8_t
 {
-    Left,
-    Right,
-    Down,
-    Up,
-    Front,
-    Back
+    XNegative,
+    XPositive,
+    YNegative,
+    YPositive,
+    ZNegative,
+    ZPositive
 };
 
 constexpr std::array<LocationType, 4> kBoundaryLocations2D = {
-    LocationType::Left,
-    LocationType::Right,
-    LocationType::Down,
-    LocationType::Up,
+    LocationType::XNegative,
+    LocationType::XPositive,
+    LocationType::YNegative,
+    LocationType::YPositive,
 };
 
 constexpr std::array<LocationType, 6> kBoundaryLocations3D = {
-    LocationType::Left,
-    LocationType::Right,
-    LocationType::Front,
-    LocationType::Back,
-    LocationType::Down,
-    LocationType::Up,
+    LocationType::XNegative,
+    LocationType::XPositive,
+    LocationType::YNegative,
+    LocationType::YPositive,
+    LocationType::ZNegative,
+    LocationType::ZPositive,
 };
 
 std::ostream& operator<<(std::ostream& os, LocationType type);
@@ -42,18 +42,18 @@ inline LocationType opposite(LocationType location)
 {
     switch (location)
     {
-        case LocationType::Left:
-            return LocationType::Right;
-        case LocationType::Right:
-            return LocationType::Left;
-        case LocationType::Down:
-            return LocationType::Up;
-        case LocationType::Up:
-            return LocationType::Down;
-        case LocationType::Front:
-            return LocationType::Back;
-        case LocationType::Back:
-            return LocationType::Front;
+        case LocationType::XNegative:
+            return LocationType::XPositive;
+        case LocationType::XPositive:
+            return LocationType::XNegative;
+        case LocationType::YNegative:
+            return LocationType::YPositive;
+        case LocationType::YPositive:
+            return LocationType::YNegative;
+        case LocationType::ZNegative:
+            return LocationType::ZPositive;
+        case LocationType::ZPositive:
+            return LocationType::ZNegative;
         default:
             throw std::invalid_argument("Invalid location type");
     }

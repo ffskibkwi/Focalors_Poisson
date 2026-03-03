@@ -30,66 +30,66 @@ public:
     void set_name(const std::string& name) { value.set_name(name); }
 };
 
-// Left face: x=0 plane, size = ny * nz
-class SchurMat3D_left : public SchurMat3D
+// XNegative face: x=0 plane, size = ny * nz
+class SchurMat3D_xneg : public SchurMat3D
 {
 public:
-    SchurMat3D_left(const Domain3DUniform* domain)
+    SchurMat3D_xneg(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_ny() * domain->get_nz())
     {}
     void   construct(DomainSolver3D* branch_solver) override;
     field3 operator*(const field3& root) override;
 };
 
-// Right face: x=nx-1 plane, size = ny * nz
-class SchurMat3D_right : public SchurMat3D
+// XPositive face: x=nx-1 plane, size = ny * nz
+class SchurMat3D_xpos : public SchurMat3D
 {
 public:
-    SchurMat3D_right(const Domain3DUniform* domain)
+    SchurMat3D_xpos(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_ny() * domain->get_nz())
     {}
     void   construct(DomainSolver3D* branch_solver) override;
     field3 operator*(const field3& root) override;
 };
 
-// Front face: y=0 plane, size = nx * nz
-class SchurMat3D_front : public SchurMat3D
+// YNegative face: y=0 plane, size = nx * nz
+class SchurMat3D_yneg : public SchurMat3D
 {
 public:
-    SchurMat3D_front(const Domain3DUniform* domain)
+    SchurMat3D_yneg(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_nx() * domain->get_nz())
     {}
     void   construct(DomainSolver3D* branch_solver) override;
     field3 operator*(const field3& root) override;
 };
 
-// Back face: y=ny-1 plane, size = nx * nz
-class SchurMat3D_back : public SchurMat3D
+// YPositive face: y=ny-1 plane, size = nx * nz
+class SchurMat3D_ypos : public SchurMat3D
 {
 public:
-    SchurMat3D_back(const Domain3DUniform* domain)
+    SchurMat3D_ypos(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_nx() * domain->get_nz())
     {}
     void   construct(DomainSolver3D* branch_solver) override;
     field3 operator*(const field3& root) override;
 };
 
-// Down face: z=0 plane, size = nx * ny
-class SchurMat3D_down : public SchurMat3D
+// ZNegative face: z=0 plane, size = nx * ny
+class SchurMat3D_zneg : public SchurMat3D
 {
 public:
-    SchurMat3D_down(const Domain3DUniform* domain)
+    SchurMat3D_zneg(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_nx() * domain->get_ny())
     {}
     void   construct(DomainSolver3D* branch_solver) override;
     field3 operator*(const field3& root) override;
 };
 
-// Up face: z=nz-1 plane, size = nx * ny
-class SchurMat3D_up : public SchurMat3D
+// ZPositive face: z=nz-1 plane, size = nx * ny
+class SchurMat3D_zpos : public SchurMat3D
 {
 public:
-    SchurMat3D_up(const Domain3DUniform* domain)
+    SchurMat3D_zpos(const Domain3DUniform* domain)
         : SchurMat3D(domain, domain->get_nx() * domain->get_ny())
     {}
     void   construct(DomainSolver3D* branch_solver) override;

@@ -203,18 +203,18 @@ namespace TreeUtils
     {
         switch (t)
         {
-            case LocationType::Left:
-                return "Left";
-            case LocationType::Right:
-                return "Right";
-            case LocationType::Down:
-                return "Down";
-            case LocationType::Up:
-                return "Up";
-            case LocationType::Front:
-                return "Front";
-            case LocationType::Back:
-                return "Back";
+            case LocationType::XNegative:
+                return "XNegative";
+            case LocationType::XPositive:
+                return "XPositive";
+            case LocationType::YNegative:
+                return "YNegative";
+            case LocationType::YPositive:
+                return "YPositive";
+            case LocationType::ZNegative:
+                return "ZNegative";
+            case LocationType::ZPositive:
+                return "ZPositive";
             default:
                 return "Unknown";
         }

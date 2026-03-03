@@ -1,10 +1,10 @@
 #include "base/parallel/mpi/mpi_misc.h"
 #include "pe/poisson/poisson_solver2d_slab_x.h"
 
-void test(PDEBoundaryType boundary_type_left,
-          PDEBoundaryType boundary_type_right,
-          PDEBoundaryType boundary_type_down,
-          PDEBoundaryType boundary_type_up)
+void test(PDEBoundaryType boundary_type_xneg,
+          PDEBoundaryType boundary_type_xpos,
+          PDEBoundaryType boundary_type_yneg,
+          PDEBoundaryType boundary_type_ypos)
 {
 
     int nx = 3;
@@ -18,14 +18,14 @@ void test(PDEBoundaryType boundary_type_left,
     MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 
     if (mpi_rank == 0)
-        std::cout << "Testing " << boundary_type_left << ' ' << boundary_type_right << ' ' << boundary_type_down << ' '
-                  << boundary_type_up << std::endl;
+        std::cout << "Testing " << boundary_type_xneg << ' ' << boundary_type_xpos << ' ' << boundary_type_yneg << ' '
+                  << boundary_type_ypos << std::endl;
 
     int nx_slab = MPIUtils::get_slab_length(nx, mpi_rank, mpi_size);
     int nx_disp = MPIUtils::get_slab_displacement(nx, mpi_rank, mpi_size);
 
     PoissonSolver2DSlabX solver(
-        nx, ny, hx, hy, boundary_type_left, boundary_type_right, boundary_type_down, boundary_type_up);
+        nx, ny, hx, hy, boundary_type_xneg, boundary_type_xpos, boundary_type_yneg, boundary_type_ypos);
 
     field2 f(nx_slab, ny);
     for (int i = 0; i < f.get_nx(); i++)

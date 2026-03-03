@@ -75,38 +75,38 @@ void GMRESSolver3D::schur_mat_construct(const std::unordered_map<LocationType, D
         SchurMat3D* current = nullptr;
         switch (location)
         {
-            case LocationType::Left: {
-                current = new SchurMat3D_left(neighbour_domain);
+            case LocationType::XNegative: {
+                current = new SchurMat3D_xneg(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Right: {
-                current = new SchurMat3D_right(neighbour_domain);
+            case LocationType::XPositive: {
+                current = new SchurMat3D_xpos(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Front: {
-                current = new SchurMat3D_front(neighbour_domain);
+            case LocationType::YNegative: {
+                current = new SchurMat3D_yneg(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Back: {
-                current = new SchurMat3D_back(neighbour_domain);
+            case LocationType::YPositive: {
+                current = new SchurMat3D_ypos(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Down: {
-                current = new SchurMat3D_down(neighbour_domain);
+            case LocationType::ZNegative: {
+                current = new SchurMat3D_zneg(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Up: {
-                current = new SchurMat3D_up(neighbour_domain);
+            case LocationType::ZPositive: {
+                current = new SchurMat3D_zpos(neighbour_domain);
                 current->construct(solver_map.at(neighbour_domain));
                 S_params.push_back(current);
             }

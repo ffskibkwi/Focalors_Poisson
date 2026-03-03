@@ -4,18 +4,18 @@ PoissonSolver2D::PoissonSolver2D(int             in_nx,
                                  int             in_ny,
                                  double          in_hx,
                                  double          in_hy,
-                                 PDEBoundaryType in_boundary_type_left,
-                                 PDEBoundaryType in_boundary_type_right,
-                                 PDEBoundaryType in_boundary_type_down,
-                                 PDEBoundaryType in_boundary_type_up)
+                                 PDEBoundaryType in_boundary_type_xneg,
+                                 PDEBoundaryType in_boundary_type_xpos,
+                                 PDEBoundaryType in_boundary_type_yneg,
+                                 PDEBoundaryType in_boundary_type_ypos)
     : PoissonSolver2DBase(in_nx,
                           in_ny,
                           in_hx,
                           in_hy,
-                          in_boundary_type_left,
-                          in_boundary_type_right,
-                          in_boundary_type_down,
-                          in_boundary_type_up)
+                          in_boundary_type_xneg,
+                          in_boundary_type_xpos,
+                          in_boundary_type_yneg,
+                          in_boundary_type_ypos)
 {
     init();
 }
@@ -25,10 +25,10 @@ PoissonSolver2D::PoissonSolver2D(Domain2DUniform* in_domain, Variable2D* in_vari
                           in_domain->ny,
                           in_domain->hx,
                           in_domain->hy,
-                          in_variable->boundary_type_map[in_domain][LocationType::Left],
-                          in_variable->boundary_type_map[in_domain][LocationType::Right],
-                          in_variable->boundary_type_map[in_domain][LocationType::Down],
-                          in_variable->boundary_type_map[in_domain][LocationType::Up])
+                          in_variable->boundary_type_map[in_domain][LocationType::XNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::XPositive],
+                          in_variable->boundary_type_map[in_domain][LocationType::YNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::YPositive])
     , domain_name(in_domain->name)
 {
     init();
@@ -38,12 +38,12 @@ void PoissonSolver2D::init()
 {
     buffer.init(nx, ny, "buffer");
 
-    create_fft(poisson_fft_y, boundary_type_down, boundary_type_up, nx, ny);
+    create_fft(poisson_fft_y, boundary_type_yneg, boundary_type_ypos, nx, ny);
 
     double* lambda_y = new double[ny];
     x_diag           = new double[ny];
 
-    cal_lambda(lambda_y, ny, 1, ny, boundary_type_down, boundary_type_up);
+    cal_lambda(lambda_y, ny, 1, ny, boundary_type_yneg, boundary_type_ypos);
 
     for (int j = 0; j < ny; j++)
     {
@@ -51,12 +51,12 @@ void PoissonSolver2D::init()
     }
     delete[] lambda_y;
 
-    bool is_no_Dirichlet = !(isDirLike(boundary_type_left) || isDirLike(boundary_type_right) ||
-                             isDirLike(boundary_type_down) || isDirLike(boundary_type_up));
+    bool is_no_Dirichlet = !(isDirLike(boundary_type_xneg) || isDirLike(boundary_type_xpos) ||
+                             isDirLike(boundary_type_yneg) || isDirLike(boundary_type_ypos));
     bool has_last_vector = true;
 
     chasing_method_x = new ChasingMethod2D();
-    chasing_method_x->init(ny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_left, boundary_type_right);
+    chasing_method_x->init(ny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_xneg, boundary_type_xpos);
 }
 
 void PoissonSolver2D::solve(field2& f)

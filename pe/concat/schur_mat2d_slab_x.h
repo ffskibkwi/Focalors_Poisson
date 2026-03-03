@@ -81,49 +81,49 @@ public:
     friend void migrate_from(SchurMat2DSlabX* src, SchurMat2DSlabX* dest);
 };
 
-class SchurMat2DSlabX_left : public SchurMat2DSlabX
+class SchurMat2DSlabX_xneg : public SchurMat2DSlabX
 {
 public:
-    SchurMat2DSlabX_left(const Domain2DUniform* domain, MPI_Comm _communicator)
+    SchurMat2DSlabX_xneg(const Domain2DUniform* domain, MPI_Comm _communicator)
         : SchurMat2DSlabX(domain, domain->get_ny(), _communicator)
     {
-        loc = LocationType::Left;
+        loc = LocationType::XNegative;
     }
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2DSlabX_right : public SchurMat2DSlabX
+class SchurMat2DSlabX_xpos : public SchurMat2DSlabX
 {
 public:
-    SchurMat2DSlabX_right(const Domain2DUniform* domain, MPI_Comm _communicator)
+    SchurMat2DSlabX_xpos(const Domain2DUniform* domain, MPI_Comm _communicator)
         : SchurMat2DSlabX(domain, domain->get_ny(), _communicator)
     {
-        loc = LocationType::Right;
+        loc = LocationType::XPositive;
     }
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2DSlabX_up : public SchurMat2DSlabX
+class SchurMat2DSlabX_ypos : public SchurMat2DSlabX
 {
 public:
-    SchurMat2DSlabX_up(const Domain2DUniform* domain, MPI_Comm _communicator)
+    SchurMat2DSlabX_ypos(const Domain2DUniform* domain, MPI_Comm _communicator)
         : SchurMat2DSlabX(domain, domain->get_nx(), _communicator)
     {
-        loc = LocationType::Up;
+        loc = LocationType::YPositive;
     }
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;
 };
 
-class SchurMat2DSlabX_down : public SchurMat2DSlabX
+class SchurMat2DSlabX_yneg : public SchurMat2DSlabX
 {
 public:
-    SchurMat2DSlabX_down(const Domain2DUniform* domain, MPI_Comm _communicator)
+    SchurMat2DSlabX_yneg(const Domain2DUniform* domain, MPI_Comm _communicator)
         : SchurMat2DSlabX(domain, domain->get_nx(), _communicator)
     {
-        loc = LocationType::Down;
+        loc = LocationType::YNegative;
     }
     void   construct(DomainSolver2D* branch_solver) override;
     field2 operator*(const field2& root) override;

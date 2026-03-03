@@ -4,23 +4,23 @@ std::ostream& operator<<(std::ostream& os, LocationType type)
 {
     switch (type)
     {
-        case LocationType::Left:
-            os << "Left";
+        case LocationType::XNegative:
+            os << "XNegative";
             break;
-        case LocationType::Right:
-            os << "Right";
+        case LocationType::XPositive:
+            os << "XPositive";
             break;
-        case LocationType::Down:
-            os << "Down";
+        case LocationType::YNegative:
+            os << "YNegative";
             break;
-        case LocationType::Up:
-            os << "Up";
+        case LocationType::YPositive:
+            os << "YPositive";
             break;
-        case LocationType::Front:
-            os << "Front";
+        case LocationType::ZNegative:
+            os << "ZNegative";
             break;
-        case LocationType::Back:
-            os << "Back";
+        case LocationType::ZPositive:
+            os << "ZPositive";
             break;
         default:
             os << "Unknown";

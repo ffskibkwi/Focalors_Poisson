@@ -16,8 +16,8 @@ public:
               double**        _x_diag,
               bool            _is_no_Dirichlet,
               bool            _has_last_vector,
-              PDEBoundaryType boundary_type_down,
-              PDEBoundaryType boundary_type_up);
+              PDEBoundaryType boundary_type_zneg,
+              PDEBoundaryType boundary_type_zpos);
 
     void chasing(field3& f, field3& p);
 
@@ -26,8 +26,8 @@ private:
     bool            is_no_Dirichlet = false;
     bool            has_last_vector = true;
     int             nx = 0, ny = 0, nz = 0;
-    PDEBoundaryType boundary_type_down;
-    PDEBoundaryType boundary_type_up;
+    PDEBoundaryType boundary_type_zneg;
+    PDEBoundaryType boundary_type_zpos;
 
     // Intermediate vectors
     field3 y;                        // For all boundary types

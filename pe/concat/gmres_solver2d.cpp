@@ -52,30 +52,30 @@ void GMRESSolver2D::schur_mat_construct(const std::unordered_map<LocationType, D
 
         switch (location)
         {
-            case LocationType::Left: {
-                current = new SchurMat2D_left(neighbour_domain);
-                current->set_name("S_" + domain->name + "_Left_" + neighbour_domain->name);
+            case LocationType::XNegative: {
+                current = new SchurMat2D_xneg(neighbour_domain);
+                current->set_name("S_" + domain->name + "_XNegative_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Right: {
-                current = new SchurMat2D_right(neighbour_domain);
-                current->set_name("S_" + domain->name + "_Right_" + neighbour_domain->name);
+            case LocationType::XPositive: {
+                current = new SchurMat2D_xpos(neighbour_domain);
+                current->set_name("S_" + domain->name + "_XPositive_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Up: {
-                current = new SchurMat2D_up(neighbour_domain);
-                current->set_name("S_" + domain->name + "_Up_" + neighbour_domain->name);
+            case LocationType::YPositive: {
+                current = new SchurMat2D_ypos(neighbour_domain);
+                current->set_name("S_" + domain->name + "_YPositive_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }
             break;
-            case LocationType::Down: {
-                current = new SchurMat2D_down(neighbour_domain);
-                current->set_name("S_" + domain->name + "_Down_" + neighbour_domain->name);
+            case LocationType::YNegative: {
+                current = new SchurMat2D_yneg(neighbour_domain);
+                current->set_name("S_" + domain->name + "_YNegative_" + neighbour_domain->name);
                 current->construct(branch_solver);
                 S_params.push_back(current);
             }

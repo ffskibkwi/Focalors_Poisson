@@ -89,11 +89,11 @@ int main(int argc, char* argv[])
 
     geo.add_domain({&T1, &T2, &T3, &T4, &T5, &T6});
 
-    geo.connect(&T1, LocationType::Left, &T2);
-    geo.connect(&T1, LocationType::Right, &T3);
-    geo.connect(&T1, LocationType::Down, &T4);
-    geo.connect(&T1, LocationType::Up, &T5);
-    geo.connect(&T3, LocationType::Right, &T6);
+    geo.connect(&T1, LocationType::XNegative, &T2);
+    geo.connect(&T1, LocationType::XPositive, &T3);
+    geo.connect(&T1, LocationType::YNegative, &T4);
+    geo.connect(&T1, LocationType::YPositive, &T5);
+    geo.connect(&T3, LocationType::XPositive, &T6);
 
     geo.check();
     geo.solve_prepare();

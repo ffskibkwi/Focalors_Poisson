@@ -58,19 +58,19 @@ public:
     double mean_at_yz_plane(int i);
 
     // Boundary operation
-    void left_bond_add(const double a, const field2& bound);
-    void right_bond_add(const double a, const field2& bound);
-    void front_bond_add(const double a, const field2& bound);
+    void xneg_bond_add(const double a, const field2& bound);
+    void xpos_bond_add(const double a, const field2& bound);
+    void yneg_bond_add(const double a, const field2& bound);
     void back_bond_add(const double a, const field2& bound);
-    void down_bond_add(const double a, const field2& bound);
+    void zneg_bond_add(const double a, const field2& bound);
     void up_bond_add(const double a, const field2& bound);
     void bond_add(LocationType location, const double a, const field2& bound);
 
-    void left_bond_add(const double a, const field3& neighbour);
-    void right_bond_add(const double a, const field3& neighbour);
-    void front_bond_add(const double a, const field3& neighbour);
+    void xneg_bond_add(const double a, const field3& neighbour);
+    void xpos_bond_add(const double a, const field3& neighbour);
+    void yneg_bond_add(const double a, const field3& neighbour);
     void back_bond_add(const double a, const field3& neighbour);
-    void down_bond_add(const double a, const field3& neighbour);
+    void zneg_bond_add(const double a, const field3& neighbour);
     void up_bond_add(const double a, const field3& neighbour);
     void bond_add(LocationType location, const double a, const field3& neighbour);
 

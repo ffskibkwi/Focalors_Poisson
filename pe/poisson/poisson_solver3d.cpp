@@ -6,24 +6,24 @@ PoissonSolver3D::PoissonSolver3D(int             in_nx,
                                  double          in_hx,
                                  double          in_hy,
                                  double          in_hz,
-                                 PDEBoundaryType in_boundary_type_left,
-                                 PDEBoundaryType in_boundary_type_right,
-                                 PDEBoundaryType in_boundary_type_front,
-                                 PDEBoundaryType in_boundary_type_back,
-                                 PDEBoundaryType in_boundary_type_down,
-                                 PDEBoundaryType in_boundary_type_up)
+                                 PDEBoundaryType in_boundary_type_xneg,
+                                 PDEBoundaryType in_boundary_type_xpos,
+                                 PDEBoundaryType in_boundary_type_yneg,
+                                 PDEBoundaryType in_boundary_type_ypos,
+                                 PDEBoundaryType in_boundary_type_zneg,
+                                 PDEBoundaryType in_boundary_type_zpos)
     : PoissonSolver3DBase(in_nx,
                           in_ny,
                           in_nz,
                           in_hx,
                           in_hy,
                           in_hz,
-                          in_boundary_type_left,
-                          in_boundary_type_right,
-                          in_boundary_type_front,
-                          in_boundary_type_back,
-                          in_boundary_type_down,
-                          in_boundary_type_up)
+                          in_boundary_type_xneg,
+                          in_boundary_type_xpos,
+                          in_boundary_type_yneg,
+                          in_boundary_type_ypos,
+                          in_boundary_type_zneg,
+                          in_boundary_type_zpos)
 {
     init();
 }
@@ -35,12 +35,12 @@ PoissonSolver3D::PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_vari
                           in_domain->hx,
                           in_domain->hy,
                           in_domain->hz,
-                          in_variable->boundary_type_map[in_domain][LocationType::Left],
-                          in_variable->boundary_type_map[in_domain][LocationType::Right],
-                          in_variable->boundary_type_map[in_domain][LocationType::Front],
-                          in_variable->boundary_type_map[in_domain][LocationType::Back],
-                          in_variable->boundary_type_map[in_domain][LocationType::Down],
-                          in_variable->boundary_type_map[in_domain][LocationType::Up])
+                          in_variable->boundary_type_map[in_domain][LocationType::XNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::XPositive],
+                          in_variable->boundary_type_map[in_domain][LocationType::YNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::YPositive],
+                          in_variable->boundary_type_map[in_domain][LocationType::ZNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::ZPositive])
     , domain_name(in_domain->name)
 {
     init();
@@ -50,15 +50,15 @@ void PoissonSolver3D::init()
 {
     buffer.init(nx, ny, nz, "buffer");
 
-    create_fft(poisson_fft_z, boundary_type_down, boundary_type_up, nx, ny, nz);
-    create_fft(poisson_fft_y, boundary_type_front, boundary_type_back, nz, nx, ny);
+    create_fft(poisson_fft_z, boundary_type_zneg, boundary_type_zpos, nx, ny, nz);
+    create_fft(poisson_fft_y, boundary_type_yneg, boundary_type_ypos, nz, nx, ny);
 
     double* lambda_z = new double[nz];
     double* lambda_y = new double[ny];
     x_diag           = new double*[nz];
 
-    cal_lambda(lambda_z, nz, 1, nz, boundary_type_down, boundary_type_up);
-    cal_lambda(lambda_y, ny, 1, ny, boundary_type_front, boundary_type_back);
+    cal_lambda(lambda_z, nz, 1, nz, boundary_type_zneg, boundary_type_zpos);
+    cal_lambda(lambda_y, ny, 1, ny, boundary_type_yneg, boundary_type_ypos);
 
     for (int k = 0; k < nz; k++)
     {
@@ -72,13 +72,13 @@ void PoissonSolver3D::init()
     delete[] lambda_z;
 
     bool is_no_Dirichlet =
-        !(isDirLike(boundary_type_left) || isDirLike(boundary_type_right) || isDirLike(boundary_type_front) ||
-          isDirLike(boundary_type_back) || isDirLike(boundary_type_down) || isDirLike(boundary_type_up));
+        !(isDirLike(boundary_type_xneg) || isDirLike(boundary_type_xpos) || isDirLike(boundary_type_yneg) ||
+          isDirLike(boundary_type_ypos) || isDirLike(boundary_type_zneg) || isDirLike(boundary_type_zpos));
     bool has_last_vector = true;
 
     chasing_method_x = new ChasingMethod3D();
     chasing_method_x->init(
-        nz, ny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_left, boundary_type_right);
+        nz, ny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_xneg, boundary_type_xpos);
 }
 
 void PoissonSolver3D::solve(field3& f)

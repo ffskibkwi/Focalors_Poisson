@@ -1,12 +1,12 @@
 #include "pe/poisson/poisson_solver2d.h"
 
-void test(PDEBoundaryType boundary_type_left,
-          PDEBoundaryType boundary_type_right,
-          PDEBoundaryType boundary_type_down,
-          PDEBoundaryType boundary_type_up)
+void test(PDEBoundaryType boundary_type_xneg,
+          PDEBoundaryType boundary_type_xpos,
+          PDEBoundaryType boundary_type_yneg,
+          PDEBoundaryType boundary_type_ypos)
 {
-    std::cout << "Testing " << boundary_type_left << ' ' << boundary_type_right << ' ' << boundary_type_down << ' '
-              << boundary_type_up << std::endl;
+    std::cout << "Testing " << boundary_type_xneg << ' ' << boundary_type_xpos << ' ' << boundary_type_yneg << ' '
+              << boundary_type_ypos << std::endl;
 
     int nx = 3;
     int ny = 4;
@@ -14,7 +14,7 @@ void test(PDEBoundaryType boundary_type_left,
     int hy = 2.0;
 
     PoissonSolver2D solver(
-        nx, ny, hx, hy, boundary_type_left, boundary_type_right, boundary_type_down, boundary_type_up);
+        nx, ny, hx, hy, boundary_type_xneg, boundary_type_xpos, boundary_type_yneg, boundary_type_ypos);
 
     field2 f(nx, ny);
     for (int i = 0; i < f.get_nx(); i++)

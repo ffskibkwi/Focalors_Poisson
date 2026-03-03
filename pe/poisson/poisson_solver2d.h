@@ -15,10 +15,10 @@ public:
                     int             in_ny,
                     double          in_hx,
                     double          in_hy,
-                    PDEBoundaryType in_boundary_type_left,
-                    PDEBoundaryType in_boundary_type_right,
-                    PDEBoundaryType in_boundary_type_down,
-                    PDEBoundaryType in_boundary_type_up);
+                    PDEBoundaryType in_boundary_type_xneg,
+                    PDEBoundaryType in_boundary_type_xpos,
+                    PDEBoundaryType in_boundary_type_yneg,
+                    PDEBoundaryType in_boundary_type_ypos);
     PoissonSolver2D(Domain2DUniform* in_domain, Variable2D* in_variable = nullptr);
 
     void solve(field2& f) override;

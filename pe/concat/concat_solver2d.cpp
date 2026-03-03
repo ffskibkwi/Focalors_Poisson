@@ -100,7 +100,7 @@ void ConcatPoissonSolver2D::solve()
         f *= domain->hx * domain->hx;
     }
 
-    // Righthand construction
+    // XPositivehand construction
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
     {
         auto level = *it;
@@ -157,51 +157,51 @@ void ConcatPoissonSolver2D::boundary_assembly()
         double hx = domain->get_hx();
         double hy = domain->get_hy();
 
-        PDEBoundaryType boundary_type_left  = var_type_map[LocationType::Left];
-        PDEBoundaryType boundary_type_right = var_type_map[LocationType::Right];
-        PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
-        PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
+        PDEBoundaryType boundary_type_xneg = var_type_map[LocationType::XNegative];
+        PDEBoundaryType boundary_type_xpos = var_type_map[LocationType::XPositive];
+        PDEBoundaryType boundary_type_yneg = var_type_map[LocationType::YNegative];
+        PDEBoundaryType boundary_type_ypos = var_type_map[LocationType::YPositive];
 
-        if (boundary_type_left == PDEBoundaryType::Dirichlet)
+        if (boundary_type_xneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Left];
-            f.left_bond_add(-1.0 / hx / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XNegative];
+            f.xneg_bond_add(-1.0 / hx / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Dirichlet)
+        if (boundary_type_xpos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Right];
-            f.right_bond_add(-1.0 / hx / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XPositive];
+            f.xpos_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
-        if (boundary_type_down == PDEBoundaryType::Dirichlet)
+        if (boundary_type_yneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Down];
-            f.down_bond_add(-1.0 / hy / hy, boundary_value);
+            double* boundary_value = var_value_map[LocationType::YNegative];
+            f.yneg_bond_add(-1.0 / hy / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Dirichlet)
+        if (boundary_type_ypos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Up];
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
-        if (boundary_type_left == PDEBoundaryType::Neumann)
+        if (boundary_type_xneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Left];
-            f.left_bond_add(1.0 / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XNegative];
+            f.xneg_bond_add(1.0 / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Neumann)
+        if (boundary_type_xpos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Right];
-            f.right_bond_add(-1.0 / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XPositive];
+            f.xpos_bond_add(-1.0 / hx, boundary_value);
         }
-        if (boundary_type_down == PDEBoundaryType::Neumann)
+        if (boundary_type_yneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Down];
-            f.down_bond_add(1.0 / hy, boundary_value);
+            double* boundary_value = var_value_map[LocationType::YNegative];
+            f.yneg_bond_add(1.0 / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Neumann)
+        if (boundary_type_ypos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Up];
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy, boundary_value);
         }
     }

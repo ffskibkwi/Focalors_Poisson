@@ -2,7 +2,7 @@
 
 #include "domain_solver.h"
 
-void SchurMat2D_left::construct(DomainSolver2D* branch_solver)
+void SchurMat2D_xneg::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bnx, bny);
     for (int i = 0; i < cn; i++)
@@ -15,7 +15,7 @@ void SchurMat2D_left::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2D_left::operator*(const field2& root)
+field2 SchurMat2D_xneg::operator*(const field2& root)
 {
     int rnx = root.get_nx();
     int rny = root.get_ny();
@@ -32,7 +32,7 @@ field2 SchurMat2D_left::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2D_right::construct(DomainSolver2D* branch_solver)
+void SchurMat2D_xpos::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bnx, bny);
     for (int i = 0; i < cn; i++)
@@ -45,7 +45,7 @@ void SchurMat2D_right::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2D_right::operator*(const field2& root)
+field2 SchurMat2D_xpos::operator*(const field2& root)
 {
     int rnx = root.get_nx();
     int rny = root.get_ny();
@@ -62,7 +62,7 @@ field2 SchurMat2D_right::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2D_up::construct(DomainSolver2D* branch_solver)
+void SchurMat2D_ypos::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bnx, bny);
     for (int i = 0; i < cn; i++)
@@ -75,7 +75,7 @@ void SchurMat2D_up::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2D_up::operator*(const field2& root)
+field2 SchurMat2D_ypos::operator*(const field2& root)
 {
     int rnx = root.get_nx();
     int rny = root.get_ny();
@@ -92,7 +92,7 @@ field2 SchurMat2D_up::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2D_down::construct(DomainSolver2D* branch_solver)
+void SchurMat2D_yneg::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bnx, bny);
     for (int i = 0; i < cn; i++)
@@ -105,7 +105,7 @@ void SchurMat2D_down::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2D_down::operator*(const field2& root)
+field2 SchurMat2D_yneg::operator*(const field2& root)
 {
     int rnx = root.get_nx();
     int rny = root.get_ny();

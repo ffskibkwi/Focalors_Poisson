@@ -224,21 +224,21 @@ double field3::mean_at_xz_plane(int j) { return sum_at_xz_plane(j) / (nx * nz); 
 
 double field3::mean_at_yz_plane(int i) { return sum_at_yz_plane(i) / (ny * nz); }
 
-void field3::left_bond_add(const double a, const field2& bound)
+void field3::xneg_bond_add(const double a, const field2& bound)
 {
     for (int j = 0; j < ny; j++)
         for (int k = 0; k < nz; k++)
             this->operator()(0, j, k) += a * bound(j, k);
 }
 
-void field3::right_bond_add(const double a, const field2& bound)
+void field3::xpos_bond_add(const double a, const field2& bound)
 {
     for (int j = 0; j < ny; j++)
         for (int k = 0; k < nz; k++)
             this->operator()(nx - 1, j, k) += a * bound(j, k);
 }
 
-void field3::front_bond_add(const double a, const field2& bound)
+void field3::yneg_bond_add(const double a, const field2& bound)
 {
     for (int i = 0; i < nx; i++)
         for (int k = 0; k < nz; k++)
@@ -252,7 +252,7 @@ void field3::back_bond_add(const double a, const field2& bound)
             this->operator()(i, ny - 1, k) += a * bound(i, k);
 }
 
-void field3::down_bond_add(const double a, const field2& bound)
+void field3::zneg_bond_add(const double a, const field2& bound)
 {
     for (int i = 0; i < nx; i++)
         for (int j = 0; j < ny; j++)
@@ -270,22 +270,22 @@ void field3::bond_add(LocationType location, const double a, const field2& bound
 {
     switch (location)
     {
-        case LocationType::Left:
-            left_bond_add(a, bound);
+        case LocationType::XNegative:
+            xneg_bond_add(a, bound);
             break;
-        case LocationType::Right:
-            right_bond_add(a, bound);
+        case LocationType::XPositive:
+            xpos_bond_add(a, bound);
             break;
-        case LocationType::Front:
-            front_bond_add(a, bound);
+        case LocationType::YNegative:
+            yneg_bond_add(a, bound);
             break;
-        case LocationType::Back:
+        case LocationType::YPositive:
             back_bond_add(a, bound);
             break;
-        case LocationType::Down:
-            down_bond_add(a, bound);
+        case LocationType::ZNegative:
+            zneg_bond_add(a, bound);
             break;
-        case LocationType::Up:
+        case LocationType::ZPositive:
             up_bond_add(a, bound);
             break;
         default:
@@ -293,7 +293,7 @@ void field3::bond_add(LocationType location, const double a, const field2& bound
     }
 }
 
-void field3::left_bond_add(const double a, const field3& neighbour)
+void field3::xneg_bond_add(const double a, const field3& neighbour)
 {
     int neighbour_nx = neighbour.get_nx();
     for (int j = 0; j < ny; j++)
@@ -301,14 +301,14 @@ void field3::left_bond_add(const double a, const field3& neighbour)
             this->operator()(0, j, k) += a * neighbour(neighbour_nx - 1, j, k);
 }
 
-void field3::right_bond_add(const double a, const field3& neighbour)
+void field3::xpos_bond_add(const double a, const field3& neighbour)
 {
     for (int j = 0; j < ny; j++)
         for (int k = 0; k < nz; k++)
             this->operator()(nx - 1, j, k) += a * neighbour(0, j, k);
 }
 
-void field3::front_bond_add(const double a, const field3& neighbour)
+void field3::yneg_bond_add(const double a, const field3& neighbour)
 {
     int neighbour_ny = neighbour.get_ny();
     for (int i = 0; i < nx; i++)
@@ -323,7 +323,7 @@ void field3::back_bond_add(const double a, const field3& neighbour)
             this->operator()(i, ny - 1, k) += a * neighbour(i, 0, k);
 }
 
-void field3::down_bond_add(const double a, const field3& neighbour)
+void field3::zneg_bond_add(const double a, const field3& neighbour)
 {
     int neighbour_nz = neighbour.get_nz();
     for (int i = 0; i < nx; i++)
@@ -342,22 +342,22 @@ void field3::bond_add(LocationType location, const double a, const field3& neigh
 {
     switch (location)
     {
-        case LocationType::Left:
-            left_bond_add(a, neighbour);
+        case LocationType::XNegative:
+            xneg_bond_add(a, neighbour);
             break;
-        case LocationType::Right:
-            right_bond_add(a, neighbour);
+        case LocationType::XPositive:
+            xpos_bond_add(a, neighbour);
             break;
-        case LocationType::Front:
-            front_bond_add(a, neighbour);
+        case LocationType::YNegative:
+            yneg_bond_add(a, neighbour);
             break;
-        case LocationType::Back:
+        case LocationType::YPositive:
             back_bond_add(a, neighbour);
             break;
-        case LocationType::Down:
-            down_bond_add(a, neighbour);
+        case LocationType::ZNegative:
+            zneg_bond_add(a, neighbour);
             break;
-        case LocationType::Up:
+        case LocationType::ZPositive:
             up_bond_add(a, neighbour);
             break;
         default:

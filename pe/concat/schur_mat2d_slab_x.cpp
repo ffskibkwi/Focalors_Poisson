@@ -12,7 +12,7 @@ void migrate_from(SchurMat2DSlabX* src, SchurMat2DSlabX* dest)
     MPIUtils::redistribute_slab(data_src, data_dest, comm_src, comm_dest);
 }
 
-void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
+void SchurMat2DSlabX_xneg::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
@@ -35,7 +35,7 @@ void SchurMat2DSlabX_left::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2DSlabX_left::operator*(const field2& root)
+field2 SchurMat2DSlabX_xneg::operator*(const field2& root)
 {
     int rsnx = root.get_nx(); // root domain with slab decomposition nx
     int rny  = root.get_ny();
@@ -60,7 +60,7 @@ field2 SchurMat2DSlabX_left::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2DSlabX_right::construct(DomainSolver2D* branch_solver)
+void SchurMat2DSlabX_xpos::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
@@ -76,7 +76,7 @@ void SchurMat2DSlabX_right::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2DSlabX_right::operator*(const field2& root)
+field2 SchurMat2DSlabX_xpos::operator*(const field2& root)
 {
     int rsnx = root.get_nx();
     int rny  = root.get_ny();
@@ -109,7 +109,7 @@ field2 SchurMat2DSlabX_right::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2DSlabX_up::construct(DomainSolver2D* branch_solver)
+void SchurMat2DSlabX_ypos::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
@@ -128,7 +128,7 @@ void SchurMat2DSlabX_up::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2DSlabX_up::operator*(const field2& root)
+field2 SchurMat2DSlabX_ypos::operator*(const field2& root)
 {
     int rsnx = root.get_nx();
     int rny  = root.get_ny();
@@ -149,7 +149,7 @@ field2 SchurMat2DSlabX_up::operator*(const field2& root)
     return R;
 }
 
-void SchurMat2DSlabX_down::construct(DomainSolver2D* branch_solver)
+void SchurMat2DSlabX_yneg::construct(DomainSolver2D* branch_solver)
 {
     field2 t_a(bsnx, bny);
     for (int i = 0; i < cn; i++)
@@ -168,7 +168,7 @@ void SchurMat2DSlabX_down::construct(DomainSolver2D* branch_solver)
     }
 }
 
-field2 SchurMat2DSlabX_down::operator*(const field2& root)
+field2 SchurMat2DSlabX_yneg::operator*(const field2& root)
 {
     int rsnx = root.get_nx();
     int rny  = root.get_ny();

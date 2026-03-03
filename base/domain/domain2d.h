@@ -20,7 +20,7 @@ public:
     double hx = 0.0;
     double hy = 0.0;
 
-    // Basic position (the position of the left-down corner)
+    // Basic position (the position of the xneg-yneg corner)
     double pos_x, pos_y;
 
     // Global offset
@@ -31,10 +31,10 @@ public:
     Geometry2D* parent = nullptr;
 
     // Boundary conditions (four directions) and setting flags
-    PDEBoundaryType boundary_type_left  = PDEBoundaryType::Null; // Left
-    PDEBoundaryType boundary_type_right = PDEBoundaryType::Null; // Right
-    PDEBoundaryType boundary_type_down  = PDEBoundaryType::Null; // Down
-    PDEBoundaryType boundary_type_up    = PDEBoundaryType::Null; // Up
+    PDEBoundaryType boundary_type_xneg = PDEBoundaryType::Null; // XNegative
+    PDEBoundaryType boundary_type_xpos = PDEBoundaryType::Null; // XPositive
+    PDEBoundaryType boundary_type_yneg = PDEBoundaryType::Null; // YNegative
+    PDEBoundaryType boundary_type_ypos = PDEBoundaryType::Null; // YPositive
 
     Domain2DUniform();
     Domain2DUniform(const std::string& in_name);

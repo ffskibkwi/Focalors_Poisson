@@ -14,8 +14,8 @@ public:
     Geometry2D*                                                                     geometry = nullptr;
     std::unordered_map<Domain2DUniform*, field2*>                                   field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, double*>> buffer_map;
-    std::unordered_map<Domain2DUniform*, double> left_up_corner_value_map;    // Only for v, the value on the node
-    std::unordered_map<Domain2DUniform*, double> right_down_corner_value_map; // Only for u，the value on the node
+    std::unordered_map<Domain2DUniform*, double> xneg_ypos_corner_value_map; // Only for v, the value on the node
+    std::unordered_map<Domain2DUniform*, double> xpos_yneg_corner_value_map; // Only for u，the value on the node
 
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, PDEBoundaryType>> boundary_type_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, bool>>            has_boundary_value_map;

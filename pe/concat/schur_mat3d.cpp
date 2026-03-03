@@ -2,8 +2,8 @@
 
 #include "domain_solver.h"
 
-// Left: 处理来自左侧邻域的贡献（作用于自身的 x=0 界面）
-void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
+// XNegative: 处理来自左侧邻域的贡献（作用于自身的 x=0 界面）
+void SchurMat3D_xneg::construct(DomainSolver3D* branch_solver)
 {
     int    interface_size = bny * bnz;
     field3 t_a(bnx, bny, bnz);
@@ -27,7 +27,7 @@ void SchurMat3D_left::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_left::operator*(const field3& root)
+field3 SchurMat3D_xneg::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();
@@ -50,8 +50,8 @@ field3 SchurMat3D_left::operator*(const field3& root)
     return R;
 }
 
-// Right: 处理来自右侧邻域的贡献（作用于自身的 x=nx-1 界面）
-void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
+// XPositive: 处理来自右侧邻域的贡献（作用于自身的 x=nx-1 界面）
+void SchurMat3D_xpos::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(bnx, bny, bnz);
     for (int j = 0; j < bny; j++)
@@ -74,7 +74,7 @@ void SchurMat3D_right::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_right::operator*(const field3& root)
+field3 SchurMat3D_xpos::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();
@@ -97,8 +97,8 @@ field3 SchurMat3D_right::operator*(const field3& root)
     return R;
 }
 
-// Front (y 负方向): 作用于自身的 y=0 界面
-void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
+// YNegative (y 负方向): 作用于自身的 y=0 界面
+void SchurMat3D_yneg::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(bnx, bny, bnz);
     for (int i = 0; i < bnx; i++)
@@ -121,7 +121,7 @@ void SchurMat3D_front::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_front::operator*(const field3& root)
+field3 SchurMat3D_yneg::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();
@@ -144,8 +144,8 @@ field3 SchurMat3D_front::operator*(const field3& root)
     return R;
 }
 
-// Back (y 正方向): 作用于自身的 y=ny-1 界面
-void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
+// YPositive (y 正方向): 作用于自身的 y=ny-1 界面
+void SchurMat3D_ypos::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(bnx, bny, bnz);
     for (int i = 0; i < bnx; i++)
@@ -168,7 +168,7 @@ void SchurMat3D_back::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_back::operator*(const field3& root)
+field3 SchurMat3D_ypos::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();
@@ -191,8 +191,8 @@ field3 SchurMat3D_back::operator*(const field3& root)
     return R;
 }
 
-// Down (z 负方向): 作用于自身的 z=0 界面
-void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
+// ZNegative (z 负方向): 作用于自身的 z=0 界面
+void SchurMat3D_zneg::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(bnx, bny, bnz);
     for (int i = 0; i < bnx; i++)
@@ -215,7 +215,7 @@ void SchurMat3D_down::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_down::operator*(const field3& root)
+field3 SchurMat3D_zneg::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();
@@ -238,8 +238,8 @@ field3 SchurMat3D_down::operator*(const field3& root)
     return R;
 }
 
-// Up (z 正方向): 作用于自身的 z=nz-1 界面
-void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
+// ZPositive (z 正方向): 作用于自身的 z=nz-1 界面
+void SchurMat3D_zpos::construct(DomainSolver3D* branch_solver)
 {
     field3 t_a(bnx, bny, bnz);
     for (int i = 0; i < bnx; i++)
@@ -262,7 +262,7 @@ void SchurMat3D_up::construct(DomainSolver3D* branch_solver)
     }
 }
 
-field3 SchurMat3D_up::operator*(const field3& root)
+field3 SchurMat3D_zpos::operator*(const field3& root)
 {
     int root_nx = root.get_nx();
     int root_ny = root.get_ny();

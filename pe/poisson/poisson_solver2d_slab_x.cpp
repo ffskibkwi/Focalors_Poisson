@@ -7,19 +7,19 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(int             in_nx,
                                            int             in_ny,
                                            double          in_hx,
                                            double          in_hy,
-                                           PDEBoundaryType in_boundary_type_left,
-                                           PDEBoundaryType in_boundary_type_right,
-                                           PDEBoundaryType in_boundary_type_down,
-                                           PDEBoundaryType in_boundary_type_up,
+                                           PDEBoundaryType in_boundary_type_xneg,
+                                           PDEBoundaryType in_boundary_type_xpos,
+                                           PDEBoundaryType in_boundary_type_yneg,
+                                           PDEBoundaryType in_boundary_type_ypos,
                                            MPI_Comm        in_communicator)
     : PoissonSolver2DBase(in_nx,
                           in_ny,
                           in_hx,
                           in_hy,
-                          in_boundary_type_left,
-                          in_boundary_type_right,
-                          in_boundary_type_down,
-                          in_boundary_type_up)
+                          in_boundary_type_xneg,
+                          in_boundary_type_xpos,
+                          in_boundary_type_yneg,
+                          in_boundary_type_ypos)
     , communicator(in_communicator)
 {
     init();
@@ -32,10 +32,10 @@ PoissonSolver2DSlabX::PoissonSolver2DSlabX(Domain2DUniform* in_domain,
                           in_domain->ny,
                           in_domain->hx,
                           in_domain->hy,
-                          in_variable->boundary_type_map[in_domain][LocationType::Left],
-                          in_variable->boundary_type_map[in_domain][LocationType::Right],
-                          in_variable->boundary_type_map[in_domain][LocationType::Down],
-                          in_variable->boundary_type_map[in_domain][LocationType::Up])
+                          in_variable->boundary_type_map[in_domain][LocationType::XNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::XPositive],
+                          in_variable->boundary_type_map[in_domain][LocationType::YNegative],
+                          in_variable->boundary_type_map[in_domain][LocationType::YPositive])
     , domain_name(in_domain->name)
     , communicator(in_communicator)
 {
@@ -56,12 +56,12 @@ void PoissonSolver2DSlabX::init()
     p_hat_T.init(sny, nx, "p_hat_T");
     p_hat.init(snx, ny, "p_hat");
 
-    create_fft(poisson_fft_y, boundary_type_down, boundary_type_up, snx, ny);
+    create_fft(poisson_fft_y, boundary_type_yneg, boundary_type_ypos, snx, ny);
 
     double* lambda_y = new double[sny];
     x_diag           = new double[sny];
 
-    cal_lambda(lambda_y, ny, 1 + ny_disp, sny, boundary_type_down, boundary_type_up);
+    cal_lambda(lambda_y, ny, 1 + ny_disp, sny, boundary_type_yneg, boundary_type_ypos);
 
     for (int j = 0; j < sny; j++)
     {
@@ -69,12 +69,12 @@ void PoissonSolver2DSlabX::init()
     }
     delete[] lambda_y;
 
-    bool is_no_Dirichlet = !(isDirLike(boundary_type_left) || isDirLike(boundary_type_right) ||
-                             isDirLike(boundary_type_down) || isDirLike(boundary_type_up));
+    bool is_no_Dirichlet = !(isDirLike(boundary_type_xneg) || isDirLike(boundary_type_xpos) ||
+                             isDirLike(boundary_type_yneg) || isDirLike(boundary_type_ypos));
     bool has_last_vector = mpi_rank == mpi_size - 1;
 
     chasing_method_x = new ChasingMethod2D();
-    chasing_method_x->init(sny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_left, boundary_type_right);
+    chasing_method_x->init(sny, nx, x_diag, is_no_Dirichlet, has_last_vector, boundary_type_xneg, boundary_type_xpos);
 
     buf_slab_x = new double[snx * ny];
     buf_slab_y = new double[sny * nx];

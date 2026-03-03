@@ -17,12 +17,12 @@ public:
                     double          in_hx,
                     double          in_hy,
                     double          in_hz,
-                    PDEBoundaryType in_boundary_type_left,
-                    PDEBoundaryType in_boundary_type_right,
-                    PDEBoundaryType in_boundary_type_front,
-                    PDEBoundaryType in_boundary_type_back,
-                    PDEBoundaryType in_boundary_type_down,
-                    PDEBoundaryType in_boundary_type_up);
+                    PDEBoundaryType in_boundary_type_xneg,
+                    PDEBoundaryType in_boundary_type_xpos,
+                    PDEBoundaryType in_boundary_type_yneg,
+                    PDEBoundaryType in_boundary_type_ypos,
+                    PDEBoundaryType in_boundary_type_zneg,
+                    PDEBoundaryType in_boundary_type_zpos);
     PoissonSolver3D(Domain3DUniform* in_domain, Variable3D* in_variable = nullptr);
 
     void solve(field3& f) override;

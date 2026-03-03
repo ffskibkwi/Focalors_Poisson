@@ -44,15 +44,15 @@ public:
     double  mean_at_y_axis(int j);
 
     // Boundary operation
-    void left_bond_add(const double a, double* bound);
-    void right_bond_add(const double a, double* bound);
-    void down_bond_add(const double a, double* bound);
+    void xneg_bond_add(const double a, double* bound);
+    void xpos_bond_add(const double a, double* bound);
+    void yneg_bond_add(const double a, double* bound);
     void up_bond_add(const double a, double* bound);
     void bond_add(LocationType location, const double a, double* bound);
 
-    void left_bond_add(const double a, const field2& neighbour);
-    void right_bond_add(const double a, const field2& neighbour);
-    void down_bond_add(const double a, const field2& neighbour);
+    void xneg_bond_add(const double a, const field2& neighbour);
+    void xpos_bond_add(const double a, const field2& neighbour);
+    void yneg_bond_add(const double a, const field2& neighbour);
     void up_bond_add(const double a, const field2& neighbour);
     void bond_add(LocationType location, const double a, const field2& neighbour);
 

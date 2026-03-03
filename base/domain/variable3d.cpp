@@ -101,12 +101,12 @@ void Variable3D::set_center_field(Domain3DUniform* s, field3& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::Left]  = new field2(s->ny, s->nz);
-    buffer_map[s][LocationType::Right] = new field2(s->ny, s->nz);
-    buffer_map[s][LocationType::Front] = new field2(s->nx, s->nz);
-    buffer_map[s][LocationType::Back]  = new field2(s->nx, s->nz);
-    buffer_map[s][LocationType::Down]  = new field2(s->nx, s->ny);
-    buffer_map[s][LocationType::Up]    = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::XNegative] = new field2(s->ny, s->nz);
+    buffer_map[s][LocationType::XPositive] = new field2(s->ny, s->nz);
+    buffer_map[s][LocationType::YNegative] = new field2(s->nx, s->nz);
+    buffer_map[s][LocationType::YPositive] = new field2(s->nx, s->nz);
+    buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
     position_type = VariablePositionType::Center;
 }
@@ -119,16 +119,16 @@ void Variable3D::set_x_face_center_field(Domain3DUniform* s, field3& f)
 
     field_map[s] = &f;
 
-    // Center variable in 3D needs buffers for Left, Right, Front, Back, Down, Up
-    // Left/Right: y-z plane (ny * nz)
-    buffer_map[s][LocationType::Left]  = new field2(s->ny, s->nz);
-    buffer_map[s][LocationType::Right] = new field2(s->ny, s->nz);
-    // Front/Back: x-z plane (nx * nz)
-    buffer_map[s][LocationType::Front] = new field2(s->nx, s->nz);
-    buffer_map[s][LocationType::Back]  = new field2(s->nx, s->nz);
-    // Down/Up: x-y plane (nx * ny)
-    buffer_map[s][LocationType::Down] = new field2(s->nx, s->ny);
-    buffer_map[s][LocationType::Up]   = new field2(s->nx, s->ny);
+    // Center variable in 3D needs buffers for XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive
+    // XNegative/XPositive: y-z plane (ny * nz)
+    buffer_map[s][LocationType::XNegative] = new field2(s->ny, s->nz);
+    buffer_map[s][LocationType::XPositive] = new field2(s->ny, s->nz);
+    // YNegative/YPositive: x-z plane (nx * nz)
+    buffer_map[s][LocationType::YNegative] = new field2(s->nx, s->nz);
+    buffer_map[s][LocationType::YPositive] = new field2(s->nx, s->nz);
+    // ZNegative/ZPositive: x-y plane (nx * ny)
+    buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
     corner_value_map_y[s] = new double[s->ny];
     corner_value_map_z[s] = new double[s->nz];
@@ -144,16 +144,16 @@ void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
 
     field_map[s] = &f;
 
-    // Center variable in 3D needs buffers for Left, Right, Front, Back, Down, Up
-    // Left/Right: y-z plane (ny * nz)
-    buffer_map[s][LocationType::Left]  = new field2(s->ny, s->nz);
-    buffer_map[s][LocationType::Right] = new field2(s->ny, s->nz);
-    // Front/Back: x-z plane (nx * nz)
-    buffer_map[s][LocationType::Front] = new field2(s->nx, s->nz);
-    buffer_map[s][LocationType::Back]  = new field2(s->nx, s->nz);
-    // Down/Up: x-y plane (nx * ny)
-    buffer_map[s][LocationType::Down] = new field2(s->nx, s->ny);
-    buffer_map[s][LocationType::Up]   = new field2(s->nx, s->ny);
+    // Center variable in 3D needs buffers for XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive
+    // XNegative/XPositive: y-z plane (ny * nz)
+    buffer_map[s][LocationType::XNegative] = new field2(s->ny, s->nz);
+    buffer_map[s][LocationType::XPositive] = new field2(s->ny, s->nz);
+    // YNegative/YPositive: x-z plane (nx * nz)
+    buffer_map[s][LocationType::YNegative] = new field2(s->nx, s->nz);
+    buffer_map[s][LocationType::YPositive] = new field2(s->nx, s->nz);
+    // ZNegative/ZPositive: x-y plane (nx * ny)
+    buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
     corner_value_map_x[s] = new double[s->nx];
     corner_value_map_z[s] = new double[s->nz];
@@ -169,16 +169,16 @@ void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
 
     field_map[s] = &f;
 
-    // Center variable in 3D needs buffers for Left, Right, Front, Back, Down, Up
-    // Left/Right: y-z plane (ny * nz)
-    buffer_map[s][LocationType::Left]  = new field2(s->ny, s->nz);
-    buffer_map[s][LocationType::Right] = new field2(s->ny, s->nz);
-    // Front/Back: x-z plane (nx * nz)
-    buffer_map[s][LocationType::Front] = new field2(s->nx, s->nz);
-    buffer_map[s][LocationType::Back]  = new field2(s->nx, s->nz);
-    // Down/Up: x-y plane (nx * ny)
-    buffer_map[s][LocationType::Down] = new field2(s->nx, s->ny);
-    buffer_map[s][LocationType::Up]   = new field2(s->nx, s->ny);
+    // Center variable in 3D needs buffers for XNegative, XPositive, YNegative, YPositive, ZNegative, ZPositive
+    // XNegative/XPositive: y-z plane (ny * nz)
+    buffer_map[s][LocationType::XNegative] = new field2(s->ny, s->nz);
+    buffer_map[s][LocationType::XPositive] = new field2(s->ny, s->nz);
+    // YNegative/YPositive: x-z plane (nx * nz)
+    buffer_map[s][LocationType::YNegative] = new field2(s->nx, s->nz);
+    buffer_map[s][LocationType::YPositive] = new field2(s->nx, s->nz);
+    // ZNegative/ZPositive: x-y plane (nx * ny)
+    buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
+    buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
     corner_value_map_x[s] = new double[s->nx];
     corner_value_map_y[s] = new double[s->ny];
@@ -241,22 +241,22 @@ void Variable3D::set_boundary_value(Domain3DUniform* s, LocationType loc, double
     check_geometry(s);
     has_boundary_value_map[s][loc] = true;
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
-        // Left/Right: y-z plane (ny * nz)
+        // XNegative/XPositive: y-z plane (ny * nz)
         int size                   = s->ny * s->nz;
         boundary_value_map[s][loc] = new field2(s->ny, s->nz);
         boundary_value_map[s][loc]->clear(in_value);
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
-        // Front/Back: x-z plane (nx * nz)
+        // YNegative/YPositive: x-z plane (nx * nz)
         boundary_value_map[s][loc] = new field2(s->nx, s->nz);
         boundary_value_map[s][loc]->clear(in_value);
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::ZNegative || loc == LocationType::ZPositive)
     {
-        // Down/Up: x-y plane (nx * ny)
+        // ZNegative/ZPositive: x-y plane (nx * ny)
         boundary_value_map[s][loc] = new field2(s->nx, s->ny);
         boundary_value_map[s][loc]->clear(in_value);
     }
@@ -306,23 +306,23 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
     switch (loc)
     {
-        case LocationType::Left:
-        case LocationType::Right:
+        case LocationType::XNegative:
+        case LocationType::XPositive:
             shift_x = 0.0;
             break;
-        case LocationType::Front:
-        case LocationType::Back:
+        case LocationType::YNegative:
+        case LocationType::YPositive:
             shift_y = 0.0;
             break;
-        case LocationType::Down:
-        case LocationType::Up:
+        case LocationType::ZNegative:
+        case LocationType::ZPositive:
             shift_z = 0.0;
             break;
         default:
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size, k_size;
         if (position_type == VariablePositionType::Corner)
@@ -338,7 +338,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(j_size, k_size);
 
-        int i_idx = (loc == LocationType::Left) ? 0 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? 0 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -351,7 +351,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
             }
         }
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size, k_size;
         if (position_type == VariablePositionType::Corner)
@@ -367,7 +367,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, k_size);
 
-        int j_idx = (loc == LocationType::Front) ? 0 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? 0 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -380,7 +380,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
             }
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::ZNegative || loc == LocationType::ZPositive)
     {
         int i_size, j_size;
         if (position_type == VariablePositionType::Corner)
@@ -396,7 +396,7 @@ void Variable3D::set_boundary_value_from_func_global(Domain3DUniform*           
 
         boundary_value_map[s][loc] = new field2(i_size, j_size);
 
-        int k_idx = (loc == LocationType::Down) ? 0 : s->nz;
+        int k_idx = (loc == LocationType::ZNegative) ? 0 : s->nz;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -479,7 +479,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             break;
     }
 
-    if (loc == LocationType::Left || loc == LocationType::Right)
+    if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
         int j_size, k_size;
         if (position_type == VariablePositionType::Corner)
@@ -493,7 +493,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             k_size = s->nz;
         }
 
-        int i_idx = (loc == LocationType::Left) ? -1 : s->nx;
+        int i_idx = (loc == LocationType::XNegative) ? -1 : s->nx;
 
         for (int j = 0; j < j_size; j++)
         {
@@ -506,7 +506,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             }
         }
     }
-    else if (loc == LocationType::Front || loc == LocationType::Back)
+    else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
         int i_size, k_size;
         if (position_type == VariablePositionType::Corner)
@@ -520,7 +520,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             k_size = s->nz;
         }
 
-        int j_idx = (loc == LocationType::Front) ? -1 : s->ny;
+        int j_idx = (loc == LocationType::YNegative) ? -1 : s->ny;
 
         for (int i = 0; i < i_size; i++)
         {
@@ -533,7 +533,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             }
         }
     }
-    else if (loc == LocationType::Down || loc == LocationType::Up)
+    else if (loc == LocationType::ZNegative || loc == LocationType::ZPositive)
     {
         int i_size, j_size;
         if (position_type == VariablePositionType::Corner)
@@ -547,7 +547,7 @@ void Variable3D::set_buffer_value_from_func_global(Domain3DUniform*             
             j_size = s->ny;
         }
 
-        int k_idx = (loc == LocationType::Down) ? -1 : s->nz;
+        int k_idx = (loc == LocationType::ZNegative) ? -1 : s->nz;
 
         for (int i = 0; i < i_size; i++)
         {

@@ -106,10 +106,10 @@ int main(int argc, char* argv[])
     Domain2DUniform neighbor_domain_x(neighbor_nx, neighbor_ny, "neighbor_domain_x");
     Domain2DUniform neighbor_domain_y(neighbor_ny, neighbor_nx, "neighbor_domain_y");
 
-    test<SchurMat2DSlabX_left>("LEFT", neighbor_domain_x, nx, ny);
-    test<SchurMat2DSlabX_right>("RIGHT", neighbor_domain_x, nx, ny);
-    test<SchurMat2DSlabX_up>("UP", neighbor_domain_y, ny, nx);
-    test<SchurMat2DSlabX_down>("DOWN", neighbor_domain_y, ny, nx);
+    test<SchurMat2DSlabX_xneg>("LEFT", neighbor_domain_x, nx, ny);
+    test<SchurMat2DSlabX_xpos>("RIGHT", neighbor_domain_x, nx, ny);
+    test<SchurMat2DSlabX_ypos>("UP", neighbor_domain_y, ny, nx);
+    test<SchurMat2DSlabX_yneg>("DOWN", neighbor_domain_y, ny, nx);
 
     MPI_Finalize();
 

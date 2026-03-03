@@ -153,7 +153,7 @@ void ConcatPoissonSolver2DSlabX::solve()
         f *= domain->hx * domain->hx;
     }
 
-    // Righthand construction
+    // XPositivehand construction
     int local_level = variable->hierarchical_slab_parents.size() - 1;
     for (auto it = hierarchical_solve_levels.rbegin(); it != hierarchical_solve_levels.rend(); ++it)
     {
@@ -261,51 +261,51 @@ void ConcatPoissonSolver2DSlabX::boundary_assembly()
         double hx = domain->get_hx();
         double hy = domain->get_hy();
 
-        PDEBoundaryType boundary_type_left  = var_type_map[LocationType::Left];
-        PDEBoundaryType boundary_type_right = var_type_map[LocationType::Right];
-        PDEBoundaryType boundary_type_down  = var_type_map[LocationType::Down];
-        PDEBoundaryType boundary_type_up    = var_type_map[LocationType::Up];
+        PDEBoundaryType boundary_type_xneg = var_type_map[LocationType::XNegative];
+        PDEBoundaryType boundary_type_xpos = var_type_map[LocationType::XPositive];
+        PDEBoundaryType boundary_type_yneg = var_type_map[LocationType::YNegative];
+        PDEBoundaryType boundary_type_ypos = var_type_map[LocationType::YPositive];
 
-        if (boundary_type_left == PDEBoundaryType::Dirichlet)
+        if (boundary_type_xneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Left];
-            f.left_bond_add(-1.0 / hx / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XNegative];
+            f.xneg_bond_add(-1.0 / hx / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Dirichlet)
+        if (boundary_type_xpos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Right];
-            f.right_bond_add(-1.0 / hx / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XPositive];
+            f.xpos_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
-        if (boundary_type_down == PDEBoundaryType::Dirichlet)
+        if (boundary_type_yneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Down];
-            f.down_bond_add(-1.0 / hy / hy, boundary_value);
+            double* boundary_value = var_value_map[LocationType::YNegative];
+            f.yneg_bond_add(-1.0 / hy / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Dirichlet)
+        if (boundary_type_ypos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = var_value_map[LocationType::Up];
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
-        if (boundary_type_left == PDEBoundaryType::Neumann)
+        if (boundary_type_xneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Left];
-            f.left_bond_add(1.0 / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XNegative];
+            f.xneg_bond_add(1.0 / hx, boundary_value);
         }
-        if (boundary_type_right == PDEBoundaryType::Neumann)
+        if (boundary_type_xpos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Right];
-            f.right_bond_add(-1.0 / hx, boundary_value);
+            double* boundary_value = var_value_map[LocationType::XPositive];
+            f.xpos_bond_add(-1.0 / hx, boundary_value);
         }
-        if (boundary_type_down == PDEBoundaryType::Neumann)
+        if (boundary_type_yneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Down];
-            f.down_bond_add(1.0 / hy, boundary_value);
+            double* boundary_value = var_value_map[LocationType::YNegative];
+            f.yneg_bond_add(1.0 / hy, boundary_value);
         }
-        if (boundary_type_up == PDEBoundaryType::Neumann)
+        if (boundary_type_ypos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = var_value_map[LocationType::Up];
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy, boundary_value);
         }
     }
@@ -346,10 +346,10 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
         MPI_Comm_size(comm_src, &mpi_size_src);
     }
 
-    if (location == LocationType::Left || location == LocationType::Right)
+    if (location == LocationType::XNegative || location == LocationType::XPositive)
     {
         bool is_desired_slab_dest = false, is_desired_slab_src = false;
-        if (location == LocationType::Left)
+        if (location == LocationType::XNegative)
         {
             is_desired_slab_dest = mpi_rank_dest == 0;
             is_desired_slab_src  = mpi_rank_src == mpi_size_src - 1;
@@ -389,7 +389,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
 
             if (is_desired_slab_src)
             {
-                int i = location == LocationType::Left ? f_src->get_nx() - 1 : 0;
+                int i = location == LocationType::XNegative ? f_src->get_nx() - 1 : 0;
                 MPI_Send(f_src->get_ptr(i, 0), f_src->get_ny(), MPI_DOUBLE, mpi_rank_dest, 0, MPI_COMM_WORLD);
             }
             if (is_desired_slab_dest)
@@ -403,7 +403,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             }
         }
     }
-    else if (location == LocationType::Down || location == LocationType::Up)
+    else if (location == LocationType::YNegative || location == LocationType::YPositive)
     {
         int result = MPI_UNEQUAL;
         if (is_src && is_dest)
@@ -434,7 +434,7 @@ void ConcatPoissonSolver2DSlabX::bond_add_slab(Domain2DUniformMPI*         domai
             {
                 buffer_src = get_buffer(nx_slab_src);
 
-                int j = location == LocationType::Down ? f_src->get_ny() - 1 : 0;
+                int j = location == LocationType::YNegative ? f_src->get_ny() - 1 : 0;
                 for (int i = 0; i < nx_slab_src; i++)
                     buffer_src[i] = (*f_src)(i, j);
             }

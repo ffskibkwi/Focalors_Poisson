@@ -6,8 +6,8 @@ void ChasingMethod3D::init(int             nx_in,
                            double**        _x_diag,
                            bool            _is_no_Dirichlet,
                            bool            _has_last_vector,
-                           PDEBoundaryType boundary_type_down,
-                           PDEBoundaryType boundary_type_up)
+                           PDEBoundaryType boundary_type_zneg,
+                           PDEBoundaryType boundary_type_zpos)
 {
     nx                       = nx_in;
     ny                       = ny_in;
@@ -15,12 +15,12 @@ void ChasingMethod3D::init(int             nx_in,
     x_diag                   = _x_diag;
     is_no_Dirichlet          = _is_no_Dirichlet;
     has_last_vector          = _has_last_vector;
-    this->boundary_type_down = boundary_type_down;
-    this->boundary_type_up   = boundary_type_up;
+    this->boundary_type_zneg = boundary_type_zneg;
+    this->boundary_type_zpos = boundary_type_zpos;
 
     y.init(nx, ny, nz, "y");
 
-    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+    if (boundary_type_zneg == PDEBoundaryType::Periodic && boundary_type_zpos == PDEBoundaryType::Periodic)
     {
         z_1.init(nx, ny, nz, "z_1");
         z_2.init(nx, ny, nz, "z_2");
@@ -42,7 +42,8 @@ void ChasingMethod3D::init(int             nx_in,
         {
             for (int j = 0; j < ny; j++)
             {
-                chasing_standard_precompute(x_diag[i][j], nz, c.get_ptr(i, j, 0), boundary_type_down, boundary_type_up);
+                chasing_standard_precompute(
+                    x_diag[i][j], nz, c.get_ptr(i, j, 0), boundary_type_zneg, boundary_type_zpos);
             }
         }
     }
@@ -50,7 +51,7 @@ void ChasingMethod3D::init(int             nx_in,
 
 void ChasingMethod3D::chasing(field3& f, field3& p)
 {
-    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+    if (boundary_type_zneg == PDEBoundaryType::Periodic && boundary_type_zpos == PDEBoundaryType::Periodic)
     {
         for (int i = 0; i < nx; i++)
         {
@@ -93,8 +94,8 @@ void ChasingMethod3D::chasing(field3& f, field3& p)
                                                         c.get_ptr(i, j, 0),
                                                         y.get_ptr(i, j, 0),
                                                         p.get_ptr(i, j, 0),
-                                                        boundary_type_down,
-                                                        boundary_type_up);
+                                                        boundary_type_zneg,
+                                                        boundary_type_zpos);
                 }
             }
         }

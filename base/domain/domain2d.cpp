@@ -111,8 +111,8 @@ bool Domain2DUniform::check_profile() const { return nx > 0 && ny > 0 && lx > 0.
  */
 bool Domain2DUniform::check_boundary() const
 {
-    return boundary_type_left != PDEBoundaryType::Null && boundary_type_right != PDEBoundaryType::Null &&
-           boundary_type_down != PDEBoundaryType::Null && boundary_type_up != PDEBoundaryType::Null;
+    return boundary_type_xneg != PDEBoundaryType::Null && boundary_type_xpos != PDEBoundaryType::Null &&
+           boundary_type_yneg != PDEBoundaryType::Null && boundary_type_ypos != PDEBoundaryType::Null;
 }
 
 double Domain2DUniform::get_pos_x() const { return pos_x; }

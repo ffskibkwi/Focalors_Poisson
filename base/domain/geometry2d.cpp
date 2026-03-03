@@ -39,7 +39,7 @@ void Geometry2D::add_domain(std::initializer_list<Domain2DUniform*> list)
  * @param a Source domain.
  * @param dir Direction from domain `a` to domain `b`.
  * @param b Target domain.
- * @throws std::invalid_argument If `dir` is `Front` or `Back` which are unsupported in 2D.
+ * @throws std::invalid_argument If `dir` is `ZNegative` or `ZPositive` which are unsupported in 2D.
  *
  * The connection is stored symmetrically: `a --dir--> b` and `b --opposite(dir)--> a`.
  * Default boundary types on the connected faces are set to Dirichlet for both domains.
@@ -49,8 +49,8 @@ void Geometry2D::connect(Domain2DUniform* a, LocationType dir, Domain2DUniform* 
     // Here defaultly add the first domain and the second domain into geo
     // Maybe it is dangerous~
     add_domain({a, b});
-    if (dir == LocationType::Front || dir == LocationType::Back)
-        throw std::invalid_argument("Geometry2D does not support Front/Back");
+    if (dir == LocationType::ZNegative || dir == LocationType::ZPositive)
+        throw std::invalid_argument("Geometry2D does not support ZNegative/ZPositive");
 
     adjacency[a][dir]           = b;
     adjacency[b][opposite(dir)] = a;
@@ -59,12 +59,12 @@ void Geometry2D::connect(Domain2DUniform* a, LocationType dir, Domain2DUniform* 
 
     // Set the size
     // In  this function, b is decided by a
-    if (dir == LocationType::Left || dir == LocationType::Right)
+    if (dir == LocationType::XNegative || dir == LocationType::XPositive)
     {
         b->set_ly(a->ly);
         b->set_ny(a->ny);
     }
-    else if (dir == LocationType::Up || dir == LocationType::Down)
+    else if (dir == LocationType::YPositive || dir == LocationType::YNegative)
     {
         b->set_lx(a->lx);
         b->set_nx(a->nx);
@@ -203,23 +203,23 @@ void Geometry2D::axis(Domain2DUniform* d, LocationType loc)
         throw std::runtime_error("axis: Domain is not in geometry");
 
     // Check direction type to decide if we are setting X or Y
-    bool is_x_axis = (loc == LocationType::Left || loc == LocationType::Right);
+    bool is_x_axis = (loc == LocationType::XNegative || loc == LocationType::XPositive);
 
     // Initialize offset for the starting domain
     if (is_x_axis)
     {
-        if (loc == LocationType::Left)
+        if (loc == LocationType::XNegative)
             d->set_offset_x(0.0);
-        else // Right
+        else // XPositive
             d->set_offset_x(-d->get_lx());
 
         update_offset_x(d);
     }
     else
     {
-        if (loc == LocationType::Down)
+        if (loc == LocationType::YNegative)
             d->set_offset_y(0.0);
-        else if (loc == LocationType::Up)
+        else if (loc == LocationType::YPositive)
             d->set_offset_y(-d->get_ly());
         else
             throw std::runtime_error("axis: Invalid LocationType for 2D");
@@ -255,11 +255,11 @@ void Geometry2D::update_offset_x(Domain2DUniform* d)
 
             double current_x = u->get_offset_x();
             double new_x     = current_x;
-            if (dir == LocationType::Right)
+            if (dir == LocationType::XPositive)
                 new_x = current_x + u->get_lx();
-            else if (dir == LocationType::Left)
+            else if (dir == LocationType::XNegative)
                 new_x = current_x - v->get_lx();
-            // For Up/Down, X offset is propagated unchanged (assuming alignment)
+            // For YPositive/YNegative, X offset is propagated unchanged (assuming alignment)
             v->set_offset_x(new_x);
 
             visited.insert(v);
@@ -295,11 +295,11 @@ void Geometry2D::update_offset_y(Domain2DUniform* d)
 
             double current_y = u->get_offset_y();
             double new_y     = current_y;
-            if (dir == LocationType::Up)
+            if (dir == LocationType::YPositive)
                 new_y = current_y + u->get_ly();
-            else if (dir == LocationType::Down)
+            else if (dir == LocationType::YNegative)
                 new_y = current_y - v->get_ly();
-            // For Left/Right, Y offset is propagated unchanged
+            // For XNegative/XPositive, Y offset is propagated unchanged
             v->set_offset_y(new_y);
 
             visited.insert(v);

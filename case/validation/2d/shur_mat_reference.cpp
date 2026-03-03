@@ -60,10 +60,10 @@ int main()
     Domain2DUniform neighbor_domain_x(neighbor_nx, neighbor_ny, "neighbor_domain_x");
     Domain2DUniform neighbor_domain_y(neighbor_ny, neighbor_nx, "neighbor_domain_y");
 
-    test<SchurMat2D_left>("LEFT", neighbor_domain_x, nx, ny);
-    test<SchurMat2D_right>("RIGHT", neighbor_domain_x, nx, ny);
-    test<SchurMat2D_up>("UP", neighbor_domain_y, ny, nx);
-    test<SchurMat2D_down>("DOWN", neighbor_domain_y, ny, nx);
+    test<SchurMat2D_xneg>("LEFT", neighbor_domain_x, nx, ny);
+    test<SchurMat2D_xpos>("RIGHT", neighbor_domain_x, nx, ny);
+    test<SchurMat2D_ypos>("UP", neighbor_domain_y, ny, nx);
+    test<SchurMat2D_yneg>("DOWN", neighbor_domain_y, ny, nx);
 
     return 0;
 }

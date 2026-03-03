@@ -8,7 +8,7 @@
  * helper vectors.  It's suitable when the tridiagonal matrix changes frequently.
  *
  * @param x_diag_single The value of the main diagonal.  Assumed to be constant.
- * @param f            The right-hand side vector.
+ * @param f            The xpos-hand side vector.
  * @param n            The size of the matrix (number of rows/columns).
  * @param c            The helper vector (size N - 1).  Must be pre-initialized. Modified during execution.
  * @param y            The helper vector (size N).  Modified during execution.
@@ -21,12 +21,12 @@
  * the precompute version calculates the helper vector 'c' beforehand (typically
  * when the tridiagonal matrix remains constant across multiple solves). This version calculates 'c' inside.
  */
-void ChasingMethodBase::chasing_standard_without_precompute(double            x_diag_single,
-                                                            int               n,
-                                                            double*           f,
-                                                            double*           c,
-                                                            double*           y,
-                                                            double*           x,
+void ChasingMethodBase::chasing_standard_without_precompute(double          x_diag_single,
+                                                            int             n,
+                                                            double*         f,
+                                                            double*         c,
+                                                            double*         y,
+                                                            double*         x,
                                                             PDEBoundaryType BoundaryTypeStart,
                                                             PDEBoundaryType BoundaryTypeEnd)
 {
@@ -41,8 +41,9 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
-                                                              (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
+    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ?
+                   (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+                   (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
     for (int i = n - 2; i >= 0; i--)
@@ -59,7 +60,7 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
  * matrix remains constant across multiple solves, as it avoids redundant calculations.
  *
  * @param x_diag_single The value of the main diagonal. Assumed to be constant.
- * @param f            The right-hand side vector.
+ * @param f            The xpos-hand side vector.
  * @param n            The size of the matrix (number of rows/columns).
  * @param c            The precomputed helper vector (size N-1).  Must be pre-calculated. Not modified during execution.
  * @param y            The helper vector (size N).  Modified during execution.
@@ -73,12 +74,12 @@ void ChasingMethodBase::chasing_standard_without_precompute(double            x_
  *  across multiple solves. The non-precompute version calculates 'c' inside the
  *  solver, which is more suitable when the matrix changes frequently.
  */
-void ChasingMethodBase::chasing_standard_with_precompute(double            x_diag_single,
-                                                         int               n,
-                                                         double*           f,
-                                                         double*           c,
-                                                         double*           y,
-                                                         double*           x,
+void ChasingMethodBase::chasing_standard_with_precompute(double          x_diag_single,
+                                                         int             n,
+                                                         double*         f,
+                                                         double*         c,
+                                                         double*         y,
+                                                         double*         x,
                                                          PDEBoundaryType BoundaryTypeStart,
                                                          PDEBoundaryType BoundaryTypeEnd)
 {
@@ -87,8 +88,9 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
     {
         y[i] = (f[i] - y[i - 1]) / (x_diag_single - c[i - 1]);
     }
-    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ? (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
-                                                              (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
+    y[n - 1] = (BoundaryTypeEnd == PDEBoundaryType::Neumann) ?
+                   (f[n - 1] - y[n - 2]) / (x_diag_single + 1.0 - c[n - 2]) :
+                   (f[n - 1] - y[n - 2]) / (x_diag_single - c[n - 2]);
 
     x[n - 1] = y[n - 1];
     for (int i = n - 2; i >= 0; i--)
@@ -112,9 +114,9 @@ void ChasingMethodBase::chasing_standard_with_precompute(double            x_dia
  *  This precomputation is beneficial when the tridiagonal matrix remains constant and
  *  is solved multiple times.
  */
-void ChasingMethodBase::chasing_standard_precompute(double            x_diag_single,
-                                                    int               n,
-                                                    double*           c,
+void ChasingMethodBase::chasing_standard_precompute(double          x_diag_single,
+                                                    int             n,
+                                                    double*         c,
                                                     PDEBoundaryType BoundaryTypeStart,
                                                     PDEBoundaryType BoundaryTypeEnd)
 {
@@ -133,7 +135,7 @@ void ChasingMethodBase::chasing_standard_precompute(double            x_diag_sin
  * and a recursive approach to compute the solution.
  *
  * @param n The size of the matrix (number of rows/columns).
- * @param f The right-hand side vector.
+ * @param f The xpos-hand side vector.
  * @param x The solution vector. Output.
  *
  * @note
@@ -160,7 +162,7 @@ void ChasingMethodBase::chasing_standard_singular(int n, double* f, double* x)
  *
  * @param x_diag_single The value of the main diagonal. Assumed to be constant.
  * @param n            The size of the matrix (number of rows/columns).
- * @param f            The right-hand side vector.
+ * @param f            The xpos-hand side vector.
  * @param c_diri       The precomputed helper vector for Dirichlet boundary conditions.
  * @param y_diri       The helper vector for intermediate calculations.
  * @param z_1          The first precomputed special solution vector.
@@ -209,7 +211,7 @@ void ChasingMethodBase::chasing_periodic_with_precompute(double  x_diag_single,
  *
  * @note
  * This precomputation involves solving two standard tridiagonal systems with special
- * right-hand sides to obtain the z_1 and z_2 vectors, which represent the influence
+ * xpos-hand sides to obtain the z_1 and z_2 vectors, which represent the influence
  * of the periodic boundary conditions. The c_diri vector is computed for use in the
  * standard chasing method with Dirichlet boundary conditions.
  */
@@ -254,7 +256,7 @@ void ChasingMethodBase::chasing_periodic_precompute(double  x_diag_single,
  * the first element of the solution and recursively computing the rest.
  *
  * @param n The size of the matrix (number of rows/columns).
- * @param f The right-hand side vector.
+ * @param f The xpos-hand side vector.
  * @param x The solution vector. Output.
  *
  * @note

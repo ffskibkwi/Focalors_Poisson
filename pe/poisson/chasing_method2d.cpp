@@ -5,20 +5,20 @@ void ChasingMethod2D::init(int             nx_in,
                            double*         _x_diag,
                            bool            _is_no_Dirichlet,
                            bool            _has_last_vector,
-                           PDEBoundaryType boundary_type_down,
-                           PDEBoundaryType boundary_type_up)
+                           PDEBoundaryType boundary_type_yneg,
+                           PDEBoundaryType boundary_type_ypos)
 {
     nx                       = nx_in;
     ny                       = ny_in;
     x_diag                   = _x_diag;
     is_no_Dirichlet          = _is_no_Dirichlet;
     has_last_vector          = _has_last_vector;
-    this->boundary_type_down = boundary_type_down;
-    this->boundary_type_up   = boundary_type_up;
+    this->boundary_type_yneg = boundary_type_yneg;
+    this->boundary_type_ypos = boundary_type_ypos;
 
     y.init(nx, ny, "y");
 
-    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+    if (boundary_type_yneg == PDEBoundaryType::Periodic && boundary_type_ypos == PDEBoundaryType::Periodic)
     {
         z_1.init(nx, ny, "z_1");
         z_2.init(nx, ny, "z_2");
@@ -34,14 +34,14 @@ void ChasingMethod2D::init(int             nx_in,
         c.init(nx, ny - 1, "c");
         for (int i = 0; i < nx; i++)
         {
-            chasing_standard_precompute(x_diag[i], ny, c.get_ptr(i), boundary_type_down, boundary_type_up);
+            chasing_standard_precompute(x_diag[i], ny, c.get_ptr(i), boundary_type_yneg, boundary_type_ypos);
         }
     }
 }
 
 void ChasingMethod2D::chasing(field2& f, field2& p)
 {
-    if (boundary_type_down == PDEBoundaryType::Periodic && boundary_type_up == PDEBoundaryType::Periodic)
+    if (boundary_type_yneg == PDEBoundaryType::Periodic && boundary_type_ypos == PDEBoundaryType::Periodic)
     {
         OPENMP_PARALLEL_FOR()
         for (int i = 0; i < nx; i++)
@@ -81,8 +81,8 @@ void ChasingMethod2D::chasing(field2& f, field2& p)
                                                     c.get_ptr(i),
                                                     y.get_ptr(i),
                                                     p.get_ptr(i),
-                                                    boundary_type_down,
-                                                    boundary_type_up);
+                                                    boundary_type_yneg,
+                                                    boundary_type_ypos);
             }
         }
     }

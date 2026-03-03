@@ -30,9 +30,9 @@ void test(const std::string& label, LocationType neighbor_loc)
     int ny          = 5;
     int neighbor_n  = 4;
     int neighbor_nx = nx, neighbor_ny = ny;
-    if (neighbor_loc == LocationType::Left || neighbor_loc == LocationType::Right)
+    if (neighbor_loc == LocationType::XNegative || neighbor_loc == LocationType::XPositive)
         neighbor_nx = neighbor_n;
-    else if (neighbor_loc == LocationType::Down || neighbor_loc == LocationType::Up)
+    else if (neighbor_loc == LocationType::YNegative || neighbor_loc == LocationType::YPositive)
         neighbor_ny = neighbor_n;
 
     int    m       = 2;
@@ -73,9 +73,9 @@ void test(const std::string& label, LocationType neighbor_loc)
 
 int main()
 {
-    test("LEFT", LocationType::Left);
-    test("RIGHT", LocationType::Right);
-    test("DOWN", LocationType::Down);
-    test("UP", LocationType::Up);
+    test("LEFT", LocationType::XNegative);
+    test("RIGHT", LocationType::XPositive);
+    test("DOWN", LocationType::YNegative);
+    test("UP", LocationType::YPositive);
     return 0;
 }

@@ -110,6 +110,16 @@ field3 field3::operator-(const field3& rhs)
     return R;
 }
 
+field3& field3::operator-=(const double a)
+{
+    OPENMP_PARALLEL_FOR()
+    for (int i = 0; i < nx; i++)
+        for (int j = 0; j < ny; j++)
+            for (int k = 0; k < nz; k++)
+                this->operator()(i, j, k) -= a;
+    return *this;
+}
+
 field3 field3::operator*(const double a)
 {
     field3 R(nx, ny, nz);

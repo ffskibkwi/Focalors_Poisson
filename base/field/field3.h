@@ -32,6 +32,7 @@ public:
 
     field3  operator+(const field3& rhs);
     field3  operator-(const field3& rhs);
+    field3& operator-=(const double a);
     field3  operator*(const double a);
     field3& operator*=(const double a);
     void    add_affine_transform(const double a, const field3& x, const double b);

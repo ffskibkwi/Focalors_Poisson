@@ -130,8 +130,8 @@ void Variable3D::set_x_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_y_map[s] = new double[s->ny];
-    corner_z_map[s] = new double[s->nz];
+    corner_y_map[s] = new double[static_cast<std::size_t>(s->ny)]();
+    corner_z_map[s] = new double[static_cast<std::size_t>(s->nz)]();
 
     position_type = VariablePositionType::XFace;
 }
@@ -155,8 +155,8 @@ void Variable3D::set_y_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_x_map[s] = new double[s->nx];
-    corner_z_map[s] = new double[s->nz];
+    corner_x_map[s] = new double[static_cast<std::size_t>(s->nx)]();
+    corner_z_map[s] = new double[static_cast<std::size_t>(s->nz)]();
 
     position_type = VariablePositionType::YFace;
 }
@@ -180,8 +180,8 @@ void Variable3D::set_z_face_center_field(Domain3DUniform* s, field3& f)
     buffer_map[s][LocationType::ZNegative] = new field2(s->nx, s->ny);
     buffer_map[s][LocationType::ZPositive] = new field2(s->nx, s->ny);
 
-    corner_x_map[s] = new double[s->nx];
-    corner_y_map[s] = new double[s->ny];
+    corner_x_map[s] = new double[static_cast<std::size_t>(s->nx)]();
+    corner_y_map[s] = new double[static_cast<std::size_t>(s->ny)]();
 
     position_type = VariablePositionType::ZFace;
 }

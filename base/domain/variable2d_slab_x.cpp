@@ -103,8 +103,8 @@ void Variable2DSlabX::set_center_field(Domain2DUniformMPI* s, field2& f)
     field_map[s] = &f;
 
     // Center variable only need xneg and yneg buffer
-    buffer_map[s][LocationType::XNegative] = new double[ny];
-    buffer_map[s][LocationType::YNegative] = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::YNegative] = new double[static_cast<std::size_t>(snx)]();
 
     position_type = VariablePositionType::Center;
 }
@@ -126,10 +126,10 @@ void Variable2DSlabX::set_x_edge_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::XNegative] = new double[ny];
-    buffer_map[s][LocationType::XPositive] = new double[ny];
-    buffer_map[s][LocationType::YNegative] = new double[snx];
-    buffer_map[s][LocationType::YPositive] = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::XPositive] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::YNegative] = new double[static_cast<std::size_t>(snx)]();
+    buffer_map[s][LocationType::YPositive] = new double[static_cast<std::size_t>(snx)]();
 
     position_type = VariablePositionType::XFace;
 }
@@ -151,10 +151,10 @@ void Variable2DSlabX::set_y_edge_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::XNegative] = new double[ny];
-    buffer_map[s][LocationType::XPositive] = new double[ny];
-    buffer_map[s][LocationType::YNegative] = new double[snx];
-    buffer_map[s][LocationType::YPositive] = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::XPositive] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::YNegative] = new double[static_cast<std::size_t>(snx)]();
+    buffer_map[s][LocationType::YPositive] = new double[static_cast<std::size_t>(snx)]();
 
     position_type = VariablePositionType::YFace;
 }
@@ -176,10 +176,10 @@ void Variable2DSlabX::set_corner_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::XNegative] = new double[ny];
-    buffer_map[s][LocationType::XPositive] = new double[ny];
-    buffer_map[s][LocationType::YNegative] = new double[snx];
-    buffer_map[s][LocationType::YPositive] = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::XPositive] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::YNegative] = new double[static_cast<std::size_t>(snx)]();
+    buffer_map[s][LocationType::YPositive] = new double[static_cast<std::size_t>(snx)]();
 
     position_type = VariablePositionType::Corner;
 }
@@ -201,10 +201,10 @@ void Variable2DSlabX::set_inner_field(Domain2DUniformMPI* s, field2& f)
 
     field_map[s] = &f;
 
-    buffer_map[s][LocationType::XNegative] = new double[ny];
-    buffer_map[s][LocationType::XPositive] = new double[ny];
-    buffer_map[s][LocationType::YNegative] = new double[snx];
-    buffer_map[s][LocationType::YPositive] = new double[snx];
+    buffer_map[s][LocationType::XNegative] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::XPositive] = new double[static_cast<std::size_t>(ny)]();
+    buffer_map[s][LocationType::YNegative] = new double[static_cast<std::size_t>(snx)]();
+    buffer_map[s][LocationType::YPositive] = new double[static_cast<std::size_t>(snx)]();
 
     position_type = VariablePositionType::Center;
 }
@@ -226,7 +226,7 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
     has_boundary_value_map[s][loc] = true;
     if (loc == LocationType::XNegative || loc == LocationType::XPositive)
     {
-        boundary_value_map[s][loc] = new double[ny];
+        boundary_value_map[s][loc] = new double[static_cast<std::size_t>(ny)]();
         for (int j = 0; j < ny; j++)
             boundary_value_map[s][loc][j] = in_value;
 
@@ -235,7 +235,7 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
     }
     else if (loc == LocationType::YNegative || loc == LocationType::YPositive)
     {
-        boundary_value_map[s][loc] = new double[snx];
+        boundary_value_map[s][loc] = new double[static_cast<std::size_t>(snx)]();
         for (int i = 0; i < snx; i++)
             boundary_value_map[s][loc][i] = in_value;
 
@@ -315,7 +315,7 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
         else
             j_size = s->ny;
 
-        boundary_value_map[s][loc] = new double[j_size];
+        boundary_value_map[s][loc] = new double[static_cast<std::size_t>(j_size)]();
 
         int i_idx = (loc == LocationType::XNegative) ? 0 : s->nx;
 
@@ -330,7 +330,7 @@ void Variable2DSlabX::set_boundary_value(Domain2DUniform* _s, LocationType loc, 
     {
         int i_size = nx_slab;
 
-        boundary_value_map[s][loc] = new double[i_size];
+        boundary_value_map[s][loc] = new double[static_cast<std::size_t>(i_size)]();
 
         int j_idx = (loc == LocationType::YNegative) ? 0 : s->ny;
 

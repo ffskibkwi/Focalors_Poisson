@@ -124,13 +124,6 @@ void Domain3DUniform::set_size(double in_lx, double in_ly, double in_lz)
         hz = in_lz / nz;
 }
 
-void Domain3DUniform::set_position(double in_pos_x, double in_pos_y, double in_pos_z)
-{
-    pos_x = in_pos_x;
-    pos_y = in_pos_y;
-    pos_z = in_pos_z;
-}
-
 void   Domain3DUniform::set_offset_x(double in_offset_x) { offset_x = in_offset_x; }
 void   Domain3DUniform::set_offset_y(double in_offset_y) { offset_y = in_offset_y; }
 void   Domain3DUniform::set_offset_z(double in_offset_z) { offset_z = in_offset_z; }
@@ -155,9 +148,6 @@ bool Domain3DUniform::check_boundary() const
            boundary_type_zneg != PDEBoundaryType::Null && boundary_type_zpos != PDEBoundaryType::Null;
 }
 
-double Domain3DUniform::get_pos_x() const { return pos_x; }
-double Domain3DUniform::get_pos_y() const { return pos_y; }
-double Domain3DUniform::get_pos_z() const { return pos_z; }
 double Domain3DUniform::get_hx() const { return hx; }
 double Domain3DUniform::get_hy() const { return hy; }
 double Domain3DUniform::get_hz() const { return hz; }

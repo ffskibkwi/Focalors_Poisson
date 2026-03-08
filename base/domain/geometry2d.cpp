@@ -183,20 +183,6 @@ void Geometry2D::set_global_spatial_step(double hx, double hy)
     }
 }
 
-void Geometry2D::set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y)
-{
-    std::queue<Domain2DUniform*> q;
-
-    q.push(ref_domain);
-    while (!q.empty())
-    {
-        Domain2DUniform* currentDomain = q.front();
-        q.pop();
-        currentDomain->set_position(pos_x, pos_y);
-        //
-    }
-}
-
 void Geometry2D::axis(Domain2DUniform* d, LocationType loc)
 {
     if (std::find(domains.begin(), domains.end(), d) == domains.end())

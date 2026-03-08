@@ -161,20 +161,6 @@ void Geometry3D::build_tree()
     is_prepared = true;
 }
 
-void Geometry3D::set_position(Domain3DUniform* ref_domain, double pos_x, double pos_y, double pos_z)
-{
-    std::queue<Domain3DUniform*> q;
-
-    q.push(ref_domain);
-    while (!q.empty())
-    {
-        Domain3DUniform* currentDomain = q.front();
-        q.pop();
-        currentDomain->set_position(pos_x, pos_y, pos_z);
-        // TODO: Update position based on adjacency
-    }
-}
-
 void Geometry3D::set_global_spatial_step(double hx, double hy, double hz)
 {
     for (auto* s : domains)

@@ -23,9 +23,6 @@ public:
     double hy = 0.0;
     double hz = 0.0;
 
-    // Basic position (the position of the xneg-zneg corner)
-    double pos_x, pos_y, pos_z;
-
     // Global offset
     double offset_x = 0.0;
     double offset_y = 0.0;
@@ -63,7 +60,6 @@ public:
     void set_lz(double in_lz);
     void set_spatial_step(double hx, double hy, double hz);
     void set_size(double in_lx, double in_ly, double in_lz);
-    void set_position(double in_pos_x, double in_pos_y, double in_pos_z);
 
     void   set_offset_x(double in_offset_x);
     void   set_offset_y(double in_offset_y);
@@ -72,9 +68,6 @@ public:
     double get_offset_y() const;
     double get_offset_z() const;
 
-    double get_pos_x() const;
-    double get_pos_y() const;
-    double get_pos_z() const;
     double get_hx() const;
     double get_hy() const;
     double get_hz() const;

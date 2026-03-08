@@ -51,8 +51,6 @@ public:
     void global_move_x(double x);
     void global_move_y(double y);
 
-    void set_position(Domain2DUniform* ref_domain, double pos_x, double pos_y);
-
 private:
     // Check the single connectedness of the geometry
     bool is_single_connected() const;

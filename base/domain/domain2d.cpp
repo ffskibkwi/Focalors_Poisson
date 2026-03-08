@@ -88,12 +88,6 @@ void Domain2DUniform::set_size(double in_lx, double in_ly)
         hy = in_ly / ny;
 }
 
-void Domain2DUniform::set_position(double in_pos_x, double in_pos_y)
-{
-    pos_x = in_pos_x;
-    pos_y = in_pos_y;
-}
-
 void   Domain2DUniform::set_offset_x(double in_offset_x) { offset_x = in_offset_x; }
 void   Domain2DUniform::set_offset_y(double in_offset_y) { offset_y = in_offset_y; }
 double Domain2DUniform::get_offset_x() const { return offset_x; }
@@ -115,8 +109,6 @@ bool Domain2DUniform::check_boundary() const
            boundary_type_yneg != PDEBoundaryType::Null && boundary_type_ypos != PDEBoundaryType::Null;
 }
 
-double Domain2DUniform::get_pos_x() const { return pos_x; }
-double Domain2DUniform::get_pos_y() const { return pos_y; }
 double Domain2DUniform::get_hx() const { return hx; }
 double Domain2DUniform::get_hy() const { return hy; }
 double Domain2DUniform::get_lx() const { return lx; }

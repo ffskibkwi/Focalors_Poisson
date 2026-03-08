@@ -47,8 +47,6 @@ public:
     void global_move_y(double y);
     void global_move_z(double z);
 
-    void set_position(Domain3DUniform* ref_domain, double pos_x, double pos_y, double pos_z);
-
 private:
     // Check the single connectedness of the geometry
     bool is_single_connected() const;

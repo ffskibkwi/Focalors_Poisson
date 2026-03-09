@@ -21,24 +21,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # ---------------------- Solver library (moved from solver/CMakeLists.txt) ----------------------
 file(GLOB_RECURSE SOLVER_HEADER_FILES
     "${CMAKE_SOURCE_DIR}/base/*.h" "${CMAKE_SOURCE_DIR}/base/*.hpp"
-    "${CMAKE_SOURCE_DIR}/io/*.h"   "${CMAKE_SOURCE_DIR}/io/*.hpp"
     "${CMAKE_SOURCE_DIR}/pe/*.h"   "${CMAKE_SOURCE_DIR}/pe/*.hpp"
-    "${CMAKE_SOURCE_DIR}/pe_mpi/*.h" "${CMAKE_SOURCE_DIR}/pe_mpi/*.hpp"
     "${CMAKE_SOURCE_DIR}/instrumentor/*.h" "${CMAKE_SOURCE_DIR}/instrumentor/*.hpp"
 )
 file(GLOB_RECURSE SOLVER_SOURCE_FILES
     "${CMAKE_SOURCE_DIR}/base/*.cpp"
-    "${CMAKE_SOURCE_DIR}/io/*.cpp"
     "${CMAKE_SOURCE_DIR}/pe/*.cpp"
-    "${CMAKE_SOURCE_DIR}/pe_mpi/*.cpp"
     "${CMAKE_SOURCE_DIR}/instrumentor/*.cpp"
 )
-
-# 排除 pe/poisson_old 和 pe/concat_old 目录下所有 cpp 文件
-file(GLOB_RECURSE POISSON_OLD_SOURCE_FILES "${CMAKE_SOURCE_DIR}/pe/poisson_old/*.cpp")
-file(GLOB_RECURSE CONCAT_OLD_SOURCE_FILES "${CMAKE_SOURCE_DIR}/pe/concat_old/*.cpp")
-list(REMOVE_ITEM SOLVER_SOURCE_FILES ${POISSON_OLD_SOURCE_FILES})
-list(REMOVE_ITEM SOLVER_SOURCE_FILES ${CONCAT_OLD_SOURCE_FILES})
 
 add_library(Solver ${SOLVER_SOURCE_FILES} ${SOLVER_HEADER_FILES})
 target_include_directories(Solver PUBLIC ${CMAKE_SOURCE_DIR})

@@ -57,6 +57,8 @@ void PhysicsConfig::set_mu_min(double in_mu_min) { mu_min = in_mu_min; }
 
 void PhysicsConfig::set_mu_max(double in_mu_max) { mu_max = in_mu_max; }
 
+void PhysicsConfig::set_gamma_ref(double in_gamma_ref) { gamma_ref = in_gamma_ref; }
+
 // Power Law model setter (K, n, optional viscosity limits)
 void PhysicsConfig::set_power_law(double in_k, double in_n, double in_mu_min, double in_mu_max)
 {
@@ -78,10 +80,10 @@ void PhysicsConfig::set_power_law_dimensionless(double in_k,
                                                 double in_mu_min,
                                                 double in_mu_max)
 {
-    k                          = in_k;
-    n                          = in_n;
-    Re                         = in_re;
-    mu_ref                     = in_mu_ref;
+    k                           = in_k;
+    n                           = in_n;
+    Re                          = in_re;
+    mu_ref                      = in_mu_ref;
     use_dimensionless_viscosity = in_use_dimensionless_viscosity;
 
     // Default limits are based on mu_ref
@@ -117,13 +119,13 @@ void PhysicsConfig::set_carreau_dimensionless(double in_mu_0,
                                               double in_mu_min,
                                               double in_mu_max)
 {
-    mu_0                       = in_mu_0;
-    mu_inf                     = in_mu_inf;
-    a                          = in_a;
-    lambda                     = in_lambda;
-    n                          = in_n;
-    Re                         = in_re;
-    mu_ref                     = in_mu_ref;
+    mu_0                        = in_mu_0;
+    mu_inf                      = in_mu_inf;
+    a                           = in_a;
+    lambda                      = in_lambda;
+    n                           = in_n;
+    Re                          = in_re;
+    mu_ref                      = in_mu_ref;
     use_dimensionless_viscosity = in_use_dimensionless_viscosity;
 
     // Default limits are based on mu_ref
@@ -158,10 +160,10 @@ void PhysicsConfig::set_casson_dimensionless(double in_casson_mu,
                                              double in_mu_min,
                                              double in_mu_max)
 {
-    casson_mu                  = in_casson_mu;
-    casson_tau0                = in_casson_tau0;
-    Re                         = in_re;
-    mu_ref                     = in_mu_ref;
+    casson_mu                   = in_casson_mu;
+    casson_tau0                 = in_casson_tau0;
+    Re                          = in_re;
+    mu_ref                      = in_mu_ref;
     use_dimensionless_viscosity = in_use_dimensionless_viscosity;
 
     // Default limits are based on mu_ref

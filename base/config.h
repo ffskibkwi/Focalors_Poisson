@@ -97,6 +97,7 @@ public:
     // Dimensionless control for non-Newtonian viscosity model
     bool   use_dimensionless_viscosity = false;
     double mu_ref                      = 1.0;
+    double gamma_ref = 1.0; // Reference shear rate used to recover physical gamma_dot from solver units
 
     // MHD parameters
     bool   enable_mhd = false; // Enable MHD module
@@ -112,6 +113,7 @@ public:
     void set_model_type(int in_model_type);
     void set_mu_min(double in_mu_min);
     void set_mu_max(double in_mu_max);
+    void set_gamma_ref(double in_gamma_ref);
 
     // Power Law model setter (K, n, optional viscosity limits)
     // Optional parameters in_mu_min and in_mu_max allow user to override current viscosity limits.
@@ -145,10 +147,7 @@ public:
                                    double in_mu_max = -1.0);
 
     // Casson model setter: eta = (sqrt(mu) + sqrt(tau0/gamma_dot))^2
-    void set_casson(double in_casson_mu,
-                    double in_casson_tau0,
-                    double in_mu_min = -1.0,
-                    double in_mu_max = -1.0);
+    void set_casson(double in_casson_mu, double in_casson_tau0, double in_mu_min = -1.0, double in_mu_max = -1.0);
 
     // Casson model setter with dimensionless scaling controls
     void set_casson_dimensionless(double in_casson_mu,

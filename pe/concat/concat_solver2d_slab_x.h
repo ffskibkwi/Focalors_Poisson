@@ -9,11 +9,13 @@ public:
     Variable2DSlabX* variable = nullptr;
 
     ConcatPoissonSolver2DSlabX(Variable2DSlabX* in_variable);
-    ~ConcatPoissonSolver2DSlabX();
+    ~ConcatPoissonSolver2DSlabX() override;
 
     void solve();
 
 protected:
+    void rebuild_solver_map() override;
+
     std::unordered_map<Domain2DUniform*, DomainSolver2D*>
          construct_local_solver_map(Domain2DUniform* domain, bool is_local, MPI_Comm local_comm);
     void construct_solver_map_at_domain(Domain2DUniformMPI* domain);

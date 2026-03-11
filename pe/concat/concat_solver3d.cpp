@@ -4,9 +4,17 @@
 
 void ConcatPoissonSolver3D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
+    const bool parameter_changed = (m != in_m) || (tol != in_tol) || (maxIter != in_maxIter);
+
     m       = in_m;
     tol     = in_tol;
     maxIter = in_maxIter;
+
+    if (parameter_changed && !solver_map.empty())
+    {
+        clear_solver_map();
+        construct_solver_map();
+    }
 }
 
 ConcatPoissonSolver3D::ConcatPoissonSolver3D(Variable3D* in_variable)
@@ -20,8 +28,16 @@ ConcatPoissonSolver3D::~ConcatPoissonSolver3D()
 {
     for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto kv : solver_map)
-        delete kv.second;
+
+    clear_solver_map();
+}
+
+void ConcatPoissonSolver3D::clear_solver_map()
+{
+    for (auto& [domain, solver] : solver_map)
+        delete solver;
+
+    solver_map.clear();
 }
 
 void ConcatPoissonSolver3D::init_before_constructing_solver(Variable3D* _variable)

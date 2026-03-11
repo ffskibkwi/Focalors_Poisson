@@ -22,12 +22,15 @@ public:
 
     ConcatPoissonSolver2D() {}
     ConcatPoissonSolver2D(Variable2D* in_variable);
-    ~ConcatPoissonSolver2D();
+    virtual ~ConcatPoissonSolver2D();
 
     void set_parameter(int in_m, double in_tol, int in_maxIter);
     void solve();
 
 protected:
+    void clear_solver_map();
+    virtual void rebuild_solver_map();
+
     void init_before_constructing_solver(Variable2D* _variable);
 
     void construct_solver_map_at_domain(Domain2DUniform* domain);

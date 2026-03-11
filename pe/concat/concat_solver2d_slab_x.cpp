@@ -23,6 +23,12 @@ ConcatPoissonSolver2DSlabX::~ConcatPoissonSolver2DSlabX()
         delete[] kv.second;
 }
 
+void ConcatPoissonSolver2DSlabX::rebuild_solver_map()
+{
+    clear_solver_map();
+    construct_solver_map();
+}
+
 std::unordered_map<Domain2DUniform*, DomainSolver2D*>
 ConcatPoissonSolver2DSlabX::construct_local_solver_map(Domain2DUniform* domain, bool is_local, MPI_Comm local_comm)
 {

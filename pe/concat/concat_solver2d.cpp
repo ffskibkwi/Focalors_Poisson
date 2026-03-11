@@ -6,9 +6,14 @@
 
 void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
+    const bool parameter_changed = (m != in_m) || (tol != in_tol) || (maxIter != in_maxIter);
+
     m       = in_m;
     tol     = in_tol;
     maxIter = in_maxIter;
+
+    if (parameter_changed && !solver_map.empty())
+        rebuild_solver_map();
 }
 
 ConcatPoissonSolver2D::ConcatPoissonSolver2D(Variable2D* in_variable)
@@ -22,8 +27,22 @@ ConcatPoissonSolver2D::~ConcatPoissonSolver2D()
 {
     for (auto& [domain, temp_field] : temp_fields)
         delete temp_field;
-    for (auto kv : solver_map)
-        delete kv.second;
+
+    clear_solver_map();
+}
+
+void ConcatPoissonSolver2D::clear_solver_map()
+{
+    for (auto& [domain, solver] : solver_map)
+        delete solver;
+
+    solver_map.clear();
+}
+
+void ConcatPoissonSolver2D::rebuild_solver_map()
+{
+    clear_solver_map();
+    construct_solver_map();
 }
 
 void ConcatPoissonSolver2D::init_before_constructing_solver(Variable2D* _variable)

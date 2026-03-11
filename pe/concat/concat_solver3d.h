@@ -27,6 +27,8 @@ public:
     void solve();
 
 private:
+    void clear_solver_map();
+
     void init_before_constructing_solver(Variable3D* _variable);
 
     void construct_solver_map_at_domain(Domain3DUniform* domain);

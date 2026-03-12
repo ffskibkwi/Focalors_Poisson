@@ -13,6 +13,9 @@ std::ostream& operator<<(std::ostream& os, DifferenceSchemeType type)
         case DifferenceSchemeType::Conv_QUICK_Diff_Center2nd:
             os << "Conv_QUICK_Diff_Center2nd";
             break;
+        case DifferenceSchemeType::Conv_TVD_VanLeer_Diff_Center2nd:
+            os << "Conv_TVD_VanLeer_Diff_Center2nd";
+            break;
         default:
             os << "Unknown";
             break;

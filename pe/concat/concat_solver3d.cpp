@@ -66,8 +66,6 @@ void ConcatPoissonSolver3D::init_before_constructing_solver(Variable3D* _variabl
     }
 
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
-
-    showGmresRes = env_cfg.showGmresRes;
 }
 
 void ConcatPoissonSolver3D::construct_solver_map_at_domain(Domain3DUniform* domain)

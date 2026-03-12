@@ -70,8 +70,6 @@ void ConcatPoissonSolver2D::init_before_constructing_solver(Variable2D* _variabl
     }
 
     EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
-
-    showGmresRes = env_cfg.showGmresRes;
 }
 
 void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)

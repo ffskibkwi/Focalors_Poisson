@@ -51,6 +51,4 @@ private:
     std::unordered_map<Domain3DUniform*, field3*>                                            field_map;
     std::unordered_map<Domain3DUniform*, std::unordered_map<LocationType, Domain3DUniform*>> tree_map;
     std::unordered_map<Domain3DUniform*, std::pair<LocationType, Domain3DUniform*>>          parent_map;
-
-    bool showGmresRes = false;
 };

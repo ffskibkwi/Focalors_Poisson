@@ -28,7 +28,7 @@ public:
     void solve();
 
 protected:
-    void clear_solver_map();
+    void         clear_solver_map();
     virtual void rebuild_solver_map();
 
     void init_before_constructing_solver(Variable2D* _variable);
@@ -53,6 +53,4 @@ protected:
     std::unordered_map<Domain2DUniform*, field2*>                                            field_map;
     std::unordered_map<Domain2DUniform*, std::unordered_map<LocationType, Domain2DUniform*>> tree_map;
     std::unordered_map<Domain2DUniform*, std::pair<LocationType, Domain2DUniform*>>          parent_map;
-
-    bool showGmresRes = false;
 };

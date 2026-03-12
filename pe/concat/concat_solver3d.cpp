@@ -64,8 +64,6 @@ void ConcatPoissonSolver3D::init_before_constructing_solver(Variable3D* _variabl
             temp_fields[domain] =
                 new field3(field->get_nx(), field->get_ny(), field->get_nz(), field->get_name() + "_temp");
     }
-
-    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 }
 
 void ConcatPoissonSolver3D::construct_solver_map_at_domain(Domain3DUniform* domain)

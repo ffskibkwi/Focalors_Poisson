@@ -68,8 +68,6 @@ void ConcatPoissonSolver2D::init_before_constructing_solver(Variable2D* _variabl
         if (domain != tree_root)
             temp_fields[domain] = new field2(field->get_nx(), field->get_ny(), field->get_name() + "_temp");
     }
-
-    EnvironmentConfig& env_cfg = EnvironmentConfig::Get();
 }
 
 void ConcatPoissonSolver2D::construct_solver_map_at_domain(Domain2DUniform* domain)

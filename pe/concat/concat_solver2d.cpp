@@ -3,7 +3,6 @@
 #include "pe/poisson/poisson_solver2d.h"
 
 #include <string>
-#include <vector>
 
 void ConcatPoissonSolver2D::set_parameter(int in_m, double in_tol, int in_maxIter)
 {
@@ -165,30 +164,13 @@ void ConcatPoissonSolver2D::boundary_assembly()
         Domain2DUniform* domain = kv.first;
         field2&          f      = *kv.second;
 
-        auto& var_type_map           = variable->boundary_type_map[domain];
-        auto& has_boundary_value_map = variable->has_boundary_value_map[domain];
-        auto& boundary_value_map     = variable->boundary_value_map[domain];
+        auto& var_value_map = variable->buffer_map[domain];
+        auto& var_type_map  = variable->boundary_type_map[domain];
 
         int    nx = domain->get_nx();
         int    ny = domain->get_ny();
         double hx = domain->get_hx();
         double hy = domain->get_hy();
-
-        std::vector<double> zero_x_values(static_cast<std::size_t>(ny), 0.0);
-        std::vector<double> zero_y_values(static_cast<std::size_t>(nx), 0.0);
-
-        auto get_physical_boundary_value = [&](LocationType loc) -> double* {
-            auto has_it = has_boundary_value_map.find(loc);
-            if (has_it != has_boundary_value_map.end() && has_it->second)
-            {
-                auto value_it = boundary_value_map.find(loc);
-                if (value_it != boundary_value_map.end() && value_it->second != nullptr)
-                    return value_it->second;
-            }
-
-            return (loc == LocationType::XNegative || loc == LocationType::XPositive) ? zero_x_values.data()
-                                                                                       : zero_y_values.data();
-        };
 
         PDEBoundaryType boundary_type_xneg = var_type_map[LocationType::XNegative];
         PDEBoundaryType boundary_type_xpos = var_type_map[LocationType::XPositive];
@@ -197,44 +179,44 @@ void ConcatPoissonSolver2D::boundary_assembly()
 
         if (boundary_type_xneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::XNegative);
+            double* boundary_value = var_value_map[LocationType::XNegative];
             f.xneg_bond_add(-1.0 / hx / hx, boundary_value);
         }
         if (boundary_type_xpos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::XPositive);
+            double* boundary_value = var_value_map[LocationType::XPositive];
             f.xpos_bond_add(-1.0 / hx / hx, boundary_value);
         }
 
         if (boundary_type_yneg == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::YNegative);
+            double* boundary_value = var_value_map[LocationType::YNegative];
             f.yneg_bond_add(-1.0 / hy / hy, boundary_value);
         }
         if (boundary_type_ypos == PDEBoundaryType::Dirichlet)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::YPositive);
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy / hy, boundary_value);
         }
 
         if (boundary_type_xneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::XNegative);
+            double* boundary_value = var_value_map[LocationType::XNegative];
             f.xneg_bond_add(1.0 / hx, boundary_value);
         }
         if (boundary_type_xpos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::XPositive);
+            double* boundary_value = var_value_map[LocationType::XPositive];
             f.xpos_bond_add(-1.0 / hx, boundary_value);
         }
         if (boundary_type_yneg == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::YNegative);
+            double* boundary_value = var_value_map[LocationType::YNegative];
             f.yneg_bond_add(1.0 / hy, boundary_value);
         }
         if (boundary_type_ypos == PDEBoundaryType::Neumann)
         {
-            double* boundary_value = get_physical_boundary_value(LocationType::YPositive);
+            double* boundary_value = var_value_map[LocationType::YPositive];
             f.up_bond_add(-1.0 / hy, boundary_value);
         }
     }

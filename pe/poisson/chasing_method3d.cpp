@@ -53,6 +53,7 @@ void ChasingMethod3D::chasing(field3& f, field3& p)
 {
     if (boundary_type_zneg == PDEBoundaryType::Periodic && boundary_type_zpos == PDEBoundaryType::Periodic)
     {
+        OPENMP_PARALLEL_FOR()
         for (int i = 0; i < nx; i++)
         {
             for (int j = 0; j < ny; j++)
@@ -78,6 +79,7 @@ void ChasingMethod3D::chasing(field3& f, field3& p)
     }
     else
     {
+        OPENMP_PARALLEL_FOR()
         for (int i = 0; i < nx; i++)
         {
             for (int j = 0; j < ny; j++)

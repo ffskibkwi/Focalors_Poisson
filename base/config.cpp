@@ -58,6 +58,7 @@ void PhysicsConfig::set_mu_min(double in_mu_min) { mu_min = in_mu_min; }
 void PhysicsConfig::set_mu_max(double in_mu_max) { mu_max = in_mu_max; }
 
 void PhysicsConfig::set_gamma_ref(double in_gamma_ref) { gamma_ref = in_gamma_ref; }
+void PhysicsConfig::set_viscosity_relax_alpha(double in_alpha) { viscosity_relax_alpha = in_alpha; }
 
 // Power Law model setter (K, n, optional viscosity limits)
 void PhysicsConfig::set_power_law(double in_k, double in_n, double in_mu_min, double in_mu_max)

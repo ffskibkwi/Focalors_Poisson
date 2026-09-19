@@ -98,6 +98,8 @@ public:
     bool   use_dimensionless_viscosity = false;
     double mu_ref                      = 1.0;
     double gamma_ref = 1.0; // Reference shear rate used to recover physical gamma_dot from solver units
+    // Relaxation factor for non-Newtonian viscosity update: (0, 1]. Default 1.0 (no relaxation)
+    double viscosity_relax_alpha = 1.0;
 
     // MHD parameters
     bool   enable_mhd = false; // Enable MHD module
@@ -114,6 +116,7 @@ public:
     void set_mu_min(double in_mu_min);
     void set_mu_max(double in_mu_max);
     void set_gamma_ref(double in_gamma_ref);
+    void set_viscosity_relax_alpha(double in_alpha);
 
     // Power Law model setter (K, n, optional viscosity limits)
     // Optional parameters in_mu_min and in_mu_max allow user to override current viscosity limits.
